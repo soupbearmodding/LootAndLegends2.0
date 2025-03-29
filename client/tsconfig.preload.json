@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json", // Inherit base settings
+  "compilerOptions": {
+    "module": "CommonJS", // Override module system for preload
+    "outDir": "./dist-electron", // Changed output directory
+    // No need for "lib": ["DOM"] here as preload doesn't directly access DOM
+    "lib": ["ES2022"]
+  },
+  "include": ["src/preload.ts"], // Only include the preload script
+  "exclude": ["node_modules", "dist", "dist-electron", "src/main.ts", "src/renderer.ts"] // Added dist-electron, exclude other source files
+}

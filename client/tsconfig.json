@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    /* Base Options: */
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "target": "ES2022",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    // "isolatedModules": true, // Remove this line
+    "moduleResolution": "node", // Important for Electron
+
+    /* Strictness */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "jsx": "react-jsx", // Added for React
+
+    /* Output */
+    "outDir": "./dist-electron", // Changed for Electron main/preload build
+    "rootDir": "./src",
+
+    /* Module System */
+    "module": "ES2022", // Change to ES Modules for renderer compatibility
+
+    /* Type Roots */
+    "typeRoots": ["./node_modules/@types"],
+
+    /* DOM library for renderer process */
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  },
+  "include": ["src/**/*"], // Include all files in the src directory, including .ts and .tsx
+  "exclude": ["node_modules", "dist", "dist-electron"] // Exclude node_modules and both output directories
+}

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- CSP needs adjustment for Vite dev server & inline styles/scripts if needed -->
+    <!-- A more relaxed policy for dev might be needed, tighten for production -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loot & Legends</title>
+    <!-- Vite will inject necessary links/scripts -->
+</head>
+<body>
+    <div id="root"></div> <!-- Standard root element for React -->
+    <script type="module" src="/src/renderer.tsx"></script> <!-- Entry point for Vite -->
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Root level dependencies
+/node_modules/
+
+# Client dependencies and build artifacts
+/client/node_modules/
+/client/dist/
+/client/dist-electron/
+
+# Server dependencies and build artifacts
+/server/node_modules/
+/server/dist/
+
+# Common build directories
+/dist/
