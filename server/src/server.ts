@@ -1,12 +1,12 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import { connectToDatabase } from './db.js';
 import { safeSend } from './utils.js';
-import { handleRegister, handleLogin, handleLogout } from './auth.js'; // Keep auth for now
-// Import new character handlers
+import { handleRegister, handleLogin, handleLogout } from './auth.js';
+
 import { handleCreateCharacter, handleSelectCharacter, handleDeleteCharacter } from './handlers/characterHandler.js';
-import { handleTravel } from './zone.js'; // Keep zone for now
-import { handleFindMonster } from './combat.js'; // Keep combat for now
-import { handleEquipItem, handleUnequipItem, handleSellItem, handleAssignPotionSlot, handleUsePotionSlot, handleAutoEquipBestStat } from './inventory.js'; // Keep inventory for now
+import { handleTravel } from './zone.js';
+import { handleFindMonster } from './combat.js';
+import { handleEquipItem, handleUnequipItem, handleSellItem, handleAssignPotionSlot, handleUsePotionSlot, handleAutoEquipBestStat } from './inventory.js';
 import { validateGameData } from './validation.js';
 import {
     WebSocketMessage,

@@ -4,6 +4,11 @@
 
 The core security philosophy of Loot & Legends relies on a **server-authoritative model**. The server is the single source of truth for all game state, calculations, and actions. Clients send requests to perform actions, but the server validates these requests and executes the logic independently, preventing clients from directly manipulating critical game data like stats, inventory, or combat outcomes.
 
+We are implementing a **layered architecture** (Handlers, Services, Repositories) to further enhance security and maintainability by clearly separating concerns:
+*   **Handlers (Application Layer):** Validate incoming requests, orchestrate actions, and format responses.
+*   **Services (Domain Layer):** Contain and enforce core game/business logic and rules.
+*   **Repositories (Persistence Layer):** Abstract and isolate all direct database interactions.
+
 ## 2. Authentication & Authorization
 
 *   **User Registration:**
@@ -25,9 +30,9 @@ The core security philosophy of Loot & Legends relies on a **server-authoritativ
 
 *   **WebSocket Communication:** All client-server communication occurs over WebSockets.
 *   **Payload Validation:**
-    *   All message handlers (`auth.ts`, `character.ts`, `inventory.ts`, `zone.ts`, `combat.ts`) perform strict validation on incoming message payloads.
+    *   All message handlers (e.g., `handlers/characterHandler.ts`, `auth.ts`, `inventory.ts`, etc.) perform strict validation on incoming message payloads *before* passing data to services.
     *   Checks include verifying the payload is an object (not null), required properties exist, data types are correct (e.g., string, number), and values are within expected ranges or formats (e.g., non-empty strings, specific enum values like slot names or stat keys).
-    *   Invalid payloads are rejected early with an error message sent to the client, and a warning is logged on the server.
+    *   Invalid payloads are rejected early by the handler with an error message sent to the client, and a warning is logged on the server.
 *   **Rate Limiting:**
     *   Implemented in `server.ts` to limit the number of messages a single client can send within a defined time window (currently 10 messages per 1 second).
     *   Uses an in-memory map (`rateLimitTracker`) to track message counts per connection.
@@ -35,17 +40,18 @@ The core security philosophy of Loot & Legends relies on a **server-authoritativ
 
 ## 4. Game Logic & State Management
 
-*   **Server-Side Calculations:** All critical game calculations are performed exclusively on the server:
+*   **Server-Side Calculations (Services):** All critical game calculations are performed exclusively within server-side **Services** (e.g., `CharacterService`, `CombatService`):
     *   Combat damage (player and monster)
     *   Attack speed
-    *   Experience point rewards (`calculateXpReward`)
-    *   Character stats (`calculateCharacterStats`, including derived stats like Max HP/Mana)
-    *   Loot generation (`lootGenerator.ts`)
-    *   Item sell values
+    *   Experience point rewards and level-up logic (`CharacterService.addExperience`)
+    *   Character stats and derived stats (Max HP/Mana)
+    *   Loot generation (`LootService` / `lootGenerator.ts`)
+    *   Item effects, equipping logic (`InventoryService`)
     *   Potion effects
-*   **State Authority:** The server maintains the authoritative game state:
-    *   Character data (stats, level, XP, inventory, equipment, location) is fetched from the database before actions and updated in the database after successful actions.
-    *   Active combat encounters (`activeEncounters` map) are managed server-side.
+*   **State Authority & Persistence (Repositories):** The server maintains the authoritative game state:
+    *   Character and User data is loaded from the database via **Repositories** (e.g., `CharacterRepository.findById`) before actions are processed by Services.
+    *   Changes to persistent state are saved back to the database exclusively through **Repositories** (e.g., `CharacterRepository.save`, `UserRepository.updateCharacterList`) after Service logic completes successfully.
+    *   Transient state like active combat encounters (`activeEncounters` map) remains managed server-side (e.g., in `server.ts` or dedicated state managers).
     *   Combat timing is controlled by server-side `setInterval` loops.
 *   **Sanity Checks:**
     *   Core calculation functions include checks to clamp results within reasonable bounds (e.g., stats and XP cannot be negative, Max HP must be >= 1, damage dealt is >= 1).
@@ -87,3 +93,4 @@ The core security philosophy of Loot & Legends relies on a **server-authoritativ
 *   **More Sophisticated Rate Limiting:** Implement more advanced rate limiting, potentially with different limits for different message types or temporary bans for abusive clients.
 *   **Session Management:** Consider more robust session management if JWTs or similar tokens are introduced later, including secure handling and expiration.
 *   **Dependency Security:** Regularly audit third-party dependencies (npm packages) for known vulnerabilities.
+*   **Complete Refactoring:** Finish refactoring all modules (Auth, Inventory, Combat, Zone, etc.) to fully adhere to the layered architecture (Handlers, Services, Repositories) to maximize separation of concerns and associated security benefits.
