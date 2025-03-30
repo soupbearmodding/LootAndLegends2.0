@@ -8,7 +8,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Send message from renderer to main
     sendMessage: (channel: string, data: any) => {
         // Whitelist channels
-        const validChannels = ['some-action', 'connect-ws', 'send-ws-message']; // Add more channels as needed
+        const validChannels = ['some-action', 'connect-ws', 'send-ws-message'];
         if (validChannels.includes(channel)) {
             ipcRenderer.send(channel, data);
         } else {
@@ -18,7 +18,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Send message from renderer to main and expect a response
     invoke: (channel: string, data: any): Promise<any> => {
          // Whitelist channels
-        const validChannels = ['some-action', 'connect-ws', 'send-ws-message']; // Add more channels as needed
+        const validChannels = ['some-action', 'connect-ws', 'send-ws-message'];
         if (validChannels.includes(channel)) {
             return ipcRenderer.invoke(channel, data);
         } else {
@@ -30,7 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     on: (channel: string, func: (...args: any[]) => void) => {
         const subscription = (event: IpcRendererEvent, ...args: any[]) => func(...args);
         // Whitelist channels
-        const validChannels = ['ws-message', 'ws-connect-status']; // Add more channels as needed
+        const validChannels = ['ws-message', 'ws-connect-status'];
         if (validChannels.includes(channel)) {
             ipcRenderer.on(channel, subscription);
             // Return a cleanup function
@@ -47,8 +47,3 @@ contextBridge.exposeInMainWorld('electronAPI', {
          ipcRenderer.removeListener(channel, func);
     }
 });
-
-// You can also expose other Node.js modules or custom APIs here securely
-// contextBridge.exposeInMainWorld('myAPI', {
-//   doSomething: () => { ... }
-// });

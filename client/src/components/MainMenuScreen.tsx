@@ -3,9 +3,9 @@ import React from 'react';
 interface MainMenuScreenProps {
     onNewGame: () => void;
     onLoadGame: () => void;
-    onOptions: () => void; // Placeholder
+    onOptions: () => void;
     onLogout: () => void;
-    onExitGame: () => void; // Placeholder
+    onExitGame: () => void;
 }
 
 const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
@@ -23,9 +23,9 @@ const MainMenuScreen: React.FC<MainMenuScreenProps> = ({
             <div className="menu-buttons">
                 <button onClick={onNewGame}>New Game</button>
                 <button onClick={onLoadGame}>Load Game</button>
-                <button onClick={onOptions} disabled>Options</button> {/* Disabled for now */}
+                <button onClick={onOptions} disabled>Options</button>
                 <button onClick={onLogout}>Logout</button>
-                <button onClick={onExitGame} disabled>Exit Game</button> {/* Disabled for now */}
+                <button onClick={onExitGame} disabled>Exit Game</button>
             </div>
         </div>
     );

@@ -1,7 +1,7 @@
-import { Item, ItemQuality, Affix, Character } from './types.js'; // Added Character import
-import { lootTables, qualityWeights } from './gameData.js'; // Keep these imports
-import { baseItemsTyped as baseItems, prefixes as prefixData, suffixes as suffixData } from './lootData.js'; // Import loot data from the new file
-import { randomUUID } from 'crypto'; // Using built-in crypto module for UUIDs
+import { Item, ItemQuality, Affix, Character } from './types.js';
+import { lootTables, qualityWeights } from './gameData.js';
+import { baseItemsTyped as baseItems, prefixes as prefixData, suffixes as suffixData } from './lootData.js';
+import { randomUUID } from 'crypto';
 
 // Helper function to select an item quality based on weights
 function rollQuality(): ItemQuality {
@@ -16,8 +16,7 @@ function rollQuality(): ItemQuality {
         }
         roll -= entry.weight;
     }
-    // Fallback in case of floating point issues or empty weights, return 'Gray'
-    // Add extra check for qualityWeights[0] existence
+    // Fallback in case of floating point issues or empty weights
     return qualityWeights.length > 0 && qualityWeights[0] ? qualityWeights[0].quality : 'Gray';
 }
 
@@ -34,10 +33,8 @@ function getRandomAffix(type: 'prefix' | 'suffix', existingAffixes: Affix[]): Af
 
     const randomIndex = Math.floor(Math.random() * availableAffixes.length);
     const selectedAffix = availableAffixes[randomIndex];
-    return selectedAffix !== undefined ? selectedAffix : null; // Ensure null is returned if undefined
+    return selectedAffix !== undefined ? selectedAffix : null;
 }
-
-
 // Main function to generate loot based on a loot table ID
 export function generateLoot(lootTableId: string): Item[] {
     const tableEntries = lootTables.get(lootTableId);
@@ -161,11 +158,10 @@ export function generateLoot(lootTableId: string): Item[] {
                     }
                 }
 
-                // --- Update Item Name (Optional but nice) ---
-                // Example: "Strong Short Sword of Vitality"
+                // --- Update Item Name ---
                 const prefixNames = newItem.prefixes.map(p => p.name).join(' ');
-                const suffixNames = newItem.suffixes.map(s => s.name).join(' '); // Assumes suffixes include "of"
-                newItem.name = `${prefixNames} ${baseItem.name} ${suffixNames}`.trim().replace(/\s+/g, ' '); // Clean up extra spaces
+                const suffixNames = newItem.suffixes.map(s => s.name).join(' ');
+                newItem.name = `${prefixNames} ${baseItem.name} ${suffixNames}`.trim().replace(/\s+/g, ' ');
 
                 // --- Combine Stats (Base + Affixes) ---
                 // Initialize stats if they don't exist on base item OR create a new object
@@ -180,7 +176,6 @@ export function generateLoot(lootTableId: string): Item[] {
                             combinedStats[key] = (combinedStats[key] || 0) + value;
                         }
                     }
-                    // TODO: Handle other affix effects (damage bonuses, resistances, etc.)
                 }
                  // Assign the newly calculated combined stats to the item
                  newItem.stats = combinedStats;

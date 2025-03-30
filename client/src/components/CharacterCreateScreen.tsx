@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-// Define necessary types locally to avoid cross-directory import issues
 interface CharacterStats {
     strength: number;
     dexterity: number;
@@ -13,12 +12,11 @@ interface CharacterClass {
     description: string;
     baseStats: CharacterStats;
 }
-// End local type definitions
 
 interface CharacterCreateScreenProps {
-    characterClasses: Map<string, CharacterClass>; // Use the locally defined type
+    characterClasses: Map<string, CharacterClass>; 
     onCreateCharacter: (name: string, classId: string) => void;
-    onBack: () => void; // Function to go back to the previous screen (e.g., Main Menu)
+    onBack: () => void; 
 }
 
 const CharacterCreateScreen: React.FC<CharacterCreateScreenProps> = ({
@@ -30,7 +28,7 @@ const CharacterCreateScreen: React.FC<CharacterCreateScreenProps> = ({
     const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
     const [classesArray, setClassesArray] = useState<[string, CharacterClass][]>([]);
 
-    // Convert Map to Array for easier rendering
+    
     useEffect(() => {
         setClassesArray(Array.from(characterClasses.entries()));
     }, [characterClasses]);
@@ -58,7 +56,7 @@ const CharacterCreateScreen: React.FC<CharacterCreateScreenProps> = ({
                         value={characterName}
                         onChange={(e) => setCharacterName(e.target.value)}
                         placeholder="Enter name..."
-                        maxLength={20} // Example max length
+                        maxLength={20}
                     />
                 </div>
 

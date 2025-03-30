@@ -1,24 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react'; // Import useEffect, useRef
+import React, { useState, useEffect, useRef } from 'react';
 import InventoryPanel from './InventoryPanel';
-// Import shared types from client/src/types.ts
 import {
     EquipmentSlot,
     ItemStats,
-    Item, // Keep Item if needed locally, or remove if CharacterDataForClient suffices
-    EquipmentSlots, // Keep if needed locally
-    ZoneStatus, // Keep if needed locally
+    Item,
+    EquipmentSlots,
+    ZoneStatus,
     ZoneWithStatus,
-    CharacterDataForClient, // Use the client-specific type
+    CharacterDataForClient,
     EncounterData
-} from '../types.js'; // Adjust path as needed
-
-// --- Duplicated Types Removed ---
+} from '../types.js';
 
 interface InGameScreenProps {
-    character: CharacterDataForClient | null; // Use imported type
-    zone: ZoneWithStatus | null; // Use imported type
-    zoneStatuses: ZoneWithStatus[]; // Use imported type
-    encounter: EncounterData | null; // Use imported type
+    character: CharacterDataForClient | null;
+    zone: ZoneWithStatus | null;
+    zoneStatuses: ZoneWithStatus[];
+    encounter: EncounterData | null;
     onTravel: (targetZoneId: string) => void;
     onLogout: () => void;
     onEquipItem: (itemId: string) => void;
@@ -27,7 +24,6 @@ interface InGameScreenProps {
     onLootGroundItem: (itemId: string) => void;
     onAssignPotionSlot: (slotNumber: 1 | 2, itemBaseId: string | null) => void;
     onUsePotionSlot: (slotNumber: 1 | 2) => void;
-    // Add the new prop
     onAutoEquipBestStat: (stat: keyof ItemStats) => void;
 }
 
@@ -51,13 +47,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ current, max, label, classNam
     );
 };
 
-const POTION_COOLDOWN_DURATION = 5000; // 5 seconds in milliseconds
+const POTION_COOLDOWN_DURATION = 5000;
 
 const InGameScreen: React.FC<InGameScreenProps> = ({
     character, zone, zoneStatuses, encounter, onTravel, onLogout,
     onEquipItem, onUnequipItem, onSellItem, onAssignPotionSlot,
     onUsePotionSlot, onLootGroundItem,
-    onAutoEquipBestStat // Destructure the new prop
+    onAutoEquipBestStat
 }) => {
     const [centerTab, setCenterTab] = useState<'combat-log' | 'chat'>('combat-log');
     const [rightTab, setRightTab] = useState<'stats' | 'skills' | 'quests' | 'mercenaries'>('stats');
@@ -86,14 +82,11 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
         }
     };
 
-    // Placeholder handler for auto-equip (will eventually call prop from App.tsx)
     const handleAutoEquipBestStat = (stat: keyof ItemStats) => {
         console.log(`Placeholder: Requesting auto-equip for stat: ${stat}`);
-        // Call the actual handler passed down from App.tsx
         onAutoEquipBestStat(stat);
     };
 
-    // --- Calculations for display ---
     const characterLevel = character?.level ?? 1;
     const currentHp = character?.currentHp ?? 0;
     const maxHp = character?.maxHp ?? 1;
@@ -102,8 +95,7 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
     const currentLevelXp = character?.currentLevelXp ?? 0;
     const xpToNextLevelBracket = character?.xpToNextLevelBracket ?? 100;
 
-    // --- Render Sub-Components ---
-    const renderZoneList = () => { /* ... (unchanged) ... */
+    const renderZoneList = () => {
         if (!character || !zoneStatuses || zoneStatuses.length === 0) return <p>Loading zones...</p>;
         const currentZoneId = character.currentZoneId;
         const currentZoneData = zoneStatuses.find(z => z.id === currentZoneId);
@@ -141,7 +133,7 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
             </ul>
         );
      };
-    const renderCombatArea = () => { /* ... (unchanged) ... */
+    const renderCombatArea = () => {
         if (encounter) {
             const monsterHpPercent = Math.max(0, Math.min(100, encounter.maxHp > 0 ? (encounter.currentHp / encounter.maxHp) * 100 : 0));
             return (
@@ -170,7 +162,7 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
             );
         }
      };
-    const renderStatsTab = () => { /* ... (unchanged) ... */
+    const renderStatsTab = () => {
         return (
             <>
                 <div className="panel-section">
@@ -202,7 +194,7 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
             </>
         );
      };
-    const renderRightPanelContent = () => { /* ... (unchanged) ... */
+    const renderRightPanelContent = () => {
         switch (rightTab) {
             case 'stats': return renderStatsTab();
             case 'skills': return <p>Skills not implemented yet.</p>;
@@ -212,7 +204,6 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
         }
      };
 
-    // --- Main JSX Structure ---
     return (
         <div id="game-screen">
             <header id="game-header">
@@ -264,7 +255,6 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
                 </aside>
             </main>
 
-            {/* Inventory Modal */}
             {isInventoryModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsInventoryModalOpen(false)}>
                     <div className="modal-content inventory-modal" onClick={e => e.stopPropagation()}>
@@ -276,7 +266,6 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
                             onSellItem={onSellItem}
                             onLootGroundItem={onLootGroundItem}
                             onAssignPotionSlot={onAssignPotionSlot}
-                            // Pass the placeholder/prop down
                             onAutoEquipBestStat={handleAutoEquipBestStat}
                         />
                     </div>

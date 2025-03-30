@@ -1,11 +1,11 @@
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
-import { UpdateFilter } from 'mongodb'; // Import UpdateFilter
+import { UpdateFilter } from 'mongodb';
 import { usersCollection, charactersCollection } from './db.js';
 import { safeSend } from './utils.js';
-import { Character, ActiveConnectionsMap, User } from './types.js'; // Import User type
-import { characterClasses, calculateMaxHp, calculateMaxMana, zones, xpForLevel } from './gameData.js'; // Import calculateMaxMana, xpForLevel
-import { getZoneStatuses } from './zone.js'; // Import the new helper function
+import { Character, ActiveConnectionsMap, User } from './types.js';
+import { characterClasses, calculateMaxHp, calculateMaxMana, zones, xpForLevel } from './gameData.js';
+import { getZoneStatuses } from './zone.js';
 
 // --- Character Handlers ---
 
@@ -41,9 +41,8 @@ export async function handleCreateCharacter(ws: WebSocket, payload: any, activeC
 
     if (name.length < 3 || name.length > 16) {
          safeSend(ws, { type: 'create_character_fail', payload: 'Character name must be between 3 and 16 characters' });
-        return;
+         return;
     }
-    // TODO: Add check for unique character name *per user* in DB
     // --- End Validation ---
 
     const chosenClass = characterClasses.get(classId); // Use validated classId
@@ -61,24 +60,22 @@ export async function handleCreateCharacter(ws: WebSocket, payload: any, activeC
     const newCharacter: Character = {
         id: uuidv4(),
         userId: userId,
-        name: name, // Use validated name
-        class: classId, // Use validated classId
+        name: name,
+        class: classId,
         level: 1,
         experience: 0,
-        stats: { ...chosenClass.baseStats }, // Copy base stats
+        stats: { ...chosenClass.baseStats },
         maxHp: calculateMaxHp(chosenClass.baseStats),
-        currentHp: calculateMaxHp(chosenClass.baseStats), // Start with full HP
-        maxMana: calculateMaxMana(chosenClass.baseStats), // Calculate initial max mana
-        currentMana: calculateMaxMana(chosenClass.baseStats), // Start with full mana
-        currentZoneId: 'town', // Start everyone in town
-        // zoneKills: {}, // Removed kill tracker initialization
-        inventory: [], // Initialize empty inventory
-        equipment: {}, // Initialize empty equipment slots
-        groundLoot: [], // Initialize empty ground loot
-        gold: 0, // Initialize gold
-        potionSlot1: undefined, // Initialize potion slot 1
-        potionSlot2: undefined, // Initialize potion slot 2
-        // Initialize other fields (if any remain after adding inventory/equipment)
+        currentHp: calculateMaxHp(chosenClass.baseStats),
+        maxMana: calculateMaxMana(chosenClass.baseStats),
+        currentMana: calculateMaxMana(chosenClass.baseStats),
+        currentZoneId: 'town',
+        inventory: [],
+        equipment: {},
+        groundLoot: [],
+        gold: 0,
+        potionSlot1: undefined,
+        potionSlot2: undefined,
     };
 
     try {
@@ -100,9 +97,7 @@ export async function handleCreateCharacter(ws: WebSocket, payload: any, activeC
         );
 
         if (updateResult.modifiedCount !== 1) {
-            // Attempt to roll back character insertion if user update fails? Complex.
             console.error(`Failed to add character ID ${newCharacter.id} to user ${userId}`);
-            // Consider deleting the character document here if consistency is critical
             throw new Error("Failed to update user's character list");
         }
 
@@ -206,7 +201,6 @@ export async function handleSelectCharacter(ws: WebSocket, payload: any, activeC
 
         // --- Debug Log ---
         console.log(`Server: Sending zoneStatuses for character select. Count: ${zoneStatuses.length}`);
-        // console.log("Server: Sending zoneStatuses content:", JSON.stringify(zoneStatuses, null, 2)); // Optional: Log full content if needed
 
         // Calculate XP needed for the next level bracket and current XP within this level (use finalCharacterData)
         const totalXpForCurrentLevel = xpForLevel(finalCharacterData.level);
@@ -228,7 +222,6 @@ export async function handleSelectCharacter(ws: WebSocket, payload: any, activeC
                 characterData: characterDataForPayload, // Send potentially updated character data
                 currentZoneData: currentZoneData, // Send data for the actual starting zone ('town')
                 zoneStatuses: zoneStatuses // Send the detailed zone status list
-                // TODO: Add initial inventory etc.
             }
         });
     } catch (error) {
@@ -291,14 +284,6 @@ export async function handleDeleteCharacter(ws: WebSocket, payload: any, activeC
         // Enhanced Logging
         console.log(`Character deleted: ${character.name} (ID: ${characterId}) by user ${user.username} (ID: ${userId}).`);
         safeSend(ws, { type: 'delete_character_success', payload: { characterId: characterId } }); // Send back the ID
-
-        // Optional: Send updated character list? The client already handles removing it locally.
-        // If consistency is paramount, fetch and send the updated list here.
-        // const updatedUser = await usersCollection.findOne({ id: userId });
-        // const userCharacters = updatedUser
-        //     ? await charactersCollection.find({ id: { $in: updatedUser.characterIds } }).toArray()
-        //     : [];
-        // safeSend(ws, { type: 'character_list_update', payload: userCharacters });
 
 
     } catch (error) {

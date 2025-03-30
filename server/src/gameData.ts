@@ -1,4 +1,4 @@
-import { Character, Monster, Zone, CharacterClass } from './types.js'; // Removed Item import
+import { Character, Monster, Zone, CharacterClass } from './types.js';
 
 // --- Combat Calculation Helpers (Very Basic) ---
 export function calculateMaxHp(stats: Character['stats']): number {
@@ -49,11 +49,11 @@ export function xpRequiredForLevel(level: number): number {
 // --- Game Data ---
 export const monsters: Map<string, Monster> = new Map([
     // Town Monsters (example)
-    ['rat1', { id: 'rat1', name: 'Giant Rat', level: 1, stats: { strength: 5, dexterity: 8, vitality: 10 }, maxHp: 20, currentHp: 20, baseDamage: 1, attackSpeed: 1500, lootTableId: 'low_level_common' }], // Added attackSpeed
-    ['goblin1', { id: 'goblin1', name: 'Goblin Scout', level: 2, stats: { strength: 8, dexterity: 10, vitality: 15 }, maxHp: 30, currentHp: 30, baseDamage: 2, attackSpeed: 2000, lootTableId: 'low_level_common' }], // Added attackSpeed
+    ['rat1', { id: 'rat1', name: 'Giant Rat', level: 1, stats: { strength: 5, dexterity: 8, vitality: 10 }, maxHp: 20, currentHp: 20, baseDamage: 1, attackSpeed: 1500, lootTableId: 'low_level_common' }],
+    ['goblin1', { id: 'goblin1', name: 'Goblin Scout', level: 2, stats: { strength: 8, dexterity: 10, vitality: 15 }, maxHp: 30, currentHp: 30, baseDamage: 2, attackSpeed: 2000, lootTableId: 'low_level_common' }],
     // Crimson Fen Monsters (example)
-    ['swamp_leech', { id: 'swamp_leech', name: 'Swamp Leech', level: 5, stats: { strength: 6, dexterity: 5, vitality: 25 }, maxHp: 50, currentHp: 50, baseDamage: 3, attackSpeed: 2500, lootTableId: 'mid_level_common' }], // Added attackSpeed
-    ['fen_lurker', { id: 'fen_lurker', name: 'Fen Lurker', level: 6, stats: { strength: 12, dexterity: 8, vitality: 30 }, maxHp: 65, currentHp: 65, baseDamage: 4, attackSpeed: 2200, lootTableId: 'mid_level_common' }], // Added attackSpeed
+    ['swamp_leech', { id: 'swamp_leech', name: 'Swamp Leech', level: 5, stats: { strength: 6, dexterity: 5, vitality: 25 }, maxHp: 50, currentHp: 50, baseDamage: 3, attackSpeed: 2500, lootTableId: 'mid_level_common' }],
+    ['fen_lurker', { id: 'fen_lurker', name: 'Fen Lurker', level: 6, stats: { strength: 12, dexterity: 8, vitality: 30 }, maxHp: 65, currentHp: 65, baseDamage: 4, attackSpeed: 2200, lootTableId: 'mid_level_common' }],
 ]);
 
 // Define connections and monsters for zones
@@ -75,7 +75,7 @@ export const characterClasses: Map<string, CharacterClass> = new Map([
     ['barbarian', { name: 'Barbarian', description: 'Master of melee combat and battle cries', baseStats: { strength: 40, dexterity: 20, vitality: 25, energy: 0 } }],
 ]);
 
-import { ItemQuality } from './types.js'; // Import ItemQuality type
+import { ItemQuality } from './types.js';
 
 // --- Item Quality Weights ---
 // Define the probability distribution for item qualities.
@@ -126,22 +126,20 @@ export const lootTables: Map<string, LootTableEntry[]> = new Map([
     ]],
     ['mid_level_common', [ // Level 6-10 monsters
         { baseId: 'gold_coins', chance: 0.9, minQuantity: 5, maxQuantity: 25 },
-        { baseId: 'minor_health_potion', chance: 0.5 }, // Still common
+        { baseId: 'minor_health_potion', chance: 0.5 }, 
         // Increased chance for better base types
         { baseId: 'dagger', chance: 0.08 },
         { baseId: 'scimitar', chance: 0.06 },
         { baseId: 'long_sword', chance: 0.04 },
         { baseId: 'spiked_club', chance: 0.07 },
-        { baseId: 'hand_axe', chance: 0.06 }, // Still drops
-        { baseId: 'short_bow', chance: 0.05 }, // Still drops
-        { baseId: 'short_staff', chance: 0.05 }, // Still drops
+        { baseId: 'hand_axe', chance: 0.06 },
+        { baseId: 'short_bow', chance: 0.05 },
+        { baseId: 'short_staff', chance: 0.05 },
         { baseId: 'skull_cap', chance: 0.07 },
         { baseId: 'leather_armor', chance: 0.06 },
-        { baseId: 'leather_gloves', chance: 0.06 }, // Still drops
-        { baseId: 'leather_boots', chance: 0.06 }, // Still drops
-        { baseId: 'sash', chance: 0.05 }, // Still drops
-        { baseId: 'buckler', chance: 0.04 }, // Still drops
+        { baseId: 'leather_gloves', chance: 0.06 },
+        { baseId: 'leather_boots', chance: 0.06 },
+        { baseId: 'sash', chance: 0.05 },
+        { baseId: 'buckler', chance: 0.04 },
     ]],
-    // Add more tables: 'high_level_common', 'low_level_magic_find', 'boss_drops', etc.
-    // Also consider tables specific to item types: 'weapon_rack_low', 'armor_stand_mid', etc.
 ]);

@@ -1,21 +1,21 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { connectToDatabase } from './db.js'; // Removed unused getDb import
+import { connectToDatabase } from './db.js';
 import { safeSend } from './utils.js';
 import { handleRegister, handleLogin, handleLogout } from './auth.js';
 import { handleCreateCharacter, handleSelectCharacter, handleDeleteCharacter } from './character.js';
 import { handleTravel } from './zone.js';
 import { handleFindMonster } from './combat.js';
 import { handleEquipItem, handleUnequipItem, handleSellItem, handleAssignPotionSlot, handleUsePotionSlot, handleAutoEquipBestStat } from './inventory.js';
-import { validateGameData } from './validation.js'; // Import the validation function
+import { validateGameData } from './validation.js';
 import {
     WebSocketMessage,
     ActiveConnectionsMap,
     ActiveEncountersMap,
-    PlayerAttackIntervalsMap, // Changed
-    MonsterAttackIntervalsMap, // Added
+    PlayerAttackIntervalsMap,
+    MonsterAttackIntervalsMap,
     Monster,
-    RateLimitInfo // Add RateLimitInfo type
-} from './types.js'; // Import types
+    RateLimitInfo
+} from './types.js';
 
 console.log("Loot & Legends server starting...");
 
@@ -75,9 +75,6 @@ async function startServer() {
 
             if (limitInfo.count > RATE_LIMIT_MAX_MESSAGES) {
                 console.warn(`Rate limit exceeded for client. Count: ${limitInfo.count}`);
-                // Optional: Send a warning message to the client (use carefully to avoid feedback loops)
-                // safeSend(ws, { type: 'error', payload: 'Rate limit exceeded. Please slow down.' });
-                // Optional: Disconnect client after repeated offenses (implement separate tracking for this)
                 return; // Ignore the message
             }
             // --- End Rate Limiting Check ---
@@ -141,11 +138,8 @@ async function startServer() {
                         handleAutoEquipBestStat(ws, messageData.payload, activeConnections);
                         break;
                     case 'delete_character':
-                        // Pass activeConnections map
                         handleDeleteCharacter(ws, messageData.payload, activeConnections);
                         break;
-                    // Combat is now automatic via intervals, no direct 'attack' message needed from client
-                    // TODO: Add cases for other game actions (skills, etc.)
                     default:
                         console.log(`Unknown message type: ${messageData.type}`);
                         safeSend(ws, { type: 'error', payload: `Unknown message type: ${messageData.type}` });
@@ -169,7 +163,6 @@ async function startServer() {
             // Clean up rate limit tracker on error too
             rateLimitTracker.delete(ws);
             console.error('WebSocket error:', error);
-            // TODO: Handle specific errors
         });
     });
 
@@ -178,8 +171,6 @@ async function startServer() {
         console.log('Server shutting down...');
         wss.close(() => {
             console.log('WebSocket server closed.');
-            // Add other cleanup logic here (e.g., close database connections)
-            // Consider closing the MongoDB client connection here as well
             process.exit(0);
         });
     });

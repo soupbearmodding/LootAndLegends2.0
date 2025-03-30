@@ -15,7 +15,6 @@ export function safeSend(ws: WebSocket, message: WebSocketMessage) {
         ws.send(JSON.stringify(message));
     } catch (error) {
         console.error("Failed to send message:", error);
-        // Optionally, you might want to close the connection here if sending fails repeatedly
     }
 }
 
@@ -68,7 +67,6 @@ export function calculateCharacterStats(character: Character): Character {
     });
 
     // --- Calculate Derived Stats ---
-    // Example: Max HP based on Vitality (adjust formula as needed)
     let calculatedMaxHp = 50 + (finalStats.vitality || 0) * 5; // Example formula
 
     // --- Sanity Check Derived Stats ---
@@ -76,7 +74,6 @@ export function calculateCharacterStats(character: Character): Character {
         console.warn(`Character ${character.id}: Calculated maxHp was less than 1 (${calculatedMaxHp}). Clamping to 1.`);
         calculatedMaxHp = 1;
     }
-    // TODO: Add sanity checks for other derived stats (e.g., max resource, damage, defense)
 
     // Ensure currentHp is valid and doesn't exceed new maxHp
     const finalCurrentHp = Math.max(0, Math.min(character.currentHp, calculatedMaxHp));
@@ -88,9 +85,7 @@ export function calculateCharacterStats(character: Character): Character {
         stats: finalStats, // Overwrite with calculated final stats
         maxHp: calculatedMaxHp, // Overwrite with calculated max HP
         currentHp: finalCurrentHp, // Overwrite with validated current HP
-        // TODO: Add other calculated derived stats here
     };
 
-    // console.log(`Calculated stats for ${character.name}:`, updatedCharacter.stats, `MaxHP: ${updatedCharacter.maxHp}`); // Optional debug log
     return updatedCharacter;
 }

@@ -8,7 +8,7 @@ interface LoginScreenProps {
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [statusMessage, setStatusMessage] = useState(''); // For displaying errors or info
+    const [statusMessage, setStatusMessage] = useState('');
 
     const handleLoginClick = () => {
         if (!username || !password) {
@@ -17,7 +17,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
         }
         setStatusMessage('Logging in...');
         onLogin(username, password);
-        // Status message will be updated by App component based on server response
     };
 
     const handleRegisterClick = () => {
@@ -31,23 +30,21 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
         }
         setStatusMessage('Registering...');
         onRegister(username, password);
-        // Status message will be updated by App component based on server response
     };
 
     const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault(); // Prevent default page reload
-        handleLoginClick(); // Call the existing login logic
+        event.preventDefault();
+        handleLoginClick();
     };
 
     return (
-        <div className="login-container"> {/* New top-level class */}
+        <div className="login-container">
             <div className="game-title-large">
                 <h1>LOOT & LEGENDS</h1>
             </div>
 
-            <form className="login-form" onSubmit={handleFormSubmit}> {/* Class for form styling */}
-                {/* Removed h2 title */}
-                <div className="form-group"> {/* Group label and input */}
+            <form className="login-form" onSubmit={handleFormSubmit}>
+                <div className="form-group">
                     <label htmlFor="username">Username:</label>
                     <input
                         type="text"
@@ -71,11 +68,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
                         autoComplete="current-password"
                     />
                 </div>
-                <div className="form-actions"> {/* Group buttons */}
+                <div className="form-actions">
                     <button type="submit" className="button-primary">Login</button>
                     <button type="button" className="button-secondary" onClick={handleRegisterClick}>Register</button>
                 </div>
-                {/* Status message display */}
                 <p className="auth-status" style={{ color: statusMessage.includes('failed') || statusMessage.includes('required') || statusMessage.includes('must be') ? 'lightcoral' : '#aaa' }}>
                     {statusMessage || '\u00A0'} {/* Use non-breaking space to maintain height */}
                 </p>

@@ -1,14 +1,11 @@
-import { Item, Affix } from './types.js'; // Import necessary types
+import { Item, Affix } from './types.js';
 
-// Define the structure for base items used internally before generation
-// This helps satisfy the type checker for baseItems map.
-// The actual Item generation will add the missing properties.
 type PotionEffect = { health?: number; mana?: number; healthPercent?: number; manaPercent?: number };
-type BaseItemDefinition = Omit<Item, 'id' | 'quality' | 'prefixes' | 'suffixes' | 'rarity'> & { // Exclude rarity too, as it's generated
+type BaseItemDefinition = Omit<Item, 'id' | 'quality' | 'prefixes' | 'suffixes' | 'rarity'> & {
     sellValue?: number;
-    effect?: PotionEffect; // Add optional effect for potions
-    damage?: { min: number; max: number }; // Add optional damage for weapons
-    defense?: number; // Add optional defense for armor
+    effect?: PotionEffect;
+    damage?: { min: number; max: number };
+    defense?: number;
     blockChance?: number; // Add optional block chance for shields
     twoHanded?: boolean; // Add optional twoHanded flag
 };
@@ -16,8 +13,6 @@ type BaseItemDefinition = Omit<Item, 'id' | 'quality' | 'prefixes' | 'suffixes' 
 
 // --- Item Data ---
 // Base definitions for items - These represent the "template" before quality/affixes are rolled.
-// The actual generated item will have quality, prefixes, and suffixes added.
-// Added sellValue property.
 export const items: Map<string, BaseItemDefinition> = new Map([
     // --- Potions ---
     ['minor_health_potion', { baseId: 'minor_health_potion', name: 'Minor Health Potion', type: 'potion', description: 'Restores 25 health.', quantity: 1, sellValue: 5, effect: { health: 25 } }],
@@ -28,7 +23,7 @@ export const items: Map<string, BaseItemDefinition> = new Map([
     ['light_mana_potion', { baseId: 'light_mana_potion', name: 'Light Mana Potion', type: 'potion', description: 'Restores 40 mana.', quantity: 1, sellValue: 25, effect: { mana: 40 } }],
     ['mana_potion', { baseId: 'mana_potion', name: 'Mana Potion', type: 'potion', description: 'Restores 80 mana.', quantity: 1, sellValue: 60, effect: { mana: 80 } }],
     ['greater_mana_potion', { baseId: 'greater_mana_potion', name: 'Greater Mana Potion', type: 'potion', description: 'Restores 150 mana.', quantity: 1, sellValue: 120, effect: { mana: 150 } }],
-    ['rejuvenation_potion', { baseId: 'rejuvenation_potion', name: 'Rejuvenation Potion', type: 'potion', description: 'Restores 35% health and mana.', quantity: 1, sellValue: 200, effect: { healthPercent: 0.35, manaPercent: 0.35 } }], // Example effect structure
+    ['rejuvenation_potion', { baseId: 'rejuvenation_potion', name: 'Rejuvenation Potion', type: 'potion', description: 'Restores 35% health and mana.', quantity: 1, sellValue: 200, effect: { healthPercent: 0.35, manaPercent: 0.35 } }],
 
     // --- Weapons ---
     // Daggers (Fast Attack Speed)
@@ -44,7 +39,7 @@ export const items: Map<string, BaseItemDefinition> = new Map([
     ['falchion', { baseId: 'falchion', name: 'Falchion', type: 'weapon', description: 'A heavy, single-edged sword.', equipmentSlot: 'mainHand', stats: { strength: 4, dexterity: 1 }, attackSpeed: 2100, damage: { min: 5, max: 11 }, sellValue: 40 }],
     ['long_sword', { baseId: 'long_sword', name: 'Long Sword', type: 'weapon', description: 'A standard military sword.', equipmentSlot: 'mainHand', stats: { strength: 3, dexterity: 2 }, attackSpeed: 2100, damage: { min: 4, max: 10 }, sellValue: 15 }],
     ['broad_sword', { baseId: 'broad_sword', name: 'Broad Sword', type: 'weapon', description: 'A wide-bladed sword.', equipmentSlot: 'mainHand', stats: { strength: 5, dexterity: 1 }, attackSpeed: 2150, damage: { min: 6, max: 12 }, sellValue: 50 }],
-    ['bastard_sword', { baseId: 'bastard_sword', name: 'Bastard Sword', type: 'weapon', description: 'Can be wielded with one or two hands.', equipmentSlot: 'mainHand', stats: { strength: 6, dexterity: 2 }, attackSpeed: 2200, damage: { min: 7, max: 14 }, sellValue: 75 }], // Could add twoHanded: true later
+    ['bastard_sword', { baseId: 'bastard_sword', name: 'Bastard Sword', type: 'weapon', description: 'Can be wielded with one or two hands.', equipmentSlot: 'mainHand', stats: { strength: 6, dexterity: 2 }, attackSpeed: 2200, damage: { min: 7, max: 14 }, sellValue: 75 }],
     ['great_sword', { baseId: 'great_sword', name: 'Great Sword', type: 'weapon', description: 'A large two-handed sword.', equipmentSlot: 'mainHand', twoHanded: true, stats: { strength: 8 }, attackSpeed: 2400, damage: { min: 10, max: 20 }, sellValue: 100 }],
 
     // Axes (Medium-Slow Attack Speed, High Strength)
@@ -113,7 +108,7 @@ export const items: Map<string, BaseItemDefinition> = new Map([
     ['gothic_plate', { baseId: 'gothic_plate', name: 'Gothic Plate', type: 'armor', description: 'Ornate and heavy plate armor.', equipmentSlot: 'chest', stats: { strength: 7, vitality: 15 }, defense: 135, sellValue: 300 }],
 
     // Gloves
-    ['leather_gloves', { baseId: 'leather_gloves', name: 'Leather Gloves', type: 'armor', description: 'Simple leather gloves.', equipmentSlot: 'hands', stats: { dexterity: 1 }, defense: 2, sellValue: 4 }], // Corrected slot
+    ['leather_gloves', { baseId: 'leather_gloves', name: 'Leather Gloves', type: 'armor', description: 'Simple leather gloves.', equipmentSlot: 'hands', stats: { dexterity: 1 }, defense: 2, sellValue: 4 }],
     ['heavy_gloves', { baseId: 'heavy_gloves', name: 'Heavy Gloves', type: 'armor', description: 'Thick leather gloves.', equipmentSlot: 'hands', stats: { strength: 1 }, defense: 4, sellValue: 8 }],
     ['chain_gloves', { baseId: 'chain_gloves', name: 'Chain Gloves', type: 'armor', description: 'Gloves made of chainmail.', equipmentSlot: 'hands', stats: { strength: 1, dexterity: 1 }, defense: 7, sellValue: 15 }],
     ['plate_gauntlets', { baseId: 'plate_gauntlets', name: 'Plate Gauntlets', type: 'armor', description: 'Articulated plate metal gloves.', equipmentSlot: 'hands', stats: { strength: 2 }, defense: 12, sellValue: 25 }],
@@ -125,7 +120,7 @@ export const items: Map<string, BaseItemDefinition> = new Map([
     ['plate_greaves', { baseId: 'plate_greaves', name: 'Plate Greaves', type: 'armor', description: 'Plate metal boots.', equipmentSlot: 'feet', stats: { strength: 1, vitality: 3 }, defense: 12, sellValue: 25 }],
 
     // Belts
-    ['sash', { baseId: 'sash', name: 'Sash', type: 'armor', description: 'A simple cloth sash.', equipmentSlot: 'waist', stats: {}, defense: 1, sellValue: 2 }], // Corrected slot
+    ['sash', { baseId: 'sash', name: 'Sash', type: 'armor', description: 'A simple cloth sash.', equipmentSlot: 'waist', stats: {}, defense: 1, sellValue: 2 }],
     ['leather_belt', { baseId: 'leather_belt', name: 'Leather Belt', type: 'armor', description: 'A sturdy leather belt.', equipmentSlot: 'waist', stats: { vitality: 1 }, defense: 3, sellValue: 6 }],
     ['heavy_belt', { baseId: 'heavy_belt', name: 'Heavy Belt', type: 'armor', description: 'A wide, thick belt.', equipmentSlot: 'waist', stats: { vitality: 3 }, defense: 5, sellValue: 12 }],
     ['plated_belt', { baseId: 'plated_belt', name: 'Plated Belt', type: 'armor', description: 'A belt reinforced with metal plates.', equipmentSlot: 'waist', stats: { strength: 1, vitality: 2 }, defense: 8, sellValue: 20 }],
@@ -137,14 +132,13 @@ export const items: Map<string, BaseItemDefinition> = new Map([
     ['tower_shield', { baseId: 'tower_shield', name: 'Tower Shield', type: 'armor', description: 'A large, heavy shield offering maximum coverage.', equipmentSlot: 'offHand', stats: { strength: 4, vitality: 2 }, defense: 25, blockChance: 0.25, sellValue: 45 }],
     ['bone_shield', { baseId: 'bone_shield', name: 'Bone Shield', type: 'armor', description: 'A shield crafted from bone, favored by necromancers.', equipmentSlot: 'offHand', stats: { energy: 3 }, defense: 12, blockChance: 0.18, sellValue: 35 }],
 
-    // --- Jewelry --- (Cannot have Gray/White quality typically)
-    ['ring', { baseId: 'ring', name: 'Ring', type: 'armor', description: 'A simple ring.', equipmentSlot: 'ring1', stats: {}, sellValue: 50 }], // Slots ring1/ring2 handled by inventory logic
+    // --- Jewelry ---
+    ['ring', { baseId: 'ring', name: 'Ring', type: 'armor', description: 'A simple ring.', equipmentSlot: 'ring1', stats: {}, sellValue: 50 }],
     ['amulet', { baseId: 'amulet', name: 'Amulet', type: 'armor', description: 'A simple amulet.', equipmentSlot: 'amulet', stats: {}, sellValue: 75 }],
 
     // --- Misc ---
-    ['gold_coins', { baseId: 'gold_coins', name: 'Gold Coins', type: 'misc', description: 'The currency of the realm.', quantity: 1 }], // Gold cannot be sold, so no sellValue
+    ['gold_coins', { baseId: 'gold_coins', name: 'Gold Coins', type: 'misc', description: 'The currency of the realm.', quantity: 1 }],
     ['key', { baseId: 'key', name: 'Key', type: 'misc', description: 'Opens locked chests.', quantity: 1, sellValue: 10 }],
-    // Add more misc items like scrolls, gems, runes later
 ]);
 
 // Re-assert the type for items using the helper type
@@ -172,7 +166,7 @@ export const prefixes: Map<string, Affix> = new Map([
     ['enr_p2', { id: 'enr_p2', name: 'Sparking', type: 'prefix', levelReq: 8, statModifiers: { energy: 3 } }],
     ['str_p2b', { id: 'str_p2b', name: 'Powerful', type: 'prefix', levelReq: 12, statModifiers: { strength: 5 } }],
     ['dex_p2b', { id: 'dex_p2b', name: 'Grand', type: 'prefix', levelReq: 12, statModifiers: { dexterity: 5 } }],
-    ['vit_p2b', { id: 'vit_p2b', name: 'Lion', type: 'prefix', levelReq: 12, statModifiers: { vitality: 5 } }], // e.g., Lion Helm
+    ['vit_p2b', { id: 'vit_p2b', name: 'Lion', type: 'prefix', levelReq: 12, statModifiers: { vitality: 5 } }],
     ['enr_p2b', { id: 'enr_p2b', name: 'Arcing', type: 'prefix', levelReq: 12, statModifiers: { energy: 5 } }],
 
     // Attack Speed (IAS)
@@ -197,8 +191,8 @@ export const prefixes: Map<string, Affix> = new Map([
     // Elemental Damage (Added to Attacks)
     ['dmg_fire_p1', { id: 'dmg_fire_p1', name: 'Fiery', type: 'prefix', levelReq: 6, addedDamage: { fire: { min: 1, max: 3 } } }],
     ['dmg_cold_p1', { id: 'dmg_cold_p1', name: 'Chilling', type: 'prefix', levelReq: 6, addedDamage: { cold: { min: 1, max: 3 } } }],
-    ['dmg_light_p1', { id: 'dmg_light_p1', name: 'Shocking', type: 'prefix', levelReq: 6, addedDamage: { lightning: { min: 1, max: 5 } } }], // Lightning often has wider range
-    ['dmg_poison_p1', { id: 'dmg_poison_p1', name: 'Septic', type: 'prefix', levelReq: 6, addedDamage: { poison: { damage: 5, duration: 3 } } }], // 5 poison dmg over 3 sec
+    ['dmg_light_p1', { id: 'dmg_light_p1', name: 'Shocking', type: 'prefix', levelReq: 6, addedDamage: { lightning: { min: 1, max: 5 } } }],
+    ['dmg_poison_p1', { id: 'dmg_poison_p1', name: 'Septic', type: 'prefix', levelReq: 6, addedDamage: { poison: { damage: 5, duration: 3 } } }],
 
     // Health / Mana
     ['hp_p1', { id: 'hp_p1', name: 'Jackal', type: 'prefix', levelReq: 2, statModifiers: { maxHp: 5 } }], // +5 HP
@@ -215,11 +209,9 @@ export const prefixes: Map<string, Affix> = new Map([
     ['def_p2', { id: 'def_p2', name: 'Fortified', type: 'prefix', levelReq: 11, defenseBonusPercent: 0.20 }], // +20% Defense
 
     // Attack Rating (Placeholder for now)
-    ['ar_p1', { id: 'ar_p1', name: 'Bronze', type: 'prefix', levelReq: 3, statModifiers: { attackRating: 10 } }], // +10 AR
-    ['ar_p2', { id: 'ar_p2', name: 'Iron', type: 'prefix', levelReq: 9, statModifiers: { attackRating: 25 } }], // +25 AR
-
-    // Add more tiers and types...
-]); // ~50 Prefixes
+    ['ar_p1', { id: 'ar_p1', name: 'Bronze', type: 'prefix', levelReq: 3, statModifiers: { attackRating: 10 } }],
+    ['ar_p2', { id: 'ar_p2', name: 'Iron', type: 'prefix', levelReq: 9, statModifiers: { attackRating: 25 } }],
+]);
 
 export const suffixes: Map<string, Affix> = new Map([
     // --- Suffixes ---
@@ -269,10 +261,10 @@ export const suffixes: Map<string, Affix> = new Map([
     ['dmg_poison_s1', { id: 'dmg_poison_s1', name: 'of Pestilence', type: 'suffix', levelReq: 6, addedDamage: { poison: { damage: 5, duration: 3 } } }],
 
     // Health / Mana
-    ['hp_s1', { id: 'hp_s1', name: 'of the Jackal', type: 'suffix', levelReq: 2, statModifiers: { maxHp: 5 } }], // +5 HP
-    ['hp_s2', { id: 'hp_s2', name: 'of the Fox', type: 'suffix', levelReq: 7, statModifiers: { maxHp: 10 } }], // +10 HP
-    ['mana_s1', { id: 'mana_s1', name: 'of the Lizard', type: 'suffix', levelReq: 2, statModifiers: { maxMana: 5 } }], // +5 Mana
-    ['mana_s2', { id: 'mana_s2', name: 'of the Snake', type: 'suffix', levelReq: 7, statModifiers: { maxMana: 10 } }], // +10 Mana
+    ['hp_s1', { id: 'hp_s1', name: 'of the Jackal', type: 'suffix', levelReq: 2, statModifiers: { maxHp: 5 } }],
+    ['hp_s2', { id: 'hp_s2', name: 'of the Fox', type: 'suffix', levelReq: 7, statModifiers: { maxHp: 10 } }],
+    ['mana_s1', { id: 'mana_s1', name: 'of the Lizard', type: 'suffix', levelReq: 2, statModifiers: { maxMana: 5 } }],
+    ['mana_s2', { id: 'mana_s2', name: 'of the Snake', type: 'suffix', levelReq: 7, statModifiers: { maxMana: 10 } }],
 
     // Magic Find / Gold Find
     ['mf_s1', { id: 'mf_s1', name: 'of Luck', type: 'suffix', levelReq: 5, magicFind: 5 }], // 5% MF
@@ -287,8 +279,6 @@ export const suffixes: Map<string, Affix> = new Map([
     ['def_s2', { id: 'def_s2', name: 'of Warding', type: 'suffix', levelReq: 11, defenseBonusPercent: 0.20 }], // +20% Defense
 
     // Attack Rating (Placeholder for now)
-    ['ar_s1', { id: 'ar_s1', name: 'of Measure', type: 'suffix', levelReq: 3, statModifiers: { attackRating: 10 } }], // +10 AR
-    ['ar_s2', { id: 'ar_s2', name: 'of Accuracy', type: 'suffix', levelReq: 9, statModifiers: { attackRating: 25 } }], // +25 AR
-
-    // Add more tiers and types...
-]); // ~50 Suffixes
+    ['ar_s1', { id: 'ar_s1', name: 'of Measure', type: 'suffix', levelReq: 3, statModifiers: { attackRating: 10 } }],
+    ['ar_s2', { id: 'ar_s2', name: 'of Accuracy', type: 'suffix', levelReq: 9, statModifiers: { attackRating: 25 } }],
+]);

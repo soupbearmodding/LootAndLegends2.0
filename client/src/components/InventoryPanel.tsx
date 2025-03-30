@@ -1,23 +1,20 @@
 import React, { useState, useEffect } from 'react';
-// Import shared types from client/src/types.ts
+
 import {
     EquipmentSlot,
     ItemStats,
     Item,
     EquipmentSlots,
-    CharacterDataForClient // Use the client-specific type
-} from '../types.js'; // Adjust path as needed
-
-// --- Duplicated Types Removed ---
+    CharacterDataForClient
+} from '../types.js';
 
 interface InventoryPanelProps {
-    character: CharacterDataForClient | null; // Use imported type
+    character: CharacterDataForClient | null;
     onEquipItem: (itemId: string) => void;
     onUnequipItem: (slot: EquipmentSlot) => void;
     onSellItem: (itemId: string) => void;
     onLootGroundItem: (itemId: string) => void;
     onAssignPotionSlot: (slotNumber: 1 | 2, itemBaseId: string | null) => void;
-    // Add the new prop for auto-equip
     onAutoEquipBestStat: (stat: keyof ItemStats) => void;
 }
 
@@ -28,12 +25,10 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
     onSellItem,
     onLootGroundItem,
     onAssignPotionSlot,
-    onAutoEquipBestStat // Destructure the new prop
+    onAutoEquipBestStat
 }) => {
-    // Item tooltip state
     const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
     const [itemTooltipPosition, setItemTooltipPosition] = useState({ x: 0, y: 0 });
-    // Auto-equip tooltip state
     const [hoveredAutoEquipStat, setHoveredAutoEquipStat] = useState<keyof ItemStats | null>(null);
     const [autoEquipTooltipContent, setAutoEquipTooltipContent] = useState<string>('');
     const [autoEquipTooltipPosition, setAutoEquipTooltipPosition] = useState({ x: 0, y: 0 });
@@ -103,11 +98,10 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
 
     const formatStatChanges = (changes: Partial<ItemStats>): string => {
         const lines = Object.entries(changes)
-            .filter(([, value]) => value !== 0) // Only show stats that actually change
+            .filter(([, value]) => value !== 0)
             .map(([stat, value]) => {
                 const sign = value > 0 ? '+' : '';
                 const color = value > 0 ? 'lightgreen' : 'salmon';
-                // Simple text formatting for now
                 return `${stat}: ${sign}${value}`;
             });
         return lines.length > 0 ? lines.join('\n') : 'No changes';
@@ -128,7 +122,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
 
 
     // --- Helper Functions ---
-    const getRarityClass = (rarity?: string): string => { /* ... (unchanged) ... */
+    const getRarityClass = (rarity?: string): string => {
         switch (rarity) {
             case 'magic': return 'rarity-magic';
             case 'rare': return 'rarity-rare';
@@ -137,7 +131,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
             case 'common': default: return 'rarity-common';
         }
     };
-    const getRarityColor = (rarity?: string): string => { /* ... (unchanged) ... */
+    const getRarityColor = (rarity?: string): string => {
         switch (rarity) {
             case 'magic': return '#6888ff';
             case 'rare': return '#ffff00';
@@ -146,7 +140,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
             case 'common': default: return '#ffffff';
         }
     };
-    const getItemShorthand = (nameInput: string | undefined): string => { /* ... (unchanged) ... */
+    const getItemShorthand = (nameInput: string | undefined): string => {
         if (!nameInput) return '??';
         const trimmedName = nameInput.trim();
         if (!trimmedName) return '??';
@@ -175,13 +169,13 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
                         <div
                             key={item ? item.id : `empty-${index}`}
                             className={`inventory-grid-item ${item ? getRarityClass(item.rarity) : ''}`}
-                            onMouseEnter={(e) => item && handleItemMouseEnter(item, e)} // Use correct handler
-                            onMouseLeave={handleItemMouseLeave} // Use correct handler
+                            onMouseEnter={(e) => item && handleItemMouseEnter(item, e)}
+                            onMouseLeave={handleItemMouseLeave}
                             onClick={() => item && item.equipmentSlot && onEquipItem(item.id)}
                             onContextMenu={(e) => {
                                 if (item) {
                                     e.preventDefault();
-                                    setHoveredItem(null); // Hide tooltip immediately
+                                    setHoveredItem(null);
                                     onSellItem(item.id);
                                 }
                             }}
@@ -209,8 +203,8 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
                         <li
                             key={item.id}
                             className="ground-loot-item"
-                            onMouseEnter={(e) => handleItemMouseEnter(item, e)} // Use correct handler
-                            onMouseLeave={handleItemMouseLeave} // Use correct handler
+                            onMouseEnter={(e) => handleItemMouseEnter(item, e)}
+                            onMouseLeave={handleItemMouseLeave}
                             onClick={() => onLootGroundItem(item.id)}
                             title={`Click to loot ${item.name}`}
                         >
@@ -223,22 +217,20 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
      };
 
     const renderEquipmentSlots = () => {
-        // Use correct slots array
         const slots: EquipmentSlot[] = ['head', 'chest', 'waist', 'hands', 'feet', 'mainHand', 'offHand', 'amulet', 'ring1', 'ring2'];
         return (
             <div className="equipment-slots-container">
                 <h4>Equipped</h4>
                 <ul>
                     {slots.map(slot => {
-                        // Ensure slot is a valid key before accessing equipment
                         const item = Object.prototype.hasOwnProperty.call(character.equipment, slot)
                             ? character.equipment[slot]
                             : undefined;
                         return (
                             <li
                                 key={slot}
-                                onMouseEnter={(e) => item && handleItemMouseEnter(item, e)} // Use correct handler
-                                onMouseLeave={handleItemMouseLeave} // Use correct handler
+                                onMouseEnter={(e) => item && handleItemMouseEnter(item, e)}
+                                onMouseLeave={handleItemMouseLeave}
                                 onClick={() => item && onUnequipItem(slot)}
                                 style={{ cursor: item ? 'pointer' : 'default' }}
                                 title={item ? `Unequip ${item.name}` : 'Slot empty'}
@@ -252,10 +244,9 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
         );
      };
 
-    // --- NEW: Render Auto-Equip Panel ---
+    // --- Render Auto-Equip Panel ---
     const renderAutoEquipPanel = () => {
-        // Use imported ItemStats type
-        const statsToEquip: (keyof ItemStats)[] = ['strength', 'dexterity', 'vitality', 'energy']; // Add more stats later if needed
+        const statsToEquip: (keyof ItemStats)[] = ['strength', 'dexterity', 'vitality', 'energy'];
 
         return (
             <div className="auto-equip-container panel-section"> {/* Reuse panel-section style */}
@@ -264,11 +255,10 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
                     {statsToEquip.map(stat => (
                         <button
                             key={stat}
-                            className="button-secondary auto-equip-button" // Use existing button style or create new
+                            className="button-secondary auto-equip-button"
                             onClick={() => onAutoEquipBestStat(stat)}
                             onMouseEnter={(e) => handleAutoEquipMouseEnter(stat, e)}
                             onMouseLeave={handleAutoEquipMouseLeave}
-                            // Remove title or update it
                         >
                             {stat.charAt(0).toUpperCase() + stat.slice(1)} {/* Capitalize stat name */}
                         </button>
@@ -311,7 +301,6 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
                     .filter((el): el is React.ReactElement => el !== null);
             }
         }
-        // --- End Stat Comparison Logic ---
 
         const rarityColor = getRarityColor(itemToShow.rarity);
 
@@ -330,7 +319,7 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
         );
      };
 
-    // --- NEW: Render Auto-Equip Tooltip ---
+    // --- Render Auto-Equip Tooltip ---
     const renderAutoEquipTooltip = () => {
         if (!hoveredAutoEquipStat) return null;
 

@@ -1,6 +1,6 @@
-import { zones, monsters, characterClasses, lootTables } from './gameData.js'; // Removed items import
-import { items, prefixes, suffixes } from './lootData.js'; // Import items, prefixes, suffixes from lootData
-import { Zone, Monster, Item, CharacterClass } from './types.js'; // Assuming LootTableEntry type is defined or implicitly handled
+import { zones, monsters, characterClasses, lootTables } from './gameData.js';
+import { items, prefixes, suffixes } from './lootData.js';
+import { Zone, Monster, Item, CharacterClass } from './types.js';
 
 // Basic validation function to check if a value is a non-negative number
 function isNonNegativeNumber(value: any): boolean {
@@ -107,26 +107,21 @@ function validateItems(): string[] {
         if (!validSlots.includes(item.equipmentSlot)) errors.push(`Item "${id}": Invalid equipmentSlot "${item.equipmentSlot}".`);
         if (item.equipmentSlot && item.type !== 'weapon' && item.type !== 'armor') errors.push(`Item "${id}": Non-equipment type "${item.type}" has equipmentSlot "${item.equipmentSlot}".`);
         // Check attackSpeed within the stats object, only if stats and attackSpeed exist
-        if (item.stats && (item.stats as any).attackSpeed !== undefined) { // Use 'as any' temporarily to bypass strict check if needed, or ensure item type includes stats: Partial<ItemStats>
-            const attackSpeedValue = (item.stats as any).attackSpeed; // Assign to variable after check
+        if (item.stats && (item.stats as any).attackSpeed !== undefined) {
+            const attackSpeedValue = (item.stats as any).attackSpeed;
             // Only validate if attackSpeed is present in stats
             if (!isNonNegativeNumber(attackSpeedValue)) {
-                // Error message is now safely inside the check, using the variable
                 errors.push(`Item "${id}": Invalid stats.attackSpeed "${attackSpeedValue}".`);
             }
         }
         if (item.quantity !== undefined && (!Number.isInteger(item.quantity) || item.quantity < 1)) errors.push(`Item "${id}": Invalid quantity "${item.quantity}". Must be integer >= 1.`);
         if (item.stats && typeof item.stats !== 'object') errors.push(`Item "${id}": Invalid stats definition (must be object or undefined).`);
-        // TODO: Deeper validation of stats object keys/values if needed
-        // TODO: Validate affix references if applicable later
     }
-    // Add validation for prefixes and suffixes maps if needed (e.g., check stat names)
     console.log(`Validating ${prefixes.size} prefixes...`);
     console.log(`Validating ${suffixes.size} suffixes...`);
     // Basic check: ensure they are Maps
     if (!(prefixes instanceof Map)) errors.push("Prefix data is not a Map.");
     if (!(suffixes instanceof Map)) errors.push("Suffix data is not a Map.");
-    // TODO: Add validation for individual affix properties
 
     return errors;
 }
@@ -180,7 +175,6 @@ export function validateGameData(): void {
     allErrors = allErrors.concat(validateCharacterClasses());
     allErrors = allErrors.concat(validateItems());
     allErrors = allErrors.concat(validateLootTables());
-    // Call other validation functions here...
 
     if (allErrors.length > 0) {
         console.error("--- Game Data Validation Failed ---");

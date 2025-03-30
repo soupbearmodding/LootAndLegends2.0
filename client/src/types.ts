@@ -20,7 +20,6 @@ export interface ItemStats {
 }
 
 // --- Item (Basic structure needed for components) ---
-// It's often better to import the full type if possible, but copying essentials works too.
 export interface Item {
     id: string;
     baseId: string;
@@ -32,9 +31,6 @@ export interface Item {
     quantity?: number;
     rarity?: 'common' | 'magic' | 'rare' | 'unique' | 'legendary';
     baseName?: string; // Add baseName back for client-side display logic
-    // Add other properties if needed by client components (e.g., prefixes/suffixes if displayed)
-    // prefixes?: any[]; // Use 'any' or define Affix locally if needed
-    // suffixes?: any[];
 }
 
 // --- Equipment Slots (Needed by components) ---
@@ -43,7 +39,6 @@ export type EquipmentSlots = {
 };
 
 // --- Character Data (Simplified for client components if full Character type isn't needed) ---
-// Or copy the full Character interface if required
 export interface CharacterDataForClient {
     id: string;
     name: string;

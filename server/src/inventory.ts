@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { charactersCollection } from './db.js';
 import { safeSend, calculateCharacterStats } from './utils.js';
-// Import Character which contains the stats definition, and other necessary types
+
 import { ActiveConnectionsMap, Character, EquipmentSlot, Item } from './types.js';
 import { items } from './lootData.js';
 
@@ -105,7 +105,7 @@ export async function handleUnequipItem(ws: WebSocket, payload: any, activeConne
         console.warn(`Invalid unequip_item payload received: ${JSON.stringify(payload)}`);
         return;
     }
-    const slotToUnequip = payload.slot as EquipmentSlot; // Keep cast for now, but validate against known slots next
+    const slotToUnequip = payload.slot as EquipmentSlot;
     // --- End Validation ---
 
     const validSlots: EquipmentSlot[] = ['head', 'chest', 'waist', 'hands', 'feet', 'mainHand', 'offHand', 'amulet', 'ring1', 'ring2'];
@@ -477,7 +477,6 @@ export async function handleAutoEquipBestStat(ws: WebSocket, payload: any, activ
                 }
                 const itemStatValue = item.stats?.[statKey] ?? 0;
                 if (itemStatValue > bestStatValue) {
-                    // TODO: Add requirement checks (level, stats)
                     bestStatValue = itemStatValue;
                     bestItemForSlot = item;
                     bestItemInventoryIndex = i;

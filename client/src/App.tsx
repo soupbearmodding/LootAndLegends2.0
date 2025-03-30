@@ -1,22 +1,19 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import LoginScreen from './components/LoginScreen';
-import MainMenuScreen from './components/MainMenuScreen'; // Import Main Menu
+import MainMenuScreen from './components/MainMenuScreen';
 import CharacterSelectScreen from './components/CharacterSelectScreen';
-import CharacterCreateScreen from './components/CharacterCreateScreen'; // Import Create Screen
+import CharacterCreateScreen from './components/CharacterCreateScreen';
 import InGameScreen from './components/InGameScreen';
-// Import shared types from the new client-side file
+
 import { EquipmentSlot, ItemStats } from './types.js';
 
-// --- Local Type Definitions (to avoid cross-directory imports) ---
-// Removed local EquipmentSlot definition
-// Removed local CharacterStats definition
 
-// Keep CharacterClass and CharacterSummary local if they are only used here or differ slightly
+
+
 interface CharacterClass {
     name: string;
     description: string;
-    // Use inline definition for baseStats since CharacterStats was removed
     baseStats: {
         strength: number;
         dexterity: number;
@@ -28,16 +25,15 @@ interface CharacterClass {
 interface CharacterSummary {
     id: string;
     name: string;
-    class: string; // Assuming class is just a string ID/name here
+    class: string;
     level: number;
 }
-// --- End Local Type Definitions ---
+
 
 // Define UI states
 type ViewState = 'login' | 'mainMenu' | 'createCharacter' | 'selectCharacter' | 'in_game';
 
 // --- Local Game Data (Simulating import from gameData.ts) ---
-// Restore character classes data
 const characterClasses: Map<string, CharacterClass> = new Map([
     ['warrior', { name: 'Warrior', description: 'Master of weapons and close combat', baseStats: { strength: 30, dexterity: 20, vitality: 25, energy: 10 } }],
     ['rogue', { name: 'Rogue', description: 'Master of ranged combat and traps', baseStats: { strength: 20, dexterity: 30, vitality: 20, energy: 15 } }],
@@ -45,13 +41,12 @@ const characterClasses: Map<string, CharacterClass> = new Map([
     ['monk', { name: 'Monk', description: 'Master of martial arts and holy magic', baseStats: { strength: 25, dexterity: 25, vitality: 20, energy: 15 } }],
     ['barbarian', { name: 'Barbarian', description: 'Master of melee combat and battle cries', baseStats: { strength: 40, dexterity: 20, vitality: 25, energy: 0 } }],
 ]);
-// --- End Local Game Data ---
 
 
 // --- WebSocket Connection Logic ---
 const serverUrl = 'ws://localhost:3001';
-let cleanupElectronWsListener: (() => void) | null = null; // Renamed for clarity
-let cleanupElectronStatusListener: (() => void) | null = null; // Renamed for clarity
+let cleanupElectronWsListener: (() => void) | null = null;
+let cleanupElectronStatusListener: (() => void) | null = null;
 
 // Store the browser WebSocket instance outside the function but within the module scope
 // Or better, manage it with useRef inside the App component.
@@ -207,13 +202,13 @@ function connectWebSocket(
 
 function App() {
     // --- State Management ---
-    const [currentView, setCurrentView] = useState<ViewState>('login'); // Renamed state
+    const [currentView, setCurrentView] = useState<ViewState>('login');
     const [userId, setUserId] = useState<string | null>(null);
     const [username, setUsername] = useState<string | null>(null);
     const [characters, setCharacters] = useState<CharacterSummary[]>([]); // Use local type
     const [selectedCharacterData, setSelectedCharacterData] = useState<any | null>(null); // Keep 'any' for now
     const [currentZoneData, setCurrentZoneData] = useState<any | null>(null); // This might become redundant if InGameScreen uses zoneStatuses directly
-    const [zoneStatuses, setZoneStatuses] = useState<any[]>([]); // Renamed state for zone statuses
+    const [zoneStatuses, setZoneStatuses] = useState<any[]>([]);
     const [currentEncounter, setCurrentEncounter] = useState<any | null>(null);
     const [wsStatus, setWsStatus] = useState<{ text: string; isConnected: boolean }>({ text: 'Idle', isConnected: false });
     const [serverMessages, setServerMessages] = useState<string[]>([]);
@@ -289,7 +284,6 @@ function App() {
                  // --- CHANGE: Immediately select the new character to enter the game ---
                  console.log(`Character created, now selecting character ID: ${newCharacterSummary.id}`);
                  sendToServer('select_character', { characterId: newCharacterSummary.id }, browserWsRef);
-                 // setCurrentView('selectCharacter'); // Remove this line - view change handled by select_character_success
                  break;
             case 'create_character_fail':
                  console.error(`Character creation failed: ${message.payload}`);
@@ -331,21 +325,6 @@ function App() {
                      setSelectedCharacterData((prev: any) => prev ? { ...prev, currentHp: message.payload.characterUpdate.currentHp } : null);
                  }
                  break;
-            // --- End NEW ---
-            /* // Optional: Keep or remove the generic 'combat_update' case depending on server behavior
-            case 'combat_update':
-                 console.log('Generic combat update:', message.payload);
-                 if (message.payload.monsterUpdate) {
-                     setCurrentEncounter((prev: any) => prev ? { ...prev, currentHp: message.payload.monsterUpdate.currentHp } : null);
-                 }
-                 if (message.payload.characterUpdate) {
-                     setSelectedCharacterData((prev: any) => prev ? {
-                         ...prev,
-                         currentHp: message.payload.characterUpdate.currentHp,
-                     } : null);
-                 }
-                 break;
-            */
             case 'player_death':
                  console.log('Player defeated:', message.payload);
                  if (message.payload.characterUpdate) {
@@ -626,13 +605,11 @@ function App() {
         sendToServer('use_potion_slot', { slotNumber }, browserWsRef);
     };
 
-    // --- NEW: Handler for Auto-Equip ---
-    // Use imported ItemStats type
+    // --- Handler for Auto-Equip ---
     const handleAutoEquipBestStat = (stat: keyof ItemStats) => {
         console.log(`App: Requesting auto-equip for stat: ${stat}`);
         sendToServer('auto_equip_best_stat', { stat }, browserWsRef);
     };
-    // --- End NEW ---
 
     const handleOptions = () => {
         console.log("Options clicked (not implemented)");

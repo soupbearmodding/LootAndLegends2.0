@@ -8,8 +8,8 @@ import {
     User,
     ActiveConnectionsMap,
     ActiveEncountersMap,
-    PlayerAttackIntervalsMap, // Changed
-    MonsterAttackIntervalsMap // Added
+    PlayerAttackIntervalsMap,
+    MonsterAttackIntervalsMap
 } from './types.js';
 
 const SALT_ROUNDS = 10; // For bcrypt hashing
@@ -19,7 +19,7 @@ const SALT_ROUNDS = 10; // For bcrypt hashing
 const MIN_USERNAME_LENGTH = 3;
 const MAX_USERNAME_LENGTH = 20;
 const MIN_PASSWORD_LENGTH = 6;
-const MAX_PASSWORD_LENGTH = 100; // Increased max length
+const MAX_PASSWORD_LENGTH = 100;
 
 export async function handleRegister(ws: WebSocket, payload: any) {
     // --- Stricter Payload Validation ---
@@ -154,8 +154,8 @@ export function handleLogout(
     ws: WebSocket,
     activeConnections: ActiveConnectionsMap,
     activeEncounters: ActiveEncountersMap,
-    playerAttackIntervals: PlayerAttackIntervalsMap, // Changed
-    monsterAttackIntervals: MonsterAttackIntervalsMap // Added
+    playerAttackIntervals: PlayerAttackIntervalsMap,
+    monsterAttackIntervals: MonsterAttackIntervalsMap
 ) {
     const connectionInfo = activeConnections.get(ws);
     if (connectionInfo) {

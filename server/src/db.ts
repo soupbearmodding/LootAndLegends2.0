@@ -1,11 +1,8 @@
 import { MongoClient, Db, Collection } from 'mongodb';
-import { User, Character } from './types.js'; // Import interfaces from types.ts
+import { User, Character } from './types.js';
 
-// Replace with your MongoDB connection string
-// Ensure your MongoDB server is running!
-// Example: mongodb://localhost:27017
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const DB_NAME = 'loot_and_legends'; // Choose a database name
+const DB_NAME = 'loot_and_legends';
 
 let db: Db;
 let usersCollection: Collection<User>;

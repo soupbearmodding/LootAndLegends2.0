@@ -1,9 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
-import { fileURLToPath } from 'url'; // Needed for ES Modules __dirname equivalent
-import WebSocket from 'ws'; // Import WebSocket
+import { fileURLToPath } from 'url';
+import WebSocket from 'ws';
 
-// ES Module equivalent for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -12,9 +11,8 @@ const __dirname = path.dirname(__filename);
 let mainWindow: BrowserWindow | null;
 
 function createWindow() {
-    // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 1280, // Adjust size as needed
+        width: 1280,
         height: 720,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'), // Points to dist-electron/preload.js after build
@@ -163,7 +161,7 @@ ipcMain.handle('send-ws-message', async (event, message: any) => {
 });
 
 
-// Example IPC handler
+// IPC handler
 ipcMain.handle('some-action', async (event, args) => {
     console.log('IPC message received in main process:', args);
     // Do something in the main process

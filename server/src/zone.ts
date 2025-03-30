@@ -1,10 +1,10 @@
 import WebSocket from 'ws';
 import { charactersCollection } from './db.js';
 import { safeSend } from './utils.js';
-import { ActiveConnectionsMap, ActiveEncountersMap, PlayerAttackIntervalsMap, MonsterAttackIntervalsMap } from './types.js'; // Import updated types
-import { zones, calculateMaxHp } from './gameData.js'; // Import calculateMaxHp
-import { handleFindMonster } from './combat.js'; // Import from combat module
-import { Character, Zone } from './types.js'; // Import Character and Zone types
+import { ActiveConnectionsMap, ActiveEncountersMap, PlayerAttackIntervalsMap, MonsterAttackIntervalsMap } from './types.js';
+import { zones, calculateMaxHp } from './gameData.js';
+import { handleFindMonster } from './combat.js';
+import { Character, Zone } from './types.js';
 
 // --- Zone Status Calculation ---
 
@@ -41,8 +41,8 @@ export async function handleTravel(
     payload: any,
     activeConnections: ActiveConnectionsMap,
     activeEncounters: ActiveEncountersMap,
-    playerAttackIntervals: PlayerAttackIntervalsMap, // Changed
-    monsterAttackIntervals: MonsterAttackIntervalsMap // Added
+    playerAttackIntervals: PlayerAttackIntervalsMap,
+    monsterAttackIntervals: MonsterAttackIntervalsMap
 ) {
     const connectionInfo = activeConnections.get(ws);
     if (!connectionInfo || !connectionInfo.userId || !connectionInfo.selectedCharacterId) {
@@ -89,9 +89,6 @@ export async function handleTravel(
         safeSend(ws, { type: 'travel_fail', payload: `Level ${targetZone.requiredLevel} required to enter ${targetZone.name}` });
         return;
     }
-
-    // --- Check Zone Unlock Requirement (REMOVED) ---
-    // Kill requirement check is removed, only level check remains above.
 
     try {
         // Update character's current zone in DB
@@ -148,7 +145,6 @@ export async function handleTravel(
         if (activeEncounters.has(ws)) {
             activeEncounters.delete(ws);
             console.log(`Cleared encounter for ${character.name} due to zone travel.`);
-            // Optionally notify client that encounter ended
             safeSend(ws, { type: 'encounter_end', payload: { reason: 'Zone changed' } });
         }
 
@@ -159,7 +155,7 @@ export async function handleTravel(
             setTimeout(() => {
                 // Pass the necessary maps to handleFindMonster (update interval maps)
                 handleFindMonster(ws, {}, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
-            }, 100); // 100ms delay, adjust if needed
+            }, 100);
         }
 
     } catch (error) {
