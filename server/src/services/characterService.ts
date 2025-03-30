@@ -13,17 +13,28 @@ const MAX_CHARACTERS_PER_ACCOUNT = 5;
  * @param name The desired name for the character.
  * @param classId The ID of the desired character class.
  * @returns A promise that resolves to the newly created Character object.
- * @throws Error if user not found, class invalid, character limit reached, or DB error occurs.
+ * @throws Error if user not found (unless using dev skip ID), class invalid, character limit reached, or DB error occurs.
  */
 async function createCharacter(userId: string, name: string, classId: string): Promise<Character> {
-    const user = await UserRepository.findById(userId);
-    if (!user) {
-        throw new Error(`User not found (ID: ${userId})`);
-    }
+    let user: User | null = null;
+    let usernameForLog = userId; // Use userId for logging if user is skipped
 
-    if (user.characterIds.length >= MAX_CHARACTERS_PER_ACCOUNT) {
-        throw new Error('Maximum characters reached for this account');
+    // --- DEV ONLY: Bypass user check if dummy ID is used ---
+    // IMPORTANT: Remove this check before production!
+    if (userId !== 'dev-user-skipped-login') {
+        user = await UserRepository.findById(userId);
+        if (!user) {
+            throw new Error(`User not found (ID: ${userId})`);
+        }
+        usernameForLog = user.username; // Use actual username for logging
+
+        if (user.characterIds.length >= MAX_CHARACTERS_PER_ACCOUNT) {
+            throw new Error('Maximum characters reached for this account');
+        }
+    } else {
+        console.warn("CharacterService (DEV MODE): Bypassing user validation for character creation.");
     }
+    // ----------------------------------------------------
 
     const chosenClass = characterClasses.get(classId);
     if (!chosenClass) {
@@ -37,7 +48,7 @@ async function createCharacter(userId: string, name: string, classId: string): P
 
     const newCharacter: Character = {
         id: uuidv4(),
-        userId: userId,
+        userId: userId, // Assign the userId (real or dummy)
         name: name,
         class: classId,
         level: 1,
@@ -60,16 +71,18 @@ async function createCharacter(userId: string, name: string, classId: string): P
         // Save the character first
         await CharacterRepository.save(newCharacter);
 
-        // Then add the character ID to the user's list
-        const updated = await UserRepository.updateCharacterList(userId, newCharacter.id, 'add');
-        if (!updated) {
-            // Attempt to roll back character creation if user update fails (best effort)
-            console.error(`Failed to add character ID ${newCharacter.id} to user ${userId}. Attempting rollback.`);
-            await CharacterRepository.deleteById(newCharacter.id);
-            throw new Error("Failed to update user's character list after character creation.");
+        // Then add the character ID to the user's list (Skip for DEV user)
+        if (userId !== 'dev-user-skipped-login' && user) {
+            const updated = await UserRepository.updateCharacterList(userId, newCharacter.id, 'add');
+            if (!updated) {
+                // Attempt to roll back character creation if user update fails (best effort)
+                console.error(`Failed to add character ID ${newCharacter.id} to user ${userId}. Attempting rollback.`);
+                await CharacterRepository.deleteById(newCharacter.id);
+                throw new Error("Failed to update user's character list after character creation.");
+            }
         }
 
-        console.log(`CharacterService: Created character ${newCharacter.name} (ID: ${newCharacter.id}) for user ${user.username} (ID: ${userId}).`);
+        console.log(`CharacterService: Created character ${newCharacter.name} (ID: ${newCharacter.id}) for user ${usernameForLog} (ID: ${userId}).`);
         return newCharacter;
     } catch (error) {
         console.error("CharacterService: Error during character creation:", error);
@@ -90,11 +103,28 @@ async function createCharacter(userId: string, name: string, classId: string): P
  */
 async function selectCharacter(userId: string, characterId: string): Promise<{ characterData: Character, currentZoneData: Zone | undefined, zoneStatuses: ZoneWithStatus[] }> { // Changed ZoneStatus[] to ZoneWithStatus[]
     const character = await CharacterRepository.findById(characterId);
-    const user = await UserRepository.findById(userId); // Fetch user to verify ownership
+    let user: User | null = null;
+    let usernameForLog = userId;
 
-    if (!character || !user || character.userId !== userId || !user.characterIds.includes(characterId)) {
-        throw new Error('Invalid character selected or character does not belong to user');
+    // --- DEV ONLY: Bypass user check if dummy ID is used ---
+    if (userId !== 'dev-user-skipped-login') {
+        user = await UserRepository.findById(userId); // Fetch user to verify ownership
+        if (!user) {
+             throw new Error(`User not found (ID: ${userId}) during character selection.`);
+        }
+        usernameForLog = user.username;
+        if (!character || character.userId !== userId || !user.characterIds.includes(characterId)) {
+            throw new Error('Invalid character selected or character does not belong to user');
+        }
+    } else {
+         console.warn("CharacterService (DEV MODE): Bypassing user validation for character selection.");
+         if (!character) { // Still need to ensure character exists
+             throw new Error(`Character not found (ID: ${characterId})`);
+         }
+         // Assume ownership for dev skip
     }
+    // ----------------------------------------------------
+
 
     // Ensure equipment field exists (backward compatibility)
     if (!character.equipment) {
@@ -150,7 +180,7 @@ async function selectCharacter(userId: string, characterId: string): Promise<{ c
         xpToNextLevelBracket: xpToNextLevelBracket
     };
 
-    console.log(`CharacterService: User ${user.username} (ID: ${userId}) selected character ${character.name} (ID: ${characterId}).`);
+    console.log(`CharacterService: User ${usernameForLog} (ID: ${userId}) selected character ${character.name} (ID: ${characterId}).`);
 
     return {
         characterData: characterDataForPayload,
@@ -167,12 +197,35 @@ async function selectCharacter(userId: string, characterId: string): Promise<{ c
  * @throws Error if user/character not found, ownership mismatch, or DB error.
  */
 async function deleteCharacter(userId: string, characterId: string): Promise<void> {
-    const character = await CharacterRepository.findById(characterId);
-    const user = await UserRepository.findById(userId); // Fetch user to verify ownership
+    let user: User | null = null;
+    let usernameForLog = userId;
 
-    if (!character || !user || character.userId !== userId || !user.characterIds.includes(characterId)) {
-        throw new Error('Character not found or does not belong to user');
+    // --- DEV ONLY: Bypass user check if dummy ID is used ---
+    if (userId !== 'dev-user-skipped-login') {
+        user = await UserRepository.findById(userId); // Fetch user to verify ownership
+        if (!user) {
+            throw new Error(`User not found (ID: ${userId}) during character deletion.`);
+        }
+        usernameForLog = user.username;
+    } else {
+        console.warn("CharacterService (DEV MODE): Bypassing user validation for character deletion.");
     }
+    // ----------------------------------------------------
+
+    const character = await CharacterRepository.findById(characterId);
+
+    // Validate ownership if not in dev skip mode
+    if (userId !== 'dev-user-skipped-login') {
+        if (!character || !user || character.userId !== userId || !user.characterIds.includes(characterId)) {
+            throw new Error('Character not found or does not belong to user');
+        }
+    } else {
+        if (!character) { // Still need character to exist for dev skip
+             throw new Error(`Character not found (ID: ${characterId})`);
+        }
+        // Assume ownership for dev skip
+    }
+
 
     try {
         // 1. Delete the character document
@@ -182,14 +235,16 @@ async function deleteCharacter(userId: string, characterId: string): Promise<voi
             throw new Error(`Failed to delete character document ${characterId}`);
         }
 
-        // 2. Remove character ID from user's list
-        const updated = await UserRepository.updateCharacterList(userId, characterId, 'remove');
-        if (!updated) {
-            // Log inconsistency but don't throw - character is gone.
-            console.warn(`CharacterService: Character ${characterId} deleted, but failed to remove ID from user ${userId}'s list.`);
+        // 2. Remove character ID from user's list (Skip for DEV user)
+        if (userId !== 'dev-user-skipped-login' && user) {
+            const updated = await UserRepository.updateCharacterList(userId, characterId, 'remove');
+            if (!updated) {
+                // Log inconsistency but don't throw - character is gone.
+                console.warn(`CharacterService: Character ${characterId} deleted, but failed to remove ID from user ${userId}'s list.`);
+            }
         }
 
-        console.log(`CharacterService: Deleted character ${character.name} (ID: ${characterId}) for user ${user.username} (ID: ${userId}).`);
+        console.log(`CharacterService: Deleted character ${character.name} (ID: ${characterId}) for user ${usernameForLog} (ID: ${userId}).`);
 
     } catch (error) {
         console.error("CharacterService: Error during character deletion:", error);

@@ -48,11 +48,14 @@ async function findByUserId(userId: string): Promise<Character[]> {
  */
 async function save(character: Character): Promise<void> {
      try {
+        // Separate the ID from the rest of the data for the $set operation
+        const { id, ...characterDataToSet } = character;
+
         // Use updateOne with upsert:true to either insert or update
         const result = await charactersCollection.updateOne(
-            { id: character.id }, // Filter by character ID
-            { $set: character }, // Set the entire character document
-            { upsert: true } // Create if it doesn't exist
+            { id: id }, // Filter by character ID
+            { $set: characterDataToSet }, // Set the character data *without* the id
+            { upsert: true } // Create if it doesn't exist (will include id on insert)
         );
 
         if (result.upsertedCount > 0) {

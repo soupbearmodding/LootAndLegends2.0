@@ -32,12 +32,34 @@ function isValidCharacterDeletePayload(payload: any): payload is { characterId: 
 // --- Character Handlers ---
 
 export async function handleCreateCharacter(ws: WebSocket, payload: any, activeConnections: ActiveConnectionsMap) {
+    let userId: string | undefined;
     const connectionInfo = activeConnections.get(ws);
-    if (!connectionInfo || !connectionInfo.userId) {
-        safeSend(ws, { type: 'create_character_fail', payload: 'User not logged in' });
-        return;
+
+    // --- DEV ONLY: Allow character creation if skipped login ---
+    // Check if the client sent the specific dummy ID used in App.tsx's handleSkipLogin
+    // IMPORTANT: Remove this check before production!
+    if (payload?.devUserId === 'dev-user-skipped-login') {
+        console.warn("DEV MODE: Allowing character creation with skipped login.");
+        userId = 'dev-user-skipped-login'; // Use the dummy ID
+        // Optionally add this dummy user to activeConnections if needed downstream,
+        // but it might be better to handle the null case where needed.
+        // if (!connectionInfo) {
+        //     activeConnections.set(ws, { userId: userId });
+        // }
+    } else {
+        // --- Regular Login Check ---
+        if (!connectionInfo || !connectionInfo.userId) {
+            safeSend(ws, { type: 'create_character_fail', payload: 'User not logged in' });
+            return;
+        }
+        userId = connectionInfo.userId;
     }
-    const userId = connectionInfo.userId;
+    // -------------------------------------------------------
+
+    if (!userId) { // Should not happen if logic above is correct, but safety check
+         safeSend(ws, { type: 'create_character_fail', payload: 'User ID could not be determined.' });
+         return;
+    }
 
     if (!isValidCharacterCreatePayload(payload)) {
         safeSend(ws, { type: 'create_character_fail', payload: 'Invalid payload format: Requires non-empty name and classId strings.' });
@@ -55,13 +77,20 @@ export async function handleCreateCharacter(ws: WebSocket, payload: any, activeC
         // Send success message with the new character data
         safeSend(ws, { type: 'create_character_success', payload: newCharacter });
 
-        // Send updated character list to client after creation
-        // Fetch updated list using UserRepository
-        const userCharacters = await UserRepository.findByUsername( // Assuming username is available or fetch user first
-             (await UserRepository.findById(userId))?.username ?? ''
-        ).then(user => user ? CharacterRepository.findByUserId(user.id) : []); // Fetch characters based on user's updated list
-
-        safeSend(ws, { type: 'character_list_update', payload: userCharacters });
+        // Send updated character list to client after creation (Skip for DEV user)
+        if (userId !== 'dev-user-skipped-login') {
+            try {
+                const user = await UserRepository.findById(userId);
+                if (user) {
+                    const userCharacters = await CharacterRepository.findByUserId(user.id);
+                    safeSend(ws, { type: 'character_list_update', payload: userCharacters });
+                } else {
+                     console.warn(`Could not find user ${userId} to send character list update after creation.`);
+                }
+            } catch (listError) {
+                 console.error(`Error fetching character list for user ${userId} after creation:`, listError);
+            }
+        }
 
     } catch (error: any) {
         console.error("Handler: Character creation error:", error);
@@ -70,26 +99,70 @@ export async function handleCreateCharacter(ws: WebSocket, payload: any, activeC
 }
 
 export async function handleSelectCharacter(ws: WebSocket, payload: any, activeConnections: ActiveConnectionsMap) {
-    const connectionInfo = activeConnections.get(ws);
-    if (!connectionInfo || !connectionInfo.userId) {
-        safeSend(ws, { type: 'select_character_fail', payload: 'User not logged in' });
-        return;
-    }
-    const userId = connectionInfo.userId;
-
+    // Validate payload first
     if (!isValidCharacterSelectPayload(payload)) {
         safeSend(ws, { type: 'select_character_fail', payload: 'Invalid payload format: Requires non-empty characterId string.' });
         console.warn(`Invalid select_character payload format received: ${JSON.stringify(payload)}`);
         return;
     }
-    const characterId = payload.characterId;
+    const characterId = payload.characterId; // Declare characterId once here
+
+    let userId: string | undefined;
+    let connectionInfo = activeConnections.get(ws); // Get initial connection info
+
+    // --- DEV ONLY: Allow character selection if skipped login ---
+    // Check if the character being selected belongs to the dummy user ID
+    // IMPORTANT: Remove this check before production!
+    let isDevSkip = false;
+    try { // Add try block for fetching character
+        const characterToCheck = await CharacterRepository.findById(characterId);
+        if (characterToCheck?.userId === 'dev-user-skipped-login') {
+            console.warn("DEV MODE: Allowing character selection with skipped login.");
+            userId = 'dev-user-skipped-login';
+            isDevSkip = true;
+            // Ensure the connection is associated with the dummy user ID
+            if (!connectionInfo) {
+                connectionInfo = { userId: userId }; // Create new info object
+                activeConnections.set(ws, connectionInfo);
+            } else if (connectionInfo.userId !== userId) {
+                connectionInfo.userId = userId; // Update existing info object
+                activeConnections.set(ws, connectionInfo);
+            }
+            // connectionInfo is now guaranteed to exist and have the correct userId
+        }
+    } catch (fetchError) {
+        console.error("Error fetching character during dev skip check:", fetchError);
+        // Proceed to normal login check which will likely fail if fetch failed
+    } // Close try block
+
+    if (!isDevSkip) {
+        // --- Regular Login Check ---
+        // Re-fetch connectionInfo in case it was just set by dev skip logic
+        connectionInfo = activeConnections.get(ws);
+        if (!connectionInfo || !connectionInfo.userId) {
+            safeSend(ws, { type: 'select_character_fail', payload: 'User not logged in' });
+            return;
+        }
+        userId = connectionInfo.userId; // Assign userId from potentially updated connectionInfo
+    }
+    // -------------------------------------------------------
+
+    // At this point, userId should be defined (either real or dummy)
+    if (!userId) {
+         safeSend(ws, { type: 'select_character_fail', payload: 'User ID could not be determined (Internal Error).' });
+         console.error("Internal Error: userId is undefined in handleSelectCharacter after checks.");
+         return;
+    }
 
     try {
+        // The service layer already has the dev skip logic for user validation
+        // Pass the guaranteed string userId
         const { characterData, currentZoneData, zoneStatuses } = await CharacterService.selectCharacter(userId, characterId);
 
         // Update the connection info with the selected character ID
-        connectionInfo.selectedCharacterId = characterId;
-        activeConnections.set(ws, connectionInfo); // Update the map entry
+        // connectionInfo is guaranteed to exist here if userId is set
+        connectionInfo!.selectedCharacterId = characterId; // Use non-null assertion
+        activeConnections.set(ws, connectionInfo!); // Update the map entry
 
         console.log(`Handler: User ${userId} selected character ${characterId}.`);
 

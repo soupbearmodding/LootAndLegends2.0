@@ -1,7 +1,17 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { connectToDatabase } from './db.js';
+import { connectToDatabase, isMongoCollection } from './db.js'; // Import isMongoCollection
 import { safeSend } from './utils.js';
 import { handleRegister, handleLogin, handleLogout } from './auth.js';
+// --- JSON DB Imports ---
+import {
+    saveData as saveJsonData, // Renamed to avoid conflict if needed, though 'saveData' is fine too
+    loadCharacterFromJsonFile,
+    saveCharacterToJsonFile
+} from './jsonDb.js';
+// ---------------------
+// Import necessary functions/data for post-processing loaded character
+import { calculateMaxHp, calculateMaxMana, xpForLevel, zones } from './gameData.js'; // Corrected path
+import { CharacterRepository } from './repositories/characterRepository.js'; // Import CharacterRepository for saving
 
 import { handleCreateCharacter, handleSelectCharacter, handleDeleteCharacter } from './handlers/characterHandler.js';
 import { handleTravel } from './zone.js';
@@ -15,7 +25,8 @@ import {
     PlayerAttackIntervalsMap,
     MonsterAttackIntervalsMap,
     Monster,
-    RateLimitInfo
+    RateLimitInfo,
+    Character // Import Character type
 } from './types.js';
 
 console.log("Loot & Legends server starting...");
@@ -60,7 +71,8 @@ async function startServer() {
         // Send a welcome message
         ws.send(JSON.stringify({ type: 'message', payload: 'Welcome to Loot & Legends!' }));
 
-        ws.on('message', (message: Buffer) => {
+        // Make the message handler async to allow await
+        ws.on('message', async (message: Buffer) => {
             // --- Rate Limiting Check ---
             const now = Date.now();
             let limitInfo = rateLimitTracker.get(ws);
@@ -141,6 +153,135 @@ async function startServer() {
                     case 'delete_character':
                         handleDeleteCharacter(ws, messageData.payload, activeConnections);
                         break;
+                    // --- Save Character Handler ---
+                    case 'saveCharacter':
+                        // Assumes client sends the full character object to save
+                        // TODO: Add validation for the received character data
+                        const characterToSave = messageData.payload.characterData as Character;
+                        const connectionInfoSave = activeConnections.get(ws);
+                        if (connectionInfoSave && connectionInfoSave.selectedCharacterId === characterToSave?.id) {
+                            try {
+                                await CharacterRepository.save(characterToSave);
+                                console.log(`Saved character ${characterToSave.id}`);
+                                safeSend(ws, { type: 'save_success', payload: { message: 'Character saved.' } });
+                            } catch (saveError) {
+                                console.error(`Error saving character ${characterToSave.id}:`, saveError);
+                                safeSend(ws, { type: 'save_fail', payload: 'Failed to save character data.' });
+                            }
+                        } else {
+                             console.warn(`Attempt to save character failed: No active character selected or ID mismatch.`);
+                             safeSend(ws, { type: 'save_fail', payload: 'No active character selected or data mismatch.' });
+                        }
+                        break;
+                    // --- Force JSON Save Handler (TEMP) ---
+                    case 'forceJsonSave':
+                        // TEMPORARY: Allows forcing a save of the JSON DB state for testing.
+                        // Remove this case when the fallback system is removed or deemed stable.
+                        console.log("Received request to force save in-memory JSON cache...");
+                        try {
+                            await saveJsonData(); // Saves the whole cache
+                            console.log("In-memory JSON data cache force-saved successfully.");
+                            safeSend(ws, { type: 'force_json_save_success', payload: { message: 'In-memory JSON cache saved.' } });
+                        } catch (jsonSaveError) {
+                            console.error("Error during force JSON cache save:", jsonSaveError);
+                            safeSend(ws, { type: 'force_json_save_fail', payload: 'Failed to force save in-memory JSON cache.' });
+                        }
+                        break;
+                    // --- Explicit JSON Save/Load Handlers ---
+                    case 'saveCharacterToJson':
+                        const charToJson = messageData.payload.characterData as Character;
+                        const connInfoSaveJson = activeConnections.get(ws);
+                        if (connInfoSaveJson && connInfoSaveJson.selectedCharacterId === charToJson?.id) {
+                            try {
+                                await saveCharacterToJsonFile(charToJson);
+                                safeSend(ws, { type: 'save_json_success', payload: { message: 'Character saved to JSON file.' } });
+                            } catch (saveJsonError) {
+                                console.error(`Error saving character ${charToJson.id} to JSON file:`, saveJsonError);
+                                safeSend(ws, { type: 'save_json_fail', payload: 'Failed to save character to JSON file.' });
+                            }
+                        } else {
+                             console.warn(`Attempt to save character to JSON failed: No active character or ID mismatch.`);
+                             safeSend(ws, { type: 'save_json_fail', payload: 'No active character selected or data mismatch.' });
+                        }
+                        break;
+                    case 'loadCharacterFromJson':
+                        const connInfoLoadJson = activeConnections.get(ws);
+                        const charIdToLoad = messageData.payload.characterId as string;
+                        // Ensure the user is trying to load their own character? Or allow loading any for now?
+                        // Let's assume they can only load the currently selected character ID for simplicity/security.
+                        if (connInfoLoadJson && connInfoLoadJson.selectedCharacterId === charIdToLoad) {
+                            try {
+                                let loadedChar = await loadCharacterFromJsonFile(charIdToLoad);
+                                if (loadedChar) {
+                                    console.log(`Loaded character ${charIdToLoad} from JSON file.`);
+
+                                    // --- Post-process loaded character data (similar to CharacterService.selectCharacter) ---
+                                    let updateRequired = false;
+                                    const updatesForDb: Partial<Character> = {};
+
+                                    // Ensure equipment exists
+                                    if (!loadedChar.equipment) loadedChar.equipment = {};
+
+                                    // Force start in town & heal
+                                    if (loadedChar.currentZoneId !== 'town') {
+                                        console.log(`Server: Forcing loaded character ${loadedChar.name} to town.`);
+                                        loadedChar.currentZoneId = 'town';
+                                        updatesForDb.currentZoneId = 'town';
+                                        updateRequired = true;
+                                    }
+                                    if (loadedChar.currentZoneId === 'town') {
+                                        const maxHp = calculateMaxHp(loadedChar.stats);
+                                        if (loadedChar.currentHp < maxHp) {
+                                            console.log(`Server: Healing loaded character ${loadedChar.name} in town.`);
+                                            loadedChar.currentHp = maxHp;
+                                            updatesForDb.currentHp = maxHp;
+                                            updateRequired = true;
+                                        }
+                                        // Optionally heal mana too
+                                        // const maxMana = calculateMaxMana(loadedChar.stats);
+                                        // if (loadedChar.currentMana < maxMana) { ... }
+                                    }
+
+                                    // If changes were made (moved to town/healed), save them back to the primary DB
+                                    // This keeps the primary DB consistent with the state sent to client after JSON load.
+                                    if (updateRequired) {
+                                         try {
+                                             await CharacterRepository.update(loadedChar.id, updatesForDb);
+                                             console.log(`Server: Updated primary DB for character ${loadedChar.id} after JSON load.`);
+                                         } catch(updateError) {
+                                             console.error(`Server: Failed to update primary DB for ${loadedChar.id} after JSON load:`, updateError);
+                                             // Continue anyway, client will get the processed state
+                                         }
+                                    }
+
+                                    // Calculate XP breakdown
+                                    const totalXpForCurrentLevel = xpForLevel(loadedChar.level);
+                                    const totalXpForNextLevel = xpForLevel(loadedChar.level + 1);
+                                    const currentLevelXp = loadedChar.experience - totalXpForCurrentLevel;
+                                    const xpToNextLevelBracket = totalXpForNextLevel - totalXpForCurrentLevel;
+
+                                    const characterDataForPayload = {
+                                        ...loadedChar,
+                                        currentLevelXp: currentLevelXp,
+                                        xpToNextLevelBracket: xpToNextLevelBracket
+                                    };
+                                    // -----------------------------------------------------------------------------
+
+                                    // Send the *processed* data back
+                                    safeSend(ws, { type: 'load_json_success', payload: { characterData: characterDataForPayload, message: 'Character loaded from JSON file.' } });
+                                } else {
+                                    safeSend(ws, { type: 'load_json_fail', payload: 'Character not found in JSON file.' });
+                                }
+                            } catch (loadJsonError) {
+                                console.error(`Error loading character ${charIdToLoad} from JSON file:`, loadJsonError);
+                                safeSend(ws, { type: 'load_json_fail', payload: 'Failed to load character from JSON file.' });
+                            }
+                        } else {
+                             console.warn(`Attempt to load character from JSON failed: No active character or ID mismatch.`);
+                             safeSend(ws, { type: 'load_json_fail', payload: 'Cannot load character: No active character selected or ID mismatch.' });
+                        }
+                        break;
+                    // ------------------------------------
                     default:
                         console.log(`Unknown message type: ${messageData.type}`);
                         safeSend(ws, { type: 'error', payload: `Unknown message type: ${messageData.type}` });

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react'; // Removed useRef
 import InventoryPanel from './InventoryPanel';
+import OptionsScreen from './OptionsScreen'; // Import the new OptionsScreen component
 import {
     EquipmentSlot,
     ItemStats,
@@ -25,6 +26,9 @@ interface InGameScreenProps {
     onAssignPotionSlot: (slotNumber: 1 | 2, itemBaseId: string | null) => void;
     onUsePotionSlot: (slotNumber: 1 | 2) => void;
     onAutoEquipBestStat: (stat: keyof ItemStats) => void;
+    onReturnToCharacterSelect: () => void; // Prop for returning
+    sendWsMessage: (type: string, payload: any) => Promise<any>; // Prop for sending messages
+    onCharacterDataLoaded: (characterData: CharacterDataForClient) => void; // Prop to update App state after load
 }
 
 const getItemShorthand = (name: string): string => {
@@ -52,19 +56,25 @@ const POTION_COOLDOWN_DURATION = 5000;
 const InGameScreen: React.FC<InGameScreenProps> = ({
     character, zone, zoneStatuses, encounter, onTravel, onLogout,
     onEquipItem, onUnequipItem, onSellItem, onAssignPotionSlot,
-    onUsePotionSlot, onLootGroundItem,
-    onAutoEquipBestStat
+    onUsePotionSlot, onLootGroundItem, onAutoEquipBestStat,
+    onReturnToCharacterSelect, // Destructure new props
+    sendWsMessage, // Destructure new props
+    onCharacterDataLoaded // Destructure new prop
 }) => {
     const [centerTab, setCenterTab] = useState<'combat-log' | 'chat'>('combat-log');
     const [rightTab, setRightTab] = useState<'stats' | 'skills' | 'quests' | 'mercenaries'>('stats');
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+    const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false); // State for options modal
     const [potionCooldownEnd, setPotionCooldownEnd] = useState<{ [key in 1 | 2]?: number | null }>({ 1: null, 2: null });
     const [now, setNow] = useState(Date.now());
+    // Removed saveStatus state and old modal handlers
 
     useEffect(() => {
         const timerId = setInterval(() => { setNow(Date.now()); }, 100);
         return () => clearInterval(timerId);
     }, []);
+
+    // Removed old options modal handlers
 
     const handleUsePotionClick = (slotNumber: 1 | 2) => {
         const cooldownEndTime = potionCooldownEnd[slotNumber];
@@ -210,7 +220,16 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
                 <div className="header-top">
                     <nav className="main-nav"> <button>Friends</button> <button>Clan</button> <button>Leaderboard</button> <button>Achievements</button> </nav>
                     <div className="game-title"> <h1>LOOT & LEGENDS</h1> </div>
-                    <div className="header-right"> <div className="debug-info">F5</div> <button id="logout-button" className="logout-button-header" title="Logout" onClick={onLogout}> <i className="fas fa-sign-out-alt"></i> </button> </div>
+                    {/* --- Modified Header Right --- */}
+                    <div className="header-right">
+                        <button className="options-button" title="Options" onClick={() => setIsOptionsModalOpen(true)}>
+                            <i className="fas fa-cog"></i>
+                        </button>
+                        <button id="logout-button" className="logout-button-header" title="Logout" onClick={onLogout}>
+                            <i className="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                    {/* --------------------------- */}
                 </div>
                 <div className="player-status-bars">
                     <ProgressBar current={currentHp} max={maxHp} className="health-bar" />
@@ -250,11 +269,13 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
                     </div>
                 </section>
                 <aside id="right-panel">
-                    <div id="right-panel-tabs"> <button className="tab-button inventory-button" onClick={() => setIsInventoryModalOpen(true)}>Inventory</button> <button className="settings-button"><i className="fas fa-cog"></i></button> </div>
+                    {/* --- Removed old settings button, moved to header --- */}
+                    <div id="right-panel-tabs"> <button className="tab-button inventory-button" onClick={() => setIsInventoryModalOpen(true)}>Inventory</button> </div>
                     <div id="right-panel-content"> {renderStatsTab()} </div>
                 </aside>
             </main>
 
+            {/* --- Inventory Modal --- */}
             {isInventoryModalOpen && (
                 <div className="modal-overlay" onClick={() => setIsInventoryModalOpen(false)}>
                     <div className="modal-content inventory-modal" onClick={e => e.stopPropagation()}>
@@ -271,6 +292,17 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
                     </div>
                 </div>
             )}
+
+            {/* --- Render the new OptionsScreen component --- */}
+            <OptionsScreen
+                isOpen={isOptionsModalOpen}
+                onClose={() => setIsOptionsModalOpen(false)}
+                character={character}
+                sendWsMessage={sendWsMessage}
+                onReturnToCharacterSelect={onReturnToCharacterSelect}
+                onLogout={onLogout}
+                onCharacterDataLoaded={onCharacterDataLoaded} // Pass the callback
+            />
         </div>
     );
 };

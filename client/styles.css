@@ -92,13 +92,14 @@ html, body {
 .header-right {
     display: flex;
     align-items: center;
+    gap: 10px; /* Add gap between buttons */
 }
 
 .connection-status {
     font-size: 0.8em;
     padding: 4px 8px;
     border-radius: 10px;
-    margin-right: 15px;
+    /* margin-right: 15px; */ /* Removed margin, using gap now */
     display: flex;
     align-items: center;
 }
@@ -121,12 +122,13 @@ html, body {
 .debug-info {
     font-size: 0.8em;
     color: #888;
-    margin-right: 15px;
+    /* margin-right: 15px; */ /* Removed margin, using gap now */
     border: 1px solid #444;
     padding: 2px 5px;
     border-radius: 3px;
 }
 
+.options-button, /* Style for new options button */
 .logout-button-header {
     background: none;
     border: none;
@@ -135,6 +137,7 @@ html, body {
     cursor: pointer;
     padding: 5px;
 }
+.options-button:hover,
 .logout-button-header:hover {
     color: #fff;
 }
@@ -878,18 +881,19 @@ input[type="password"]:focus {
     color: #90ee90; /* Light Green */
     border-bottom-color: transparent;
 }
-#right-panel-tabs .settings-button {
-    background: none;
+#right-panel-tabs .settings-button { /* Removed, moved to header */
+    /* background: none;
     border: none;
     color: #aaa;
     padding: 8px 10px;
-    margin-left: auto; /* Push to the right */
+    margin-left: auto;
     cursor: pointer;
-    font-size: 1em;
+    font-size: 1em; */
+    display: none; /* Hide the old button */
 }
-#right-panel-tabs .settings-button:hover {
+/* #right-panel-tabs .settings-button:hover {
     color: #fff;
-}
+} */
 
 #right-panel-content {
     flex-grow: 1;
@@ -1507,4 +1511,232 @@ input[type="password"]:focus {
 }
 .modal-close-button:hover {
     color: #fff;
+}
+
+/* --- Options Modal Specific Styles --- */
+.options-modal {
+    min-width: 300px; /* Minimum width */
+    max-width: 500px; /* Maximum width */
+    width: auto; /* Allow content to determine width */
+    max-height: 80vh; /* Limit height */
+    overflow-y: auto; /* Scroll if needed */
+}
+
+.options-modal h3 {
+    color: #e4d00a;
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+}
+
+.options-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Space between buttons */
+}
+
+.options-buttons button {
+    /* Use general button styles */
+    display: block;
+    width: 100%;
+    padding: 10px 15px;
+    margin: 0; /* Remove default margin */
+    border: 1px solid #444;
+    background-color: #2a2a2a;
+    color: #ccc;
+    font-size: 1em;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.options-buttons button:hover:not(:disabled) {
+    background-color: #383838;
+    border-color: #e4d00a;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(228, 208, 10, 0.4);
+}
+
+.options-buttons button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    border-color: #444;
+}
+
+.save-status {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #aaa;
+    min-height: 1.2em; /* Reserve space */
+}
+
+/* --- Options Screen Modal Styles (New) --- */
+.options-screen-modal {
+    min-width: 450px; /* Wider than default modal */
+    max-width: 600px;
+    width: auto;
+    max-height: 85vh;
+    /* Uses .modal-content base styles */
+}
+
+.options-screen-header {
+    text-align: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.options-screen-header h3 {
+    color: #e4d00a;
+    font-size: 1.4em;
+    margin: 0;
+}
+
+.options-screen-tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #282828;
+    flex-shrink: 0;
+}
+
+.options-screen-tabs .tab-button {
+    flex-grow: 1;
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent; /* Indicator line */
+    color: #aaa;
+    cursor: pointer;
+    font-size: 1em;
+    transition: color 0.2s, border-color 0.2s;
+    border-radius: 0;
+    margin: 0;
+}
+.options-screen-tabs .tab-button:hover {
+    color: #eee;
+}
+.options-screen-tabs .tab-button.active {
+    color: #fff;
+    font-weight: bold;
+    border-bottom-color: #e4d00a; /* Gold indicator */
+}
+
+.options-screen-content {
+    flex-grow: 1; /* Allow content to take space */
+    overflow-y: auto; /* Scroll content if needed */
+    padding: 10px 0; /* Add some padding */
+    min-height: 200px; /* Ensure minimum height for content */
+}
+
+/* Save/Load Tab Specific */
+.save-load-content h4 {
+    color: #ccc;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.save-slot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1a1a1a;
+    padding: 10px 15px;
+    border: 1px solid #333;
+    border-radius: 3px;
+    margin-bottom: 10px;
+}
+
+.save-slot.current {
+    border-left: 4px solid #e4d00a; /* Highlight current save */
+    padding-left: 11px; /* Adjust padding for border */
+}
+
+.save-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex-grow: 1;
+    margin-right: 15px;
+    overflow: hidden; /* Prevent long names from breaking layout */
+}
+
+.save-name {
+    font-size: 1em;
+    color: #eee;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.save-time {
+    font-size: 0.85em;
+    color: #888;
+}
+
+.save-actions {
+    display: grid; /* Use grid for better alignment */
+    grid-template-columns: repeat(2, 1fr); /* Two columns */
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.save-actions button {
+    padding: 6px 10px; /* Smaller buttons */
+    font-size: 0.85em;
+    /* Inherit general button styles */
+    width: auto;
+    max-width: none;
+    margin: 0;
+    min-width: 80px; /* Ensure minimum width */
+}
+
+.save-load-content hr {
+    border: none;
+    border-top: 1px solid #282828;
+    margin: 20px 0;
+}
+
+.options-general-actions {
+    display: flex;
+    justify-content: space-around; /* Space out buttons */
+    gap: 15px;
+    margin-top: 10px; /* Add space above */
+}
+
+.options-general-actions button {
+     padding: 10px 20px;
+     font-size: 1em;
+     width: auto;
+     max-width: none;
+     margin: 0;
+}
+
+/* Options Tab Specific */
+.options-content h4 {
+    color: #ccc;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+.options-content p {
+    color: #aaa;
+}
+
+/* Status Message */
+.options-status-message {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #aaa;
+    min-height: 1.2em; /* Reserve space */
+    padding: 5px;
+    background-color: #1a1a1a;
+    border-radius: 3px;
+    border: 1px solid #333;
+    flex-shrink: 0; /* Prevent shrinking */
 }
