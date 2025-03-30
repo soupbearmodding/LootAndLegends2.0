@@ -58,12 +58,19 @@ Loot & Legends is a UI-heavy RPG built with TypeScript and Electron. It features
 
 4.  **Configure MongoDB:**
     *   Ensure your MongoDB instance is running.
-    *   The server expects the MongoDB connection string via the `MONGODB_URI` environment variable. You might need to create a `.env` file in the `server/` directory or set the environment variable in your shell:
+    *   The server connects to MongoDB using the connection string specified in the `MONGODB_URI` environment variable.
+    *   **If `MONGODB_URI` is not set, it defaults to `mongodb://localhost:27017`.** The database name used is `loot_and_legends`.
+    *   If your MongoDB server is running elsewhere or requires authentication, you'll need to set the `MONGODB_URI` environment variable accordingly (e.g., by creating a `.env` file in the `server/` directory and using a library like `dotenv`, or by setting it directly in your shell).
+        ```bash
+        # Example for setting the variable in your shell (Linux/macOS)
+        export MONGODB_URI="mongodb://user:password@host:port/loot_and_legends"
+
+        # Example for setting the variable in your shell (Windows CMD)
+        set MONGODB_URI="mongodb://user:password@host:port/loot_and_legends"
+
+        # Example for a .env file in server/ (requires code changes to load it)
+        MONGODB_URI="mongodb://user:password@host:port/loot_and_legends"
         ```
-        # Example for a .env file in server/
-        MONGODB_URI=mongodb://localhost:27017/loot_and_legends
-        ```
-        *(Note: The server code currently reads this directly from `process.env.MONGODB_URI`. You may need to adjust `server/src/db.ts` or use a library like `dotenv` if you prefer a `.env` file.)*
 
 ## Running the Application
 
