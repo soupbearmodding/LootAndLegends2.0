@@ -607,10 +607,7 @@ input[type="password"]:focus {
 }
 
 /* Specific state styling */
-.zone-item.unlocked .zone-button {
-    /* Default unlocked, travelable state (if connected) */
-    /* Hover effect already defined */
-}
+
 
 .zone-item.locked .zone-button {
     color: #777; /* Dim text for level lock */
@@ -793,15 +790,10 @@ input[type="password"]:focus {
 }
 
 /* Skill specific (if needed later) */
-.skill-button {
-    /* Add specific skill styles if needed */
-}
+
 
 /* Potion Cooldown Styles */
-.action-button.on-cooldown {
-    /* Optionally change background or border slightly when on CD */
-    /* background-color: #2f2f2f; */
-}
+
 
 .cooldown-overlay {
     position: absolute;
