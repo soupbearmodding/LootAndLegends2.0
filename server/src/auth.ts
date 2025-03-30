@@ -3,19 +3,50 @@ import { v4 as uuidv4 } from 'uuid';
 import bcrypt from 'bcrypt';
 import { usersCollection, charactersCollection } from './db.js';
 import { safeSend } from './utils.js';
-import { UserCredentials, User, ActiveConnectionsMap, ActiveEncountersMap, CombatIntervalsMap } from './types.js';
+import {
+    UserCredentials,
+    User,
+    ActiveConnectionsMap,
+    ActiveEncountersMap,
+    PlayerAttackIntervalsMap, // Changed
+    MonsterAttackIntervalsMap // Added
+} from './types.js';
 
 const SALT_ROUNDS = 10; // For bcrypt hashing
 
 // --- Authentication Handlers ---
 
+const MIN_USERNAME_LENGTH = 3;
+const MAX_USERNAME_LENGTH = 20;
+const MIN_PASSWORD_LENGTH = 6;
+const MAX_PASSWORD_LENGTH = 100; // Increased max length
+
 export async function handleRegister(ws: WebSocket, payload: any) {
-    if (!payload || typeof payload.username !== 'string' || typeof payload.password !== 'string') {
-        safeSend(ws, { type: 'register_fail', payload: 'Invalid registration data' });
+    // --- Stricter Payload Validation ---
+    if (typeof payload !== 'object' || payload === null ||
+        typeof payload.username !== 'string' || payload.username.trim() === '' ||
+        typeof payload.password !== 'string' || payload.password === '') // Allow spaces in password, but not empty
+    {
+        safeSend(ws, { type: 'register_fail', payload: 'Invalid payload format: Requires non-empty username and password strings.' });
+        console.warn(`Invalid register payload format received: ${JSON.stringify(payload)}`);
         return;
     }
 
-    const { username, password }: UserCredentials = payload;
+    const username = payload.username.trim(); // Trim username
+    const password = payload.password; // Keep password as is
+
+    if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
+        safeSend(ws, { type: 'register_fail', payload: `Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters.` });
+        return;
+    }
+    if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
+        safeSend(ws, { type: 'register_fail', payload: `Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters.` });
+        return;
+    }
+    // --- End Validation ---
+
+    // Use validated variables
+    const credentials: UserCredentials = { username, password };
 
     try {
         // Check if user already exists in DB
@@ -53,12 +84,22 @@ export async function handleRegister(ws: WebSocket, payload: any) {
 }
 
 export async function handleLogin(ws: WebSocket, payload: any, activeConnections: ActiveConnectionsMap) {
-    if (!payload || typeof payload.username !== 'string' || typeof payload.password !== 'string') {
-        safeSend(ws, { type: 'login_fail', payload: 'Invalid login data' });
+    // --- Stricter Payload Validation ---
+    if (typeof payload !== 'object' || payload === null ||
+        typeof payload.username !== 'string' || payload.username.trim() === '' ||
+        typeof payload.password !== 'string' || payload.password === '') // Allow spaces in password, but not empty
+    {
+        safeSend(ws, { type: 'login_fail', payload: 'Invalid payload format: Requires non-empty username and password strings.' });
+        console.warn(`Invalid login payload format received: ${JSON.stringify(payload)}`);
         return;
     }
 
-    const { username, password }: UserCredentials = payload;
+    const username = payload.username.trim(); // Trim username
+    const password = payload.password; // Keep password as is
+    // --- End Validation ---
+
+    // Use validated variables
+    const credentials: UserCredentials = { username, password };
 
     try {
         // Find user in DB
@@ -87,7 +128,8 @@ export async function handleLogin(ws: WebSocket, payload: any, activeConnections
 
         // Store user ID against the connection
         activeConnections.set(ws, { userId: user.id });
-        console.log(`User logged in: ${username} (ID: ${user.id})`);
+        // Enhanced Logging
+        console.log(`User logged in: ${user.username} (ID: ${user.id}). Connection established.`);
 
         // Find existing characters for this user from DB
         const userCharacters = await charactersCollection.find({ userId: user.id }).toArray();
@@ -112,17 +154,24 @@ export function handleLogout(
     ws: WebSocket,
     activeConnections: ActiveConnectionsMap,
     activeEncounters: ActiveEncountersMap,
-    combatIntervals: CombatIntervalsMap
+    playerAttackIntervals: PlayerAttackIntervalsMap, // Changed
+    monsterAttackIntervals: MonsterAttackIntervalsMap // Added
 ) {
     const connectionInfo = activeConnections.get(ws);
     if (connectionInfo) {
         const userId = connectionInfo.userId;
-        // Clear combat interval if player was in combat
-        const existingInterval = combatIntervals.get(ws);
-        if (existingInterval) {
-            clearInterval(existingInterval);
-            combatIntervals.delete(ws);
-            console.log(`Cleared combat interval for user ${userId} due to logout.`);
+        // Clear combat intervals if player was in combat
+        const playerInterval = playerAttackIntervals.get(ws);
+        if (playerInterval) {
+            clearInterval(playerInterval);
+            playerAttackIntervals.delete(ws);
+            console.log(`Cleared player attack interval for user ${userId} due to logout.`);
+        }
+        const monsterInterval = monsterAttackIntervals.get(ws);
+        if (monsterInterval) {
+            clearInterval(monsterInterval);
+            monsterAttackIntervals.delete(ws);
+            console.log(`Cleared monster attack interval for user ${userId} due to logout.`);
         }
         activeEncounters.delete(ws); // Also clear encounter on logout
         activeConnections.delete(ws);

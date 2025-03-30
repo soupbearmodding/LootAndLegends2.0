@@ -1,9 +1,15 @@
-import { Character, Monster, Zone, CharacterClass, Item } from './types.js'; // Import Item
+import { Character, Monster, Zone, CharacterClass } from './types.js'; // Removed Item import
 
 // --- Combat Calculation Helpers (Very Basic) ---
 export function calculateMaxHp(stats: Character['stats']): number {
     // Example: Base HP + HP per vitality point
     return 50 + (stats.vitality * 5);
+}
+
+// Calculate max mana based on energy
+export function calculateMaxMana(stats: Character['stats']): number {
+    // Example: Base Mana + Mana per energy point
+    return 20 + (stats.energy * 2);
 }
 
 /**
@@ -26,25 +32,39 @@ export function xpForLevel(level: number): number {
   return Math.floor(100 * Math.pow(baseLevel - 1, 1.5));
 }
 
+/**
+ * Calculates the amount of XP required to advance *through* a given level.
+ * e.g., xpRequiredForLevel(5) returns the XP needed to go from level 5 to level 6.
+ * @param level The current level.
+ * @returns The XP needed to reach the next level from the start of the current level.
+ */
+export function xpRequiredForLevel(level: number): number {
+    if (level < 1) return 0; // Or handle as error
+    const xpForNext = xpForLevel(level + 1);
+    const xpForCurrent = xpForLevel(level);
+    return xpForNext - xpForCurrent;
+}
+
+
 // --- Game Data ---
 export const monsters: Map<string, Monster> = new Map([
     // Town Monsters (example)
-    ['rat1', { id: 'rat1', name: 'Giant Rat', level: 1, stats: { strength: 5, dexterity: 8, vitality: 10 }, maxHp: 20, currentHp: 20, baseDamage: 1, lootTableId: 'low_level_common' }],
-    ['goblin1', { id: 'goblin1', name: 'Goblin Scout', level: 2, stats: { strength: 8, dexterity: 10, vitality: 15 }, maxHp: 30, currentHp: 30, baseDamage: 2, lootTableId: 'low_level_common' }],
+    ['rat1', { id: 'rat1', name: 'Giant Rat', level: 1, stats: { strength: 5, dexterity: 8, vitality: 10 }, maxHp: 20, currentHp: 20, baseDamage: 1, attackSpeed: 1500, lootTableId: 'low_level_common' }], // Added attackSpeed
+    ['goblin1', { id: 'goblin1', name: 'Goblin Scout', level: 2, stats: { strength: 8, dexterity: 10, vitality: 15 }, maxHp: 30, currentHp: 30, baseDamage: 2, attackSpeed: 2000, lootTableId: 'low_level_common' }], // Added attackSpeed
     // Crimson Fen Monsters (example)
-    ['swamp_leech', { id: 'swamp_leech', name: 'Swamp Leech', level: 5, stats: { strength: 6, dexterity: 5, vitality: 25 }, maxHp: 50, currentHp: 50, baseDamage: 3, lootTableId: 'mid_level_common' }],
-    ['fen_lurker', { id: 'fen_lurker', name: 'Fen Lurker', level: 6, stats: { strength: 12, dexterity: 8, vitality: 30 }, maxHp: 65, currentHp: 65, baseDamage: 4, lootTableId: 'mid_level_common' }],
+    ['swamp_leech', { id: 'swamp_leech', name: 'Swamp Leech', level: 5, stats: { strength: 6, dexterity: 5, vitality: 25 }, maxHp: 50, currentHp: 50, baseDamage: 3, attackSpeed: 2500, lootTableId: 'mid_level_common' }], // Added attackSpeed
+    ['fen_lurker', { id: 'fen_lurker', name: 'Fen Lurker', level: 6, stats: { strength: 12, dexterity: 8, vitality: 30 }, maxHp: 65, currentHp: 65, baseDamage: 4, attackSpeed: 2200, lootTableId: 'mid_level_common' }], // Added attackSpeed
 ]);
 
 // Define connections and monsters for zones
 export const zones: Map<string, Zone> = new Map([
     ['town', { id: 'town', name: 'Town', description: 'A relatively safe starting area.', requiredLevel: 1, connectedZoneIds: ['crimson_fen', 'stonebound_field', 'whispering_woods'], monsterIds: [] }], // No monsters in town
-    ['whispering_woods', { id: 'whispering_woods', name: 'Whispering Woods', description: 'A quiet forest near the town.', requiredLevel: 1, connectedZoneIds: ['town'], monsterIds: ['rat1'] }],
-    ['crimson_fen', { id: 'crimson_fen', name: 'Crimson Fen', description: 'A murky swamp.', requiredLevel: 5, connectedZoneIds: ['town', 'shadow_swamp'], monsterIds: ['swamp_leech', 'fen_lurker'] }],
-    ['icy_flats', { id: 'icy_flats', name: 'Icy Flats', description: 'A frozen wasteland.', requiredLevel: 10, connectedZoneIds: ['stonebound_field', 'windswept_highland'], monsterIds: [], killsToUnlock: 20 }], // Requires 20 kills in Stonebound Field
-    ['stonebound_field', { id: 'stonebound_field', name: 'Stonebound Field', description: 'Rocky fields.', requiredLevel: 3, connectedZoneIds: ['town', 'icy_flats'], monsterIds: ['goblin1', 'rat1'] }], // Example reuse
-    ['shadow_swamp', { id: 'shadow_swamp', name: 'Shadow Swamp', description: 'A darker, more dangerous swamp.', requiredLevel: 8, connectedZoneIds: ['crimson_fen'], monsterIds: ['fen_lurker'], killsToUnlock: 20 }], // Requires 20 kills in Crimson Fen
-    ['windswept_highland', { id: 'windswept_highland', name: 'Windswept Highland', description: 'High altitude plains.', requiredLevel: 12, connectedZoneIds: ['icy_flats'], monsterIds: [], killsToUnlock: 20 }], // Requires 20 kills in Icy Flats
+    ['whispering_woods', { id: 'whispering_woods', name: 'Whispering Woods', description: 'A quiet forest near the town.', requiredLevel: 1, connectedZoneIds: ['town', 'stonebound_field'], monsterIds: ['rat1'] }], // Connects TO Stonebound
+    ['stonebound_field', { id: 'stonebound_field', name: 'Stonebound Field', description: 'Rocky fields.', requiredLevel: 3, connectedZoneIds: ['town', 'whispering_woods', 'crimson_fen', 'icy_flats'], monsterIds: ['goblin1', 'rat1'] }],
+    ['crimson_fen', { id: 'crimson_fen', name: 'Crimson Fen', description: 'A murky swamp.', requiredLevel: 5, connectedZoneIds: ['town', 'stonebound_field', 'shadow_swamp'], monsterIds: ['swamp_leech', 'fen_lurker'] }],
+    ['shadow_swamp', { id: 'shadow_swamp', name: 'Shadow Swamp', description: 'A darker, more dangerous swamp.', requiredLevel: 8, connectedZoneIds: ['crimson_fen'], monsterIds: ['fen_lurker'] }],
+    ['icy_flats', { id: 'icy_flats', name: 'Icy Flats', description: 'A frozen wasteland.', requiredLevel: 10, connectedZoneIds: ['stonebound_field', 'windswept_highland'], monsterIds: [] }],
+    ['windswept_highland', { id: 'windswept_highland', name: 'Windswept Highland', description: 'High altitude plains.', requiredLevel: 12, connectedZoneIds: ['icy_flats'], monsterIds: [] }],
 ]);
 
 export const characterClasses: Map<string, CharacterClass> = new Map([
@@ -55,21 +75,22 @@ export const characterClasses: Map<string, CharacterClass> = new Map([
     ['barbarian', { name: 'Barbarian', description: 'Master of melee combat and battle cries', baseStats: { strength: 40, dexterity: 20, vitality: 25, energy: 0 } }],
 ]);
 
-// --- Item Data ---
-// Base definitions for items
-export const baseItems: Map<string, Omit<Item, 'id'>> = new Map([
-    // Potions
-    ['minor_health_potion', { baseId: 'minor_health_potion', name: 'Minor Health Potion', type: 'potion', description: 'Restores a small amount of health.', quantity: 1 }],
-    // Weapons (very basic)
-    ['rusty_dagger', { baseId: 'rusty_dagger', name: 'Rusty Dagger', type: 'weapon', description: 'A simple, worn dagger.', equipmentSlot: 'mainHand', stats: { dexterity: 1 } }],
-    ['short_sword', { baseId: 'short_sword', name: 'Short Sword', type: 'weapon', description: 'A basic short sword.', equipmentSlot: 'mainHand', stats: { strength: 1, dexterity: 1 } }],
-    // Armor (very basic)
-    ['leather_cap', { baseId: 'leather_cap', name: 'Leather Cap', type: 'armor', description: 'A simple cap made of hardened leather.', equipmentSlot: 'head', stats: { vitality: 1 } }],
-    // Misc
-    ['gold_coins', { baseId: 'gold_coins', name: 'Gold Coins', type: 'misc', description: 'The currency of the realm.', quantity: 1 }], // Quantity will be randomized on drop
-]);
+import { ItemQuality } from './types.js'; // Import ItemQuality type
+
+// --- Item Quality Weights ---
+// Define the probability distribution for item qualities.
+// Weights don't have to sum to 1, they represent relative chances.
+export const qualityWeights: { quality: ItemQuality; weight: number }[] = [
+    { quality: 'Gray', weight: 25 },
+    { quality: 'White', weight: 40 },
+    { quality: 'Green', weight: 20 },
+    { quality: 'Blue', weight: 10 },
+    { quality: 'Purple', weight: 4 },
+    { quality: 'Red', weight: 1 },
+];
 
 // Loot Tables - Define potential drops for monsters
+// Note: baseId now refers to keys in server/src/lootData.ts
 interface LootTableEntry {
     baseId: string; // ID from baseItems
     chance: number; // Probability (e.g., 0.5 for 50%)
@@ -79,18 +100,48 @@ interface LootTableEntry {
 
 export const lootTables: Map<string, LootTableEntry[]> = new Map([
     // Example: Low-level monsters (rats, goblins)
-    ['low_level_common', [
-        { baseId: 'gold_coins', chance: 0.8, minQuantity: 1, maxQuantity: 10 }, // 80% chance for gold
-        { baseId: 'minor_health_potion', chance: 0.3 }, // 30% chance for potion
-        { baseId: 'rusty_dagger', chance: 0.1 }, // 10% chance for dagger
-        { baseId: 'leather_cap', chance: 0.05 }, // 5% chance for cap
+    // --- Loot Tables ---
+    // More granular tables, can be combined or assigned based on monster level/type
+    ['junk', [ // Very low chance of anything useful
+        { baseId: 'gold_coins', chance: 0.5, minQuantity: 1, maxQuantity: 5 },
+        { baseId: 'rusty_dagger', chance: 0.02 },
+        { baseId: 'club', chance: 0.02 },
+        { baseId: 'sash', chance: 0.01 },
     ]],
-    // Example: Slightly higher level (swamp monsters)
-    ['mid_level_common', [
+    ['low_level_common', [ // Level 1-5 monsters
+        { baseId: 'gold_coins', chance: 0.8, minQuantity: 1, maxQuantity: 10 },
+        { baseId: 'minor_health_potion', chance: 0.3 },
+        { baseId: 'rusty_dagger', chance: 0.08 },
+        { baseId: 'club', chance: 0.08 },
+        { baseId: 'short_sword', chance: 0.05 },
+        { baseId: 'hand_axe', chance: 0.05 },
+        { baseId: 'short_bow', chance: 0.04 },
+        { baseId: 'short_staff', chance: 0.04 },
+        { baseId: 'leather_cap', chance: 0.06 },
+        { baseId: 'quilted_armor', chance: 0.05 },
+        { baseId: 'leather_gloves', chance: 0.05 },
+        { baseId: 'leather_boots', chance: 0.05 },
+        { baseId: 'sash', chance: 0.04 },
+        { baseId: 'buckler', chance: 0.03 },
+    ]],
+    ['mid_level_common', [ // Level 6-10 monsters
         { baseId: 'gold_coins', chance: 0.9, minQuantity: 5, maxQuantity: 25 },
-        { baseId: 'minor_health_potion', chance: 0.5 },
-        { baseId: 'short_sword', chance: 0.15 },
-        { baseId: 'leather_cap', chance: 0.1 },
+        { baseId: 'minor_health_potion', chance: 0.5 }, // Still common
+        // Increased chance for better base types
+        { baseId: 'dagger', chance: 0.08 },
+        { baseId: 'scimitar', chance: 0.06 },
+        { baseId: 'long_sword', chance: 0.04 },
+        { baseId: 'spiked_club', chance: 0.07 },
+        { baseId: 'hand_axe', chance: 0.06 }, // Still drops
+        { baseId: 'short_bow', chance: 0.05 }, // Still drops
+        { baseId: 'short_staff', chance: 0.05 }, // Still drops
+        { baseId: 'skull_cap', chance: 0.07 },
+        { baseId: 'leather_armor', chance: 0.06 },
+        { baseId: 'leather_gloves', chance: 0.06 }, // Still drops
+        { baseId: 'leather_boots', chance: 0.06 }, // Still drops
+        { baseId: 'sash', chance: 0.05 }, // Still drops
+        { baseId: 'buckler', chance: 0.04 }, // Still drops
     ]],
-    // Add more tables for different monster types/levels/difficulties
+    // Add more tables: 'high_level_common', 'low_level_magic_find', 'boss_drops', etc.
+    // Also consider tables specific to item types: 'weapon_rack_low', 'armor_stand_mid', etc.
 ]);

@@ -40,37 +40,46 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
     };
 
     return (
-        <div className="auth-container">
-            <h2>Login or Register</h2>
-            {/* Wrap inputs and login button in a form */}
-            <form id="login-form" onSubmit={handleFormSubmit}>
-                <label htmlFor="username">Username:</label>
-                <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                /><br /><br />
-                <label htmlFor="password">Password:</label>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                /><br /><br />
-                {/* Change Login button type to submit */}
-                <button type="submit" id="login-button">Login</button>
-                {/* Keep Register button as type="button" */}
-                <button type="button" id="register-button" onClick={handleRegisterClick}>Register</button>
+        <div className="login-container"> {/* New top-level class */}
+            <div className="game-title-large">
+                <h1>LOOT & LEGENDS</h1>
+            </div>
+
+            <form className="login-form" onSubmit={handleFormSubmit}> {/* Class for form styling */}
+                {/* Removed h2 title */}
+                <div className="form-group"> {/* Group label and input */}
+                    <label htmlFor="username">Username:</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        autoComplete="username"
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="password">Password:</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        autoComplete="current-password"
+                    />
+                </div>
+                <div className="form-actions"> {/* Group buttons */}
+                    <button type="submit" className="button-primary">Login</button>
+                    <button type="button" className="button-secondary" onClick={handleRegisterClick}>Register</button>
+                </div>
                 {/* Status message display */}
-                <p id="auth-status" style={{ color: statusMessage.includes('failed') || statusMessage.includes('required') || statusMessage.includes('must be') ? 'lightcoral' : '#aaa' }}>
+                <p className="auth-status" style={{ color: statusMessage.includes('failed') || statusMessage.includes('required') || statusMessage.includes('must be') ? 'lightcoral' : '#aaa' }}>
                     {statusMessage || '\u00A0'} {/* Use non-breaking space to maintain height */}
                 </p>
-            </form> {/* Close the form */}
+            </form>
         </div>
     );
 };

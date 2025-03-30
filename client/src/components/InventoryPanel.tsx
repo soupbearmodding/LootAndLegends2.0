@@ -1,78 +1,218 @@
-import React, { useState } from 'react'; // Ensure React is imported
+import React, { useState, useEffect } from 'react';
+// Import shared types from client/src/types.ts
+import {
+    EquipmentSlot,
+    ItemStats,
+    Item,
+    EquipmentSlots,
+    CharacterDataForClient // Use the client-specific type
+} from '../types.js'; // Adjust path as needed
 
-// TODO: Refactor types into a shared location (e.g., ../../server/src/types)
-// --- Duplicated Types (Temporary) ---
-type EquipmentSlot = 'head' | 'chest' | 'legs' | 'feet' | 'mainHand' | 'offHand' | 'ring1' | 'ring2' | 'amulet';
-
-interface ItemStats {
-    strength?: number;
-    dexterity?: number;
-    vitality?: number;
-    energy?: number;
-}
-
-interface Item {
-    id: string;
-    baseId: string;
-    name: string;
-    type: 'weapon' | 'armor' | 'potion' | 'misc';
-    description: string;
-    equipmentSlot?: EquipmentSlot;
-    stats?: Partial<ItemStats>;
-    quantity?: number;
-}
-
-// Correct type definition matching server/src/types.ts
-type EquipmentSlots = {
-    [key in EquipmentSlot]?: Item; // Optional because a slot might be empty
-};
-
-interface CharacterData {
-    inventory: Item[];
-    equipment: EquipmentSlots;
-    stats: ItemStats; // Assuming base character stats structure
-    // Add other relevant character fields if needed for comparison
-}
-// --- End Duplicated Types ---
-
+// --- Duplicated Types Removed ---
 
 interface InventoryPanelProps {
-    character: CharacterData | null;
-    onEquipItem: (itemId: string) => void; // Function to call when equipping
-    onUnequipItem: (slot: EquipmentSlot) => void; // Function to call when unequipping
+    character: CharacterDataForClient | null; // Use imported type
+    onEquipItem: (itemId: string) => void;
+    onUnequipItem: (slot: EquipmentSlot) => void;
+    onSellItem: (itemId: string) => void;
+    onLootGroundItem: (itemId: string) => void;
+    onAssignPotionSlot: (slotNumber: 1 | 2, itemBaseId: string | null) => void;
+    // Add the new prop for auto-equip
+    onAutoEquipBestStat: (stat: keyof ItemStats) => void;
 }
 
-const InventoryPanel: React.FC<InventoryPanelProps> = ({ character, onEquipItem, onUnequipItem }) => {
+const InventoryPanel: React.FC<InventoryPanelProps> = ({
+    character,
+    onEquipItem,
+    onUnequipItem,
+    onSellItem,
+    onLootGroundItem,
+    onAssignPotionSlot,
+    onAutoEquipBestStat // Destructure the new prop
+}) => {
+    // Item tooltip state
     const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
-    const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+    const [itemTooltipPosition, setItemTooltipPosition] = useState({ x: 0, y: 0 });
+    // Auto-equip tooltip state
+    const [hoveredAutoEquipStat, setHoveredAutoEquipStat] = useState<keyof ItemStats | null>(null);
+    const [autoEquipTooltipContent, setAutoEquipTooltipContent] = useState<string>('');
+    const [autoEquipTooltipPosition, setAutoEquipTooltipPosition] = useState({ x: 0, y: 0 });
+
 
     if (!character) {
         return <p>Loading character data...</p>;
     }
 
-    const handleMouseEnter = (item: Item, event: React.MouseEvent) => {
+    // --- Event Handlers ---
+    const handleItemMouseEnter = (item: Item, event: React.MouseEvent) => {
         setHoveredItem(item);
-        setTooltipPosition({ x: event.clientX + 15, y: event.clientY + 15 }); // Position tooltip slightly offset from cursor
+        setItemTooltipPosition({ x: event.clientX + 15, y: event.clientY + 15 });
     };
-
-    const handleMouseLeave = () => {
+    const handleItemMouseLeave = () => {
         setHoveredItem(null);
     };
 
+    // --- Auto-Equip Calculation & Tooltip Handlers ---
+    const calculateAutoEquipChanges = (targetStat: keyof ItemStats): Partial<ItemStats> => {
+        if (!character) return {};
+
+        const netChanges: Partial<ItemStats> = {};
+        const slots: EquipmentSlot[] = ['head', 'chest', 'waist', 'hands', 'feet', 'mainHand', 'offHand', 'amulet', 'ring1', 'ring2'];
+        const inventoryItems = character.inventory;
+        const currentEquipment = character.equipment;
+
+        for (const slot of slots) {
+            const currentItem = currentEquipment[slot];
+            let bestInventoryItem: Item | null = null;
+            let bestStatValue = -Infinity;
+
+            // Find best item in inventory for this slot and target stat
+            for (const invItem of inventoryItems) {
+                if (invItem.equipmentSlot === slot) {
+                    const statValue = invItem.stats?.[targetStat] ?? 0;
+                    // Ensure we don't consider the currently equipped item if it's also in inventory
+                    if (invItem.id !== currentItem?.id && statValue > bestStatValue) {
+                        bestStatValue = statValue;
+                        bestInventoryItem = invItem;
+                    }
+                }
+            }
+
+            // If no better item found in inventory, or if the best is the current one, skip slot
+            if (!bestInventoryItem || bestInventoryItem.id === currentItem?.id) {
+                continue;
+            }
+
+            // Calculate stat differences for this slot
+            const currentStats = currentItem?.stats ?? {};
+            const bestStats = bestInventoryItem.stats ?? {};
+            const allStatKeys = new Set([...Object.keys(currentStats), ...Object.keys(bestStats)]) as Set<keyof ItemStats>;
+
+            allStatKeys.forEach(statKey => {
+                const currentVal = currentStats[statKey] ?? 0;
+                const bestVal = bestStats[statKey] ?? 0;
+                const diff = bestVal - currentVal;
+                if (diff !== 0) {
+                    netChanges[statKey] = (netChanges[statKey] ?? 0) + diff;
+                }
+            });
+        }
+
+        return netChanges;
+    };
+
+    const formatStatChanges = (changes: Partial<ItemStats>): string => {
+        const lines = Object.entries(changes)
+            .filter(([, value]) => value !== 0) // Only show stats that actually change
+            .map(([stat, value]) => {
+                const sign = value > 0 ? '+' : '';
+                const color = value > 0 ? 'lightgreen' : 'salmon';
+                // Simple text formatting for now
+                return `${stat}: ${sign}${value}`;
+            });
+        return lines.length > 0 ? lines.join('\n') : 'No changes';
+    };
+
+
+    const handleAutoEquipMouseEnter = (stat: keyof ItemStats, event: React.MouseEvent) => {
+        const changes = calculateAutoEquipChanges(stat);
+        const formattedChanges = formatStatChanges(changes);
+        setHoveredAutoEquipStat(stat);
+        setAutoEquipTooltipContent(formattedChanges);
+        setAutoEquipTooltipPosition({ x: event.clientX + 15, y: event.clientY + 15 });
+    };
+
+    const handleAutoEquipMouseLeave = () => {
+        setHoveredAutoEquipStat(null);
+    };
+
+
+    // --- Helper Functions ---
+    const getRarityClass = (rarity?: string): string => { /* ... (unchanged) ... */
+        switch (rarity) {
+            case 'magic': return 'rarity-magic';
+            case 'rare': return 'rarity-rare';
+            case 'unique': return 'rarity-unique';
+            case 'legendary': return 'rarity-legendary';
+            case 'common': default: return 'rarity-common';
+        }
+    };
+    const getRarityColor = (rarity?: string): string => { /* ... (unchanged) ... */
+        switch (rarity) {
+            case 'magic': return '#6888ff';
+            case 'rare': return '#ffff00';
+            case 'unique': return '#a5694f';
+            case 'legendary': return '#af00ff';
+            case 'common': default: return '#ffffff';
+        }
+    };
+    const getItemShorthand = (nameInput: string | undefined): string => { /* ... (unchanged) ... */
+        if (!nameInput) return '??';
+        const trimmedName = nameInput.trim();
+        if (!trimmedName) return '??';
+        const shorthand = trimmedName.substring(0, 2).toUpperCase();
+        return shorthand || '??';
+    };
+
+    // --- Render Functions ---
     const renderInventoryGrid = () => {
-        // Simple list for now, grid layout later
+        const gridSize = 150;
+        const gridItems: (Item | null)[] = Array(gridSize).fill(null);
+        const itemsToDisplay = character?.inventory.filter(item => item.baseId !== 'gold_coins') || [];
+        itemsToDisplay.forEach((item, index) => {
+            if (index < gridSize) { gridItems[index] = item; }
+        });
+        const goldAmount = character?.gold ?? 0;
+
         return (
-            <div className="inventory-grid">
-                <h4>Inventory</h4>
-                <ul>
-                    {character.inventory.map(item => (
+            <div className="inventory-grid-container">
+                <div className="inventory-header">
+                    <h4>Inventory</h4>
+                    <div className="gold-display">Gold: {goldAmount}</div>
+                </div>
+                <div className="inventory-grid">
+                    {gridItems.map((item, index) => (
+                        <div
+                            key={item ? item.id : `empty-${index}`}
+                            className={`inventory-grid-item ${item ? getRarityClass(item.rarity) : ''}`}
+                            onMouseEnter={(e) => item && handleItemMouseEnter(item, e)} // Use correct handler
+                            onMouseLeave={handleItemMouseLeave} // Use correct handler
+                            onClick={() => item && item.equipmentSlot && onEquipItem(item.id)}
+                            onContextMenu={(e) => {
+                                if (item) {
+                                    e.preventDefault();
+                                    setHoveredItem(null); // Hide tooltip immediately
+                                    onSellItem(item.id);
+                                }
+                            }}
+                            style={{ cursor: item ? 'pointer' : 'default' }}
+                        >
+                            {item ? getItemShorthand(item.baseName || item.name) : ''}
+                            {item && item.quantity && item.quantity > 1 && (
+                                <span className="item-quantity">{item.quantity}</span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+     };
+
+    const renderGroundLoot = () => {
+        const groundItems = character?.groundLoot ?? [];
+        return (
+            <div className="ground-loot-container">
+                <h4>Ground Loot (Last 10)</h4>
+                <ul className="ground-loot-list">
+                    {groundItems.length === 0 && <li className="ground-loot-empty">Nothing on the ground.</li>}
+                    {groundItems.map(item => (
                         <li
                             key={item.id}
-                            onMouseEnter={(e) => handleMouseEnter(item, e)}
-                            onMouseLeave={handleMouseLeave}
-                            onClick={() => item.equipmentSlot && onEquipItem(item.id)} // Equip on click if equippable
-                            style={{ cursor: item.equipmentSlot ? 'pointer' : 'default' }} // Change cursor if equippable
-                            title={item.equipmentSlot ? 'Click to equip' : 'Cannot equip'}
+                            className="ground-loot-item"
+                            onMouseEnter={(e) => handleItemMouseEnter(item, e)} // Use correct handler
+                            onMouseLeave={handleItemMouseLeave} // Use correct handler
+                            onClick={() => onLootGroundItem(item.id)}
+                            title={`Click to loot ${item.name}`}
                         >
                             {item.name} {item.quantity && item.quantity > 1 ? `(${item.quantity})` : ''}
                         </li>
@@ -80,106 +220,158 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({ character, onEquipItem,
                 </ul>
             </div>
         );
-    };
+     };
 
     const renderEquipmentSlots = () => {
-        const slots: EquipmentSlot[] = ['head', 'chest', 'legs', 'feet', 'mainHand', 'offHand', 'amulet', 'ring1', 'ring2'];
+        // Use correct slots array
+        const slots: EquipmentSlot[] = ['head', 'chest', 'waist', 'hands', 'feet', 'mainHand', 'offHand', 'amulet', 'ring1', 'ring2'];
         return (
-            <div className="equipment-slots">
+            <div className="equipment-slots-container">
                 <h4>Equipped</h4>
                 <ul>
                     {slots.map(slot => {
-                        const item = character.equipment[slot];
+                        // Ensure slot is a valid key before accessing equipment
+                        const item = Object.prototype.hasOwnProperty.call(character.equipment, slot)
+                            ? character.equipment[slot]
+                            : undefined;
                         return (
                             <li
                                 key={slot}
-                                onMouseEnter={(e) => item ? handleMouseEnter(item, e) : undefined}
-                                onMouseLeave={handleMouseLeave}
-                                onClick={() => item && onUnequipItem(slot)} // Unequip on click if item exists
-                                style={{ cursor: item ? 'pointer' : 'default' }} // Change cursor if item exists
-                                title={item ? 'Click to unequip' : 'Slot empty'}
+                                onMouseEnter={(e) => item && handleItemMouseEnter(item, e)} // Use correct handler
+                                onMouseLeave={handleItemMouseLeave} // Use correct handler
+                                onClick={() => item && onUnequipItem(slot)}
+                                style={{ cursor: item ? 'pointer' : 'default' }}
+                                title={item ? `Unequip ${item.name}` : 'Slot empty'}
                             >
-                                <strong>{slot}:</strong> {item ? item.name : '(Empty)'}
+                                <strong>{slot}:</strong> {item ? <span style={{ color: getRarityColor(item.rarity) }}>{item.name}</span> : '(Empty)'}
                             </li>
                         );
                     })}
                 </ul>
             </div>
         );
-    };
+     };
 
-    const renderTooltip = () => {
-        if (!hoveredItem) return null;
-
-        const isInventoryItem = character.inventory.some(invItem => invItem.id === hoveredItem.id);
-        const isEquippable = !!hoveredItem.equipmentSlot;
-        let comparisonElements: (React.ReactNode | null)[] = [];
-
-        // --- Stat Comparison Logic ---
-        if (isInventoryItem && isEquippable && hoveredItem.equipmentSlot) {
-            const currentItem = character.equipment[hoveredItem.equipmentSlot];
-            const hoveredStats = hoveredItem.stats || {};
-            const currentStats = currentItem?.stats || {};
-            const allStatKeys = new Set([...Object.keys(hoveredStats), ...Object.keys(currentStats)]) as Set<keyof ItemStats>;
-
-            comparisonElements = Array.from(allStatKeys).map(stat => {
-                const hoveredValue = hoveredStats[stat] || 0;
-                const currentValue = currentStats[stat] || 0;
-                const diff = hoveredValue - currentValue;
-
-                if (diff !== 0) {
-                    const sign = diff > 0 ? '+' : '';
-                    const color = diff > 0 ? 'lightgreen' : 'salmon';
-                    return <li key={stat} style={{ color }}>{stat}: {sign}{diff}</li>;
-                }
-                return null; // Don't show stats with no difference
-            }); // Keep the map, filter happens implicitly when rendering or can be done later if needed
-            // Filter nulls before rendering
-            const validComparisonElements = comparisonElements.filter(el => el !== null);
-        }
-        // --- End Stat Comparison Logic ---
-
+    // --- NEW: Render Auto-Equip Panel ---
+    const renderAutoEquipPanel = () => {
+        // Use imported ItemStats type
+        const statsToEquip: (keyof ItemStats)[] = ['strength', 'dexterity', 'vitality', 'energy']; // Add more stats later if needed
 
         return (
-            <div
-                className="item-tooltip"
-                style={{ position: 'fixed', left: tooltipPosition.x, top: tooltipPosition.y, border: '1px solid #ccc', background: '#333', color: '#fff', padding: '10px', borderRadius: '4px', zIndex: 1000 }}
-            >
-                <h5>{hoveredItem.name}</h5>
-                <p><em>{hoveredItem.type}{hoveredItem.equipmentSlot ? ` (${hoveredItem.equipmentSlot})` : ''}</em></p>
-                <p>{hoveredItem.description}</p>
-                {hoveredItem.stats && Object.keys(hoveredItem.stats).length > 0 && (
-                    <>
-                        <hr />
-                        <h6>Stats:</h6>
-                        <ul>
-                            {Object.entries(hoveredItem.stats).map(([stat, value]) => (
-                                <li key={stat}>{stat}: +{value}</li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-                 {/* TODO: Add stat comparison display */}
-                 {isInventoryItem && isEquippable && (
-                    <>
-                        <hr />
-                         <h6>Comparison vs Equipped:</h6>
-                         {comparisonElements.filter(el => el !== null).length > 0 ? ( // Filter nulls here for the check and render
-                             <ul>{comparisonElements.filter(el => el !== null)}</ul>
-                         ) : (
-                             <p>(No stat changes or slot empty)</p>
-                         )}
-                     </>
-                 )}
+            <div className="auto-equip-container panel-section"> {/* Reuse panel-section style */}
+                <h4>Auto Equip Best Stats</h4>
+                <div className="auto-equip-buttons">
+                    {statsToEquip.map(stat => (
+                        <button
+                            key={stat}
+                            className="button-secondary auto-equip-button" // Use existing button style or create new
+                            onClick={() => onAutoEquipBestStat(stat)}
+                            onMouseEnter={(e) => handleAutoEquipMouseEnter(stat, e)}
+                            onMouseLeave={handleAutoEquipMouseLeave}
+                            // Remove title or update it
+                        >
+                            {stat.charAt(0).toUpperCase() + stat.slice(1)} {/* Capitalize stat name */}
+                        </button>
+                    ))}
+                </div>
             </div>
         );
     };
 
+    const renderItemTooltip = () => {
+        if (!hoveredItem) return null;
+
+        const itemToShow = hoveredItem;
+        const isInventoryItem = character.inventory.some(invItem => invItem.id === itemToShow.id);
+        const isEquippable = !!itemToShow.equipmentSlot;
+        let comparisonElements: React.ReactElement[] = [];
+
+        // --- Stat Comparison Logic ---
+        if (isInventoryItem && isEquippable && itemToShow.equipmentSlot) {
+            const targetSlot = itemToShow.equipmentSlot;
+            if (targetSlot && Object.prototype.hasOwnProperty.call(character.equipment, targetSlot)) {
+                const currentItem = character.equipment[targetSlot];
+                const hoveredStats = itemToShow.stats || {};
+                // Check currentItem exists before accessing stats
+                const currentStats = currentItem?.stats || {};
+                const allStatKeys = new Set([...Object.keys(hoveredStats), ...Object.keys(currentStats)]) as Set<keyof ItemStats>;
+
+                comparisonElements = Array.from(allStatKeys)
+                    .map(stat => {
+                        const hoveredValue = hoveredStats[stat] || 0;
+                        const currentValue = currentStats[stat] || 0;
+                        const diff = hoveredValue - currentValue;
+                        if (diff !== 0) {
+                            const sign = diff > 0 ? '+' : '';
+                            const color = diff > 0 ? 'lightgreen' : 'salmon';
+                            return <li key={stat} style={{ color }}>{stat}: {sign}{diff}</li>;
+                        }
+                        return null;
+                    })
+                    .filter((el): el is React.ReactElement => el !== null);
+            }
+        }
+        // --- End Stat Comparison Logic ---
+
+        const rarityColor = getRarityColor(itemToShow.rarity);
+
+        return (
+            <div className="item-tooltip" style={{ position: 'fixed', left: itemTooltipPosition.x, top: itemTooltipPosition.y, border: `2px solid ${rarityColor}`, background: '#333', color: rarityColor, padding: '10px', borderRadius: '4px', zIndex: 1000, minWidth: '200px', pointerEvents: 'none' }}>
+                <h5 style={{ color: rarityColor, margin: '0 0 5px 0', borderBottom: `1px solid ${rarityColor}` }}>{itemToShow.name}</h5>
+                <p style={{ color: '#fff', margin: '5px 0' }}><em>{itemToShow.type}{itemToShow.equipmentSlot ? ` (${itemToShow.equipmentSlot})` : ''}</em></p>
+                <p style={{ color: '#fff', margin: '5px 0' }}>{itemToShow.description}</p>
+                {itemToShow.stats && Object.keys(itemToShow.stats).length > 0 && (
+                    <> <hr style={{ borderColor: rarityColor, opacity: 0.5 }}/> <h6 style={{ color: '#fff', margin: '5px 0' }}>Stats:</h6> <ul style={{ color: '#fff', listStyle: 'none', paddingLeft: '10px', margin: '5px 0' }}> {Object.entries(itemToShow.stats).map(([stat, value]) => ( <li key={stat} style={{ color: '#68c7ff' }}>{stat}: +{value}</li> ))} </ul> </>
+                )}
+                {isInventoryItem && isEquippable && (
+                    <> <hr style={{ borderColor: rarityColor, opacity: 0.5 }}/> <h6 style={{ color: '#fff', margin: '5px 0' }}>Comparison vs Equipped:</h6> {comparisonElements.length > 0 ? ( <ul style={{ listStyle: 'none', paddingLeft: '10px', margin: '5px 0' }}>{comparisonElements}</ul> ) : ( <p style={{ color: '#aaa', margin: '5px 0' }}>(No stat changes or slot empty)</p> )} </>
+                )}
+            </div>
+        );
+     };
+
+    // --- NEW: Render Auto-Equip Tooltip ---
+    const renderAutoEquipTooltip = () => {
+        if (!hoveredAutoEquipStat) return null;
+
+        // Simple text display using pre-wrap to handle newlines
+        return (
+            <div className="auto-equip-tooltip" style={{ position: 'fixed', left: autoEquipTooltipPosition.x, top: autoEquipTooltipPosition.y, background: '#333', color: '#fff', border: '1px solid #ccc', padding: '10px', borderRadius: '4px', zIndex: 1000, whiteSpace: 'pre-wrap', pointerEvents: 'none' }}>
+                <h6 style={{ margin: '0 0 5px 0', borderBottom: '1px solid #ccc' }}>Net Stat Changes:</h6>
+                 {autoEquipTooltipContent.split('\n').map((line, index) => {
+                     const parts = line.split(':');
+                     const statName = parts[0];
+                     const valueStr = parts[1] ? parts[1].trim() : undefined; // Check if parts[1] exists
+                     let value = NaN;
+                     let color = '#fff'; // Default color
+
+                     if (valueStr !== undefined) {
+                         value = parseInt(valueStr, 10);
+                         color = isNaN(value) ? '#fff' : (value > 0 ? 'lightgreen' : 'salmon');
+                     } else if (line === 'No changes') {
+                         color = '#aaa'; // Grey out "No changes"
+                     }
+
+                     return <div key={index} style={{ color }}>{line}</div>;
+                 })}
+            </div>
+        );
+    };
+
+
     return (
         <div className="inventory-panel">
-            {renderEquipmentSlots()}
-            {renderInventoryGrid()}
-            {renderTooltip()}
+            <div className="inventory-main-area">
+                 {renderInventoryGrid()}
+                 {renderGroundLoot()}
+            </div>
+            <div className="equipment-area">
+                {renderEquipmentSlots()}
+                {/* Replace potion slots with auto-equip panel */}
+                {renderAutoEquipPanel()}
+            </div>
+            {renderItemTooltip()}
+            {renderAutoEquipTooltip()} {/* Render the new tooltip */}
         </div>
     );
 };

@@ -1,11 +1,106 @@
 import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
 import { charactersCollection } from './db.js';
-import { safeSend, randomInt } from './utils.js'; // Import randomInt
-import { ActiveConnectionsMap, ActiveEncountersMap, CombatIntervalsMap, Monster, Character, Item } from './types.js'; // Import Character and Item
-import { zones, monsters, calculateMaxHp, xpForLevel, characterClasses, lootTables, baseItems } from './gameData.js'; // Import lootTables and baseItems
+import { safeSend, randomInt } from './utils.js';
+import {
+    ActiveConnectionsMap,
+    ActiveEncountersMap,
+    PlayerAttackIntervalsMap, // Changed
+    MonsterAttackIntervalsMap, // Added
+    Monster,
+    Character,
+    Item,
+    EquipmentSlot,
+    PlayerAttackUpdatePayload, // Added
+    MonsterAttackUpdatePayload // Added
+} from './types.js';
+// Import 'items' instead of 'baseItems'
+import { zones, monsters, calculateMaxHp, xpForLevel, xpRequiredForLevel, characterClasses } from './gameData.js'; // Removed items
+import { items } from './lootData.js'; // Import items from lootData
+import { generateLoot as generateLootFromTable } from './lootGenerator.js';
 
-const COMBAT_INTERVAL_MS = 2000; // Attack every 2 seconds (adjust as needed)
+const DEFAULT_PLAYER_ATTACK_SPEED = 2000; // Default ms between player attacks if no weapon
+const MIN_ATTACK_SPEED = 500; // Minimum attack speed in ms
+
+// --- Helper Functions ---
+
+// Calculate player's attack speed based on weapon and gear
+function calculatePlayerAttackSpeed(character: Character): number {
+    let baseSpeed = DEFAULT_PLAYER_ATTACK_SPEED;
+    let totalIncreasedAttackSpeed = 0; // Percentage increase
+
+    const mainHand = character.equipment?.mainHand;
+    // Access attackSpeed via the stats object
+    if (mainHand && mainHand.stats?.attackSpeed) {
+        baseSpeed = mainHand.stats.attackSpeed;
+    }
+
+    // Sum IAS from all equipment slots
+    for (const slot in character.equipment) {
+        const item = character.equipment[slot as EquipmentSlot];
+        if (item) {
+            // Also check item base stats for IAS
+            totalIncreasedAttackSpeed += item.stats?.increasedAttackSpeed ?? 0;
+            // Check affix statModifiers for IAS
+            item.prefixes?.forEach(affix => {
+                totalIncreasedAttackSpeed += affix.statModifiers?.increasedAttackSpeed ?? 0;
+            });
+            item.suffixes?.forEach(affix => {
+                totalIncreasedAttackSpeed += affix.statModifiers?.increasedAttackSpeed ?? 0;
+            });
+        }
+    }
+
+    // Apply percentage increase
+    let finalSpeed = baseSpeed / (1 + totalIncreasedAttackSpeed);
+
+    // Clamp to minimum speed
+    finalSpeed = Math.max(MIN_ATTACK_SPEED, finalSpeed);
+
+    console.log(`Attack Speed Calc: Base=${baseSpeed}, IAS=${(totalIncreasedAttackSpeed * 100).toFixed(0)}%, Final=${finalSpeed.toFixed(0)}ms`);
+    return finalSpeed;
+}
+
+// XP reward calculation (remains the same)
+function calculateXpReward(monster: Monster, characterLevel: number): number {
+    const mLvl = monster.level ?? 1;
+    const pLvl = characterLevel;
+    const baseMonsterXp = 10 + (mLvl * 5);
+    const levelDiff = pLvl - mLvl;
+    let xpMultiplier = 1.0;
+
+    if (levelDiff > 10) {
+        xpMultiplier = Math.max(0.05, 1.0 - (levelDiff - 10) * 0.05);
+    } else if (levelDiff < -10) {
+        xpMultiplier = Math.max(0.05, 1.0 - (Math.abs(levelDiff) - 10) * 0.05);
+    }
+    xpMultiplier = Math.max(0, xpMultiplier);
+    const finalXp = Math.floor(baseMonsterXp * xpMultiplier);
+    console.log(`XP Calc: pLvl=${pLvl}, mLvl=${mLvl}, baseXP=${baseMonsterXp}, diff=${levelDiff}, mult=${xpMultiplier.toFixed(2)}, finalXP=${finalXp}`);
+    return finalXp;
+}
+
+// Function to clear combat state for a connection
+function clearCombatState(
+    ws: WebSocket,
+    activeEncounters: ActiveEncountersMap,
+    playerAttackIntervals: PlayerAttackIntervalsMap,
+    monsterAttackIntervals: MonsterAttackIntervalsMap
+) {
+    const playerInterval = playerAttackIntervals.get(ws);
+    if (playerInterval) {
+        clearInterval(playerInterval);
+        playerAttackIntervals.delete(ws);
+    }
+    const monsterInterval = monsterAttackIntervals.get(ws);
+    if (monsterInterval) {
+        clearInterval(monsterInterval);
+        monsterAttackIntervals.delete(ws);
+    }
+    activeEncounters.delete(ws);
+    console.log("Cleared combat state (intervals and encounter).");
+}
+
 
 // --- Combat Handlers ---
 
@@ -14,8 +109,18 @@ export async function handleFindMonster(
     payload: any, // Keep payload for potential future use (e.g., specific monster targeting)
     activeConnections: ActiveConnectionsMap,
     activeEncounters: ActiveEncountersMap,
-    combatIntervals: CombatIntervalsMap
+    playerAttackIntervals: PlayerAttackIntervalsMap, // Changed
+    monsterAttackIntervals: MonsterAttackIntervalsMap // Added
 ) {
+    // --- Basic Payload Validation (Future-proofing) ---
+    // Although payload isn't used now, validate its basic type if provided.
+    if (typeof payload !== 'object' && payload !== null && payload !== undefined) {
+        safeSend(ws, { type: 'find_monster_fail', payload: 'Invalid payload format for find_monster.' });
+        console.warn(`Invalid find_monster payload format received: ${JSON.stringify(payload)}`);
+        return;
+    }
+    // --- End Validation ---
+
     const connectionInfo = activeConnections.get(ws);
     // Check connectionInfo and that selectedCharacterId is a string
     if (!connectionInfo || typeof connectionInfo.selectedCharacterId !== 'string') {
@@ -39,9 +144,9 @@ export async function handleFindMonster(
         return;
     }
 
-    // If already in an encounter or combat loop, fail
-    if (activeEncounters.has(ws) || combatIntervals.has(ws)) {
-         safeSend(ws, { type: 'find_monster_fail', payload: 'Already in an encounter' });
+    // If already in an encounter or combat loops are running, fail
+    if (activeEncounters.has(ws) || playerAttackIntervals.has(ws) || monsterAttackIntervals.has(ws)) {
+         safeSend(ws, { type: 'find_monster_fail', payload: 'Already in an encounter or combat loops active' });
          return;
     }
 
@@ -61,111 +166,124 @@ export async function handleFindMonster(
         ...monsterTemplate, // Copy template data
         id: uuidv4(), // Give it a unique instance ID for this fight
         currentHp: monsterTemplate.maxHp, // Ensure full HP at start
-        stats: { ...monsterTemplate.stats } // Ensure stats are copied, not referenced
+        stats: { ...monsterTemplate.stats }, // Ensure stats are copied, not referenced
+        attackSpeed: monsterTemplate.attackSpeed // Copy attack speed
     };
 
     activeEncounters.set(ws, monsterInstance);
-    console.log(`Character ${character.name} encountered ${monsterInstance.name} (Instance ID: ${monsterInstance.id})`);
+    // Enhanced Logging
+    console.log(`Character ${character.name} (ID: ${characterId}) encountered ${monsterInstance.name} (Instance ID: ${monsterInstance.id}, Level: ${monsterInstance.level}) in zone ${currentZone.id}.`);
 
     safeSend(ws, { type: 'encounter_start', payload: { monster: monsterInstance } });
 
-    // Start the combat loop
-    const intervalId = setInterval(() => {
-        // Pass ws and maps to know which connection/encounter to process
-        performCombatRound(ws, activeConnections, activeEncounters, combatIntervals);
-    }, COMBAT_INTERVAL_MS);
-    combatIntervals.set(ws, intervalId);
-    console.log(`Started combat interval for ${character.name}`);
+    // --- Start Separate Combat Intervals ---
+    const playerAttackSpeed = calculatePlayerAttackSpeed(character);
+    const monsterAttackSpeed = monsterInstance.attackSpeed; // Use the instance's speed
+
+    // Player Attack Interval
+    const playerIntervalId = setInterval(() => {
+        performPlayerAttack(ws, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+    }, playerAttackSpeed);
+    playerAttackIntervals.set(ws, playerIntervalId);
+    console.log(`Started player attack interval (${playerAttackSpeed}ms) for ${character.name}`);
+
+    // Monster Attack Interval (slight delay to prevent simultaneous first hit)
+    setTimeout(() => {
+        // Check if encounter is still active before starting monster interval
+        if (activeEncounters.has(ws)) {
+            const monsterIntervalId = setInterval(() => {
+                performMonsterAttack(ws, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+            }, monsterAttackSpeed);
+            monsterAttackIntervals.set(ws, monsterIntervalId);
+            console.log(`Started monster attack interval (${monsterAttackSpeed}ms) for ${monsterInstance.name}`);
+        } else {
+            console.log(`Encounter ended before monster ${monsterInstance.name} could start attacking.`);
+        }
+    }, randomInt(100, 300)); // Add small random delay
 }
 
-// Performs one auto-attack round
-async function performCombatRound(
+
+// --- Player Attack Logic ---
+async function performPlayerAttack(
     ws: WebSocket,
     activeConnections: ActiveConnectionsMap,
     activeEncounters: ActiveEncountersMap,
-    combatIntervals: CombatIntervalsMap
+    playerAttackIntervals: PlayerAttackIntervalsMap,
+    monsterAttackIntervals: MonsterAttackIntervalsMap
 ) {
     const connectionInfo = activeConnections.get(ws);
     const encounter = activeEncounters.get(ws);
 
-    // Validate connection, character selection, and active encounter
-    // Check if interval still exists (might have been cleared by travel/logout/death)
-    if (!connectionInfo || typeof connectionInfo.selectedCharacterId !== 'string' || !encounter || !combatIntervals.has(ws)) {
-        console.log("Combat round skipped or stopped due to invalid state.");
-        // Ensure interval is cleared if it exists but state is invalid
-        const existingInterval = combatIntervals.get(ws);
-        if (existingInterval) {
-            clearInterval(existingInterval);
-            combatIntervals.delete(ws);
-        }
-        activeEncounters.delete(ws); // Also clear encounter
+    // Validate connection, character selection, active encounter, and player interval
+    if (!connectionInfo || typeof connectionInfo.selectedCharacterId !== 'string' || !encounter || !playerAttackIntervals.has(ws)) {
+        console.log("Player attack skipped or stopped due to invalid state.");
+        clearCombatState(ws, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
         return;
     }
     const characterId = connectionInfo.selectedCharacterId;
-    // Fetch character from DB for current stats/HP
-    let character = await charactersCollection.findOne({ id: characterId }); // Use let
+    let character = await charactersCollection.findOne({ id: characterId });
 
     if (!character) {
-        console.error(`Combat round: Character ${characterId} not found in DB.`);
+        console.error(`Player attack: Character ${characterId} not found in DB.`);
         safeSend(ws, { type: 'attack_fail', payload: 'Character data inconsistency' });
-        const existingInterval = combatIntervals.get(ws);
-        if (existingInterval) clearInterval(existingInterval); // Stop loop on error
-        combatIntervals.delete(ws);
-        activeEncounters.delete(ws);
+        clearCombatState(ws, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
         return;
     }
 
-    // --- Ensure zoneKills exists ---
-    if (!character.zoneKills) {
-        character.zoneKills = {};
-        console.log(`Initialized missing zoneKills for character ${character.name}`);
-        // Optionally update the DB here too, though it will be updated on the next kill anyway
-        // await charactersCollection.updateOne({ id: character.id }, { $set: { zoneKills: {} } });
-    }
-
-    // --- Player Attack Phase ---
-    // Basic damage calculation (e.g., based on Strength) - VERY simplified
-    const playerDamage = Math.max(1, Math.floor(character.stats.strength / 5)); // Ensure at least 1 damage
+    // --- Player Attack Calculation ---
+    // TODO: Enhance damage calculation (weapon damage, stats, skills)
+    let playerDamage = Math.floor((character.stats?.strength ?? 0) / 5); // Example base damage
+    // Sanity check: Ensure damage is at least 1 (or 0 if you want attacks to potentially do nothing)
+    playerDamage = Math.max(1, playerDamage);
     encounter.currentHp -= playerDamage;
-    console.log(`${character.name} attacks ${encounter.name} for ${playerDamage} damage. ${encounter.name} HP: ${encounter.currentHp}/${encounter.maxHp}`);
+    // Enhanced Logging
+    console.log(`Player Attack: ${character.name} (ID: ${characterId}) dealt ${playerDamage} damage to ${encounter.name} (Instance ID: ${encounter.id}). ${encounter.name} HP: ${encounter.currentHp}/${encounter.maxHp}`);
 
-    // Check if monster is defeated
+    // Send update to client
+    const playerAttackPayload: PlayerAttackUpdatePayload = {
+        playerDamageDealt: playerDamage,
+        monsterUpdate: { currentHp: encounter.currentHp }
+    };
+    safeSend(ws, { type: 'player_attack_update', payload: playerAttackPayload });
+
+    // Update encounter map with new monster HP
+    activeEncounters.set(ws, encounter);
+
+    // --- Check if Monster is Defeated ---
     if (encounter.currentHp <= 0) {
-        console.log(`${encounter.name} defeated by ${character.name}`);
-        const defeatedMonsterName = encounter.name; // Store name before deleting
-        activeEncounters.delete(ws); // End encounter
-        const existingInterval = combatIntervals.get(ws);
-        if (existingInterval) clearInterval(existingInterval); // Stop combat loop
-        combatIntervals.delete(ws);
+        // Enhanced Logging
+        console.log(`Monster Defeated: ${encounter.name} (Instance ID: ${encounter.id}) defeated by ${character.name} (ID: ${characterId}).`);
+        const defeatedMonsterName = encounter.name;
+        const defeatedMonster = { ...encounter }; // Copy data before clearing state
+
+        // Stop combat loops and clear encounter state FIRST
+        clearCombatState(ws, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
 
         // --- Grant Experience & Check Level Up ---
-        const xpGained = calculateXpReward(encounter); // Calculate XP based on monster
-        character.experience += xpGained;
-        console.log(`${character.name} gained ${xpGained} XP. Total XP: ${character.experience}`);
+        let xpGained = calculateXpReward(defeatedMonster, character.level); // Use defeatedMonster here
+        // Sanity check: Ensure XP gained is not negative
+        xpGained = Math.max(0, xpGained);
+        character.experience = (character.experience ?? 0) + xpGained;
+        // Enhanced Logging
+        console.log(`XP Gain: ${character.name} (ID: ${characterId}) gained ${xpGained} XP. Total XP: ${character.experience}.`);
 
         let leveledUp = false;
-        let statIncreases = {}; // To store which stats increased
-        while (character.experience >= xpForLevel(character.level + 1)) {
+        let statIncreases = {};
+        while (character.experience >= xpForLevel((character.level ?? 0) + 1)) {
             leveledUp = true;
-            character.level++;
-            console.log(`${character.name} leveled up to level ${character.level}!`);
+            const oldLevel = character.level; // Store old level for logging
+            character.level = (character.level ?? 0) + 1;
+            // Enhanced Logging
+            console.log(`Level Up: ${character.name} (ID: ${characterId}) leveled up from ${oldLevel} to ${character.level}!`);
 
-            // --- Apply Stat Increases (Example: +2 main stat, +1 others based on class) ---
-            // This is a very basic example; a real game would have more complex progression
-            const charClassData = characterClasses.get(character.class); // Get class data
-            if (charClassData) { // Check if class data exists
-                // Example: Warrior gets +2 str, +1 vit; Rogue +2 dex, +1 vit etc.
-                // For simplicity, let's give +1 to all stats for now
-                character.stats.strength += 1;
-                character.stats.dexterity += 1;
-                character.stats.vitality += 1;
-                character.stats.energy += 1;
-                statIncreases = { strength: 1, dexterity: 1, vitality: 1, energy: 1 }; // Record increases
-                console.log(`Stats increased: +1 to all.`);
-            } else {
-                console.warn(`Could not find class data for ${character.class} during level up.`);
-            }
-
+            // --- Apply Stat Increases ---
+            if (!character.stats) character.stats = { strength: 0, dexterity: 0, vitality: 0, energy: 0 }; // Initialize if missing
+            character.stats.strength = (character.stats.strength ?? 0) + 1;
+            character.stats.dexterity = (character.stats.dexterity ?? 0) + 1;
+            character.stats.vitality = (character.stats.vitality ?? 0) + 1;
+            character.stats.energy = (character.stats.energy ?? 0) + 1;
+            statIncreases = { strength: 1, dexterity: 1, vitality: 1, energy: 1 }; // Record increases
+            console.log(`Stats increased: +1 to all.`);
 
             // Recalculate Max HP based on new stats (especially vitality)
             character.maxHp = calculateMaxHp(character.stats);
@@ -174,16 +292,9 @@ async function performCombatRound(
             console.log(`Max HP increased to ${character.maxHp}. HP restored.`);
         }
 
-        // --- Update Zone Kills ---
-        const currentZoneId = character.currentZoneId;
-        const currentKills = character.zoneKills[currentZoneId] || 0;
-        const newKills = currentKills + 1;
-        const updateField = `zoneKills.${currentZoneId}`; // Field path for MongoDB update
-
-        // Prepare update object for DB
-        const updateData: Partial<Character> & { [key: string]: any } = {
+        // --- Prepare update object for DB (Removed zone kill update) ---
+        const updateData: Partial<Character> = { // Use Partial<Character> directly
             experience: character.experience,
-            [updateField]: newKills,
         };
         if (leveledUp) {
             updateData.level = character.level;
@@ -192,39 +303,97 @@ async function performCombatRound(
             updateData.currentHp = character.currentHp; // Restore HP
         }
 
-        // Update character in DB
-        await charactersCollection.updateOne({ id: character.id }, { $set: updateData });
-
-        // Update local character object (already partially done during level up check)
-        character.zoneKills[currentZoneId] = newKills;
-        console.log(`${character.name} now has ${newKills} kills in ${currentZoneId}.`);
-
-        // Prepare payload for client
-        const xpToNext = xpForLevel(character.level + 1); // Calculate XP needed for next level
-        const characterUpdatePayload: any = {
-            experience: character.experience,
-            zoneKills: character.zoneKills,
-            xpToNextLevel: xpToNext, // Add XP needed for next level
-        };
-        if (leveledUp) {
-            characterUpdatePayload.level = character.level;
-            characterUpdatePayload.stats = character.stats;
-            characterUpdatePayload.maxHp = character.maxHp;
-            characterUpdatePayload.currentHp = character.currentHp;
-            characterUpdatePayload.leveledUp = true; // Add a flag for the client
-            characterUpdatePayload.statIncreases = statIncreases; // Send increases info
+        // --- Generate Loot ---
+        let droppedLoot: Item[] = [];
+        if (defeatedMonster.lootTableId) {
+            droppedLoot = generateLootFromTable(defeatedMonster.lootTableId);
+            // Enhanced Logging
+            const lootSummary = droppedLoot.map((item: Item) => `${item.name}${item.quantity && item.quantity > 1 ? `(x${item.quantity})` : ''} (ID: ${item.id})`).join(', ') || 'Nothing';
+            console.log(`Loot Drop: ${character.name} (ID: ${characterId}) received loot from ${defeatedMonsterName}: ${lootSummary}`);
+        } else {
+            console.log(`Loot Drop: ${defeatedMonster.name} has no loot table defined.`);
         }
 
-        // --- Generate Loot ---
-        const droppedLoot = generateLoot(encounter);
-        console.log(`${character.name} received loot:`, droppedLoot.map((item: Item) => `${item.name}${item.quantity && item.quantity > 1 ? ` (x${item.quantity})` : ''}`).join(', ') || 'Nothing');
+        // --- Add Loot to Inventory ---
+        if (droppedLoot.length > 0) {
+            // Ensure inventory array exists
+            if (!character.inventory) {
+                character.inventory = [];
+            }
+
+            droppedLoot.forEach(newItem => {
+                const isStackable = (newItem.type === 'potion' || newItem.type === 'misc') && (newItem.quantity ?? 1) > 0; // Check if item type is stackable and has quantity
+                let existingItemIndex = -1;
+
+                if (isStackable) {
+                    // Find item with the same baseId in the inventory
+                    existingItemIndex = character.inventory.findIndex(invItem => invItem.baseId === newItem.baseId);
+                }
+
+                if (isStackable && existingItemIndex !== -1) {
+                    // Get the item at the found index
+                    const existingItem = character.inventory[existingItemIndex];
+                    // Double-check if the item actually exists (to satisfy TS, though logically it should)
+                    if (existingItem) {
+                        const existingQuantity = existingItem.quantity ?? 0; // Default to 0 if undefined
+                        existingItem.quantity = existingQuantity + (newItem.quantity ?? 1); // Default new item quantity to 1 if undefined
+                        console.log(`Stacked ${newItem.quantity ?? 1} ${newItem.name}. New quantity: ${existingItem.quantity}`);
+                    } else {
+                         // This case should logically not happen if findIndex returned a valid index other than -1
+                         // But handle it defensively: add as a new item instead of crashing
+                         console.warn(`Item not found at index ${existingItemIndex} despite findIndex success. Adding as new item.`);
+                         character.inventory.push(newItem);
+                         console.log(`Added new item: ${newItem.name}${newItem.quantity && newItem.quantity > 1 ? ` (x${newItem.quantity})` : ''}`);
+                    }
+                } else {
+                    // Add new item (or non-stackable item)
+                    character.inventory.push(newItem);
+                    console.log(`Added new item: ${newItem.name}${newItem.quantity && newItem.quantity > 1 ? ` (x${newItem.quantity})` : ''}`);
+                }
+            });
+
+            // Include inventory in the database update
+            updateData.inventory = character.inventory;
+        }
+
+        // Update character in DB (now includes potential inventory changes)
+        await charactersCollection.updateOne({ id: character.id }, { $set: updateData });
+
+        // Update local character object with potentially updated inventory
+        // (other fields like level, xp, stats, hp were already updated locally)
+        if (updateData.inventory) {
+            character.inventory = updateData.inventory;
+        }
+        // Removed local zone kill update
+
+
+        // --- Prepare Payload for Client ---
+        const finalTotalXpForCurrentLevel = xpForLevel(character.level); // XP needed to *reach* current level
+        const finalXpToNextLevelBracket = xpRequiredForLevel(character.level); // XP needed *for* current level bracket
+        const finalCurrentLevelXp = character.experience - finalTotalXpForCurrentLevel; // XP earned within current level
+
+        const finalCharacterUpdatePayload: any = {
+            experience: character.experience, // Send total XP for potential debugging/other uses
+            currentLevelXp: finalCurrentLevelXp, // Send XP within the current level
+            xpToNextLevelBracket: finalXpToNextLevelBracket, // Send XP needed for the bracket
+            inventory: character.inventory ?? [], // Send updated inventory, default to [] if undefined
+        };
+        if (leveledUp) {
+            finalCharacterUpdatePayload.level = character.level;
+            finalCharacterUpdatePayload.stats = character.stats;
+            finalCharacterUpdatePayload.maxHp = character.maxHp;
+            finalCharacterUpdatePayload.currentHp = character.currentHp;
+            finalCharacterUpdatePayload.leveledUp = true; // Add a flag for the client
+            finalCharacterUpdatePayload.statIncreases = statIncreases; // Send increases info
+        }
+
 
         safeSend(ws, {
             type: 'encounter_end',
             payload: {
                 reason: `Defeated ${defeatedMonsterName}! Gained ${xpGained} XP.`,
-                characterUpdate: characterUpdatePayload,
-                loot: droppedLoot // Add loot payload
+                characterUpdate: finalCharacterUpdatePayload, // Use the final payload
+                loot: droppedLoot // Send the list of items actually dropped
             }
         });
 
@@ -233,142 +402,130 @@ async function performCombatRound(
             console.log(`Finding next monster for ${character?.name}...`);
             // Check if connection is still valid before finding next monster
             if (activeConnections.has(ws)) {
-                handleFindMonster(ws, {}, activeConnections, activeEncounters, combatIntervals);
+                // Pass the updated interval maps
+                handleFindMonster(ws, {}, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
             } else {
                 console.log(`Connection closed before finding next monster for ${character?.name}.`);
             }
-        }, 1500); // Delay before next fight (adjust as needed)
+        }, 1500); // Delay before next fight
 
-        return; // Combat round ends here
+        return; // Player attack round ends here as monster is defeated
+    }
+    // Monster survived the player's attack
+}
+
+
+// --- Monster Attack Logic ---
+async function performMonsterAttack(
+    ws: WebSocket,
+    activeConnections: ActiveConnectionsMap,
+    activeEncounters: ActiveEncountersMap,
+    playerAttackIntervals: PlayerAttackIntervalsMap,
+    monsterAttackIntervals: MonsterAttackIntervalsMap
+) {
+    const connectionInfo = activeConnections.get(ws);
+    const encounter = activeEncounters.get(ws);
+
+    // Validate connection, character selection, active encounter, and monster interval
+    if (!connectionInfo || typeof connectionInfo.selectedCharacterId !== 'string' || !encounter || !monsterAttackIntervals.has(ws)) {
+        console.log("Monster attack skipped or stopped due to invalid state.");
+        // Don't clear state here if player interval might still be valid,
+        // let the player attack check handle full cleanup if needed.
+        // However, if the monster interval *specifically* is gone, clear it.
+        const monsterInterval = monsterAttackIntervals.get(ws);
+        if (monsterInterval) {
+             clearInterval(monsterInterval);
+             monsterAttackIntervals.delete(ws);
+        }
+        // If encounter is also gone, ensure full cleanup
+        if (!activeEncounters.has(ws)) {
+            clearCombatState(ws, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+        }
+        return;
+    }
+    const characterId = connectionInfo.selectedCharacterId;
+    let character = await charactersCollection.findOne({ id: characterId });
+
+    if (!character) {
+        console.error(`Monster attack: Character ${characterId} not found in DB.`);
+        // Don't send attack_fail here, player might be disconnected
+        clearCombatState(ws, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+        return;
     }
 
-    // --- Monster Attack Phase (if monster survived) ---
-    // Basic monster damage calculation
-    const monsterDamage = Math.max(1, encounter.baseDamage); // Use base damage for now
-    const newHp = character.currentHp - monsterDamage;
-    console.log(`${encounter.name} attacks ${character.name} for ${monsterDamage} damage. ${character.name} HP: ${newHp}/${character.maxHp}`);
+    // --- Monster Attack Calculation ---
+    // TODO: Enhance damage calculation (monster stats, abilities)
+    let monsterDamage = encounter.baseDamage ?? 1; // Example base damage
+    // Sanity check: Ensure damage is at least 1 (or 0)
+    monsterDamage = Math.max(1, monsterDamage);
+    const newHp = (character.currentHp ?? 0) - monsterDamage;
+    // Enhanced Logging
+    console.log(`Monster Attack: ${encounter.name} (Instance ID: ${encounter.id}) dealt ${monsterDamage} damage to ${character.name} (ID: ${characterId}). ${character.name} HP: ${newHp}/${character.maxHp ?? '??'}`);
 
-    // Check if player is defeated
+    // --- Check if Player is Defeated ---
     if (newHp <= 0) {
-        console.log(`${character.name} defeated by ${encounter.name}`);
-        character.currentHp = 0; // Don't go below 0
-        activeEncounters.delete(ws); // End encounter
-        const existingInterval = combatIntervals.get(ws);
-        if (existingInterval) clearInterval(existingInterval); // Stop combat loop
-        combatIntervals.delete(ws);
+        // Enhanced Logging
+        console.log(`Player Death: ${character.name} (ID: ${characterId}) defeated by ${encounter.name} (Instance ID: ${encounter.id}).`);
+        const defeatedByMonsterName = encounter.name; // Store name before clearing state
+
+        // Stop combat loops and clear encounter state FIRST
+        clearCombatState(ws, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
 
         // --- Player Death Consequences ---
-        const maxHp = calculateMaxHp(character.stats); // Calculate max HP for respawn
+        character.currentHp = 0; // Set HP to 0 locally before DB update
+        const respawnHp = calculateMaxHp(character.stats ?? { strength: 0, dexterity: 0, vitality: 0, energy: 0 });
         const respawnZoneId = 'town'; // Respawn in town
+
+        // Removed duplicate respawnZoneId declaration
 
         // Update character HP and Zone in DB
         await charactersCollection.updateOne(
             { id: character.id },
-            { $set: { currentHp: maxHp, currentZoneId: respawnZoneId } }
+            { $set: { currentHp: respawnHp, currentZoneId: respawnZoneId } }
         );
 
         // Update local character object for payload
-        character.currentHp = maxHp;
+        character.currentHp = respawnHp;
         character.currentZoneId = respawnZoneId;
 
-        console.log(`${character.name} died and respawned in ${respawnZoneId} with full HP.`);
+        // Enhanced Logging
+        console.log(`Respawn: ${character.name} (ID: ${characterId}) respawned in ${respawnZoneId} with ${respawnHp} HP.`);
 
         // TODO: Add XP loss? Other penalties?
         safeSend(ws, {
             type: 'player_death',
             payload: {
-                message: `You were defeated by ${encounter.name}! Respawning in Town...`,
+                message: `You were defeated by ${defeatedByMonsterName}! Respawning in Town...`,
                 characterUpdate: {
                     currentHp: character.currentHp,
                     currentZoneId: character.currentZoneId,
-                    // Also send potentially updated level/xp/stats if penalties were applied (not implemented yet)
                     level: character.level,
                     experience: character.experience,
-                    xpToNextLevel: xpForLevel(character.level + 1) // Send XP needed after respawn
+                    // Calculate these based on the potentially updated character state after respawn
+                    currentLevelXp: character.experience - xpForLevel(character.level),
+                    xpToNextLevelBracket: xpRequiredForLevel(character.level),
                 }
-                // Send new zone data for town as well? Client might need it.
                 // zoneData: zones.get(respawnZoneId) // Consider adding this
             }
         });
-        // Encounter already ended, client needs to handle UI state change based on death message
-        return; // Combat round ends here
+        return; // Monster attack round ends here as player is defeated
     }
 
-    // If both survived, update HP in DB and send updates
+    // --- Player Survived ---
+    // Update HP in DB
     character.currentHp = newHp;
     await charactersCollection.updateOne({ id: character.id }, { $set: { currentHp: newHp } });
 
-    safeSend(ws, {
-        type: 'combat_update',
-        payload: {
-            playerDamageDealt: playerDamage,
-            monsterDamageTaken: monsterDamage,
-            monsterUpdate: { currentHp: encounter.currentHp },
-            characterUpdate: {
-                currentHp: character.currentHp
-                // No need to send xpToNextLevel on every hit, only on changes (encounter end, level up, login)
-            }
-        }
-    });
+    // Send update to client
+    const monsterAttackPayload: MonsterAttackUpdatePayload = {
+        monsterDamageTaken: monsterDamage,
+        characterUpdate: { currentHp: character.currentHp }
+    };
+    safeSend(ws, { type: 'monster_attack_update', payload: monsterAttackPayload });
 
-    // Update encounter map with new monster HP (character data is fetched fresh next round)
-    activeEncounters.set(ws, encounter);
+    // No need to update encounter map here, monster state didn't change
+    // Character state is fetched fresh next time
 }
 
-// --- Helper Functions ---
-
-// Basic XP reward calculation (adjust formula as needed)
-function calculateXpReward(monster: Monster): number {
-    // Example: Base XP + XP per level
-    const baseXp = 5;
-    const xpPerLevel = 3;
-    return baseXp + (monster.level * xpPerLevel);
-}
-
-// Generates loot based on monster's loot table
-function generateLoot(monster: Monster): Item[] {
-    const droppedItems: Item[] = [];
-    if (!monster.lootTableId) {
-        return droppedItems; // No loot table assigned
-    }
-
-    const table = lootTables.get(monster.lootTableId);
-    if (!table) {
-        console.warn(`Loot table not found: ${monster.lootTableId}`);
-        return droppedItems;
-    }
-
-    table.forEach(entry => {
-        if (Math.random() <= entry.chance) {
-            const baseItem = baseItems.get(entry.baseId);
-            if (baseItem) {
-                const newItem: Item = {
-                    ...baseItem,
-                    id: uuidv4(), // Unique instance ID
-                };
-
-                // Handle quantity randomization
-                if (entry.minQuantity !== undefined && entry.maxQuantity !== undefined) {
-                    newItem.quantity = randomInt(entry.minQuantity, entry.maxQuantity);
-                } else {
-                    // Default quantity if not specified (or for non-stackables where it might be 1)
-                    newItem.quantity = baseItem.quantity || 1;
-                }
-
-                // Ensure non-stackables don't get quantity > 1 unless intended
-                if (newItem.type !== 'potion' && newItem.type !== 'misc' && (newItem.quantity ?? 1) > 1) {
-                     // For now, just set non-stackable quantity to 1 if randomized > 1
-                     // A better system might drop multiple individual items
-                     newItem.quantity = 1;
-                }
-
-
-                droppedItems.push(newItem);
-            } else {
-                console.warn(`Base item not found for loot table entry: ${entry.baseId}`);
-            }
-        }
-    });
-
-    return droppedItems;
-}
+// Note: calculateXpReward is now defined earlier in the file.
+// Note: generateLootFromTable is imported and used directly where needed.

@@ -139,6 +139,301 @@ html, body {
     color: #fff;
 }
 
+
+/* --- Pre-Game Screen Styles (Login, Main Menu, Create, Select) --- */
+
+/* General Container for Centering */
+.login-container,
+.main-menu-container,
+.character-create-container,
+.character-select-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* Center vertically */
+    min-height: 100vh; /* Full viewport height */
+    padding: 20px;
+    background-color: #1a1a1a; /* Dark background */
+    color: #ccc;
+}
+
+/* Large Game Title */
+.game-title-large {
+    margin-bottom: 40px; /* Space below title */
+    text-align: center;
+}
+.game-title-large h1 {
+    margin: 0;
+    font-size: 3.5em; /* Larger title */
+    font-weight: bold;
+    color: #e4d00a; /* Gold color */
+    text-shadow: 0 0 10px rgba(228, 208, 10, 0.7), 0 0 20px rgba(228, 208, 10, 0.5); /* Gold glow */
+    letter-spacing: 2px;
+    position: relative;
+    display: inline-block;
+    padding: 0 30px;
+}
+/* Lines next to title */
+.game-title-large h1::before,
+.game-title-large h1::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 80px; /* Adjust length */
+    height: 2px;
+    background-color: #e4d00a; /* Gold color */
+    opacity: 0.7;
+    box-shadow: 0 0 5px rgba(228, 208, 10, 0.5);
+}
+.game-title-large h1::before { left: -60px; } /* Adjust position */
+.game-title-large h1::after { right: -60px; } /* Adjust position */
+
+/* General Button Styles */
+.button-primary,
+.button-secondary,
+.button-danger,
+.menu-buttons button {
+    display: block; /* Stack buttons in menus */
+    width: 100%; /* Full width within their container */
+    max-width: 350px; /* Max width for readability */
+    padding: 12px 20px;
+    margin: 8px auto; /* Center buttons horizontally if container allows */
+    border: 1px solid #444;
+    background-color: #2a2a2a;
+    color: #ccc;
+    font-size: 1.1em;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+
+.button-primary:hover,
+.button-secondary:hover,
+.button-danger:hover,
+.menu-buttons button:hover:not(:disabled) {
+    background-color: #383838;
+    border-color: #e4d00a; /* Gold border on hover */
+    color: #fff;
+    box-shadow: 0 0 8px rgba(228, 208, 10, 0.4);
+}
+
+.button-primary {
+    background-color: #3a3a3a; /* Slightly different base for primary */
+    border-color: #555;
+}
+.button-primary:hover {
+     background-color: #4a4a4a;
+}
+
+.button-danger {
+    border-color: #7c3e3e;
+    background-color: #5c1e1e;
+}
+.button-danger:hover {
+    border-color: #c0392b; /* Brighter red border */
+    background-color: #7c3e3e;
+    box-shadow: 0 0 8px rgba(192, 57, 43, 0.4);
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+    border-color: #444;
+}
+
+/* Input Styles */
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px 12px;
+    background-color: #111; /* Very dark input background */
+    border: 1px solid #444;
+    color: #eee;
+    border-radius: 3px;
+    font-size: 1em;
+    margin-top: 4px; /* Space below label */
+}
+input[type="text"]:focus,
+input[type="password"]:focus {
+    outline: none;
+    border-color: #e4d00a; /* Gold focus border */
+    box-shadow: 0 0 5px rgba(228, 208, 10, 0.3);
+}
+
+/* Login Screen Specific */
+.login-container .login-form {
+    width: 100%;
+    max-width: 400px; /* Limit form width */
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Space between form groups */
+}
+.login-form .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #aaa;
+    font-size: 0.9em;
+}
+.login-form .form-actions {
+    display: flex;
+    gap: 10px; /* Space between login/register buttons */
+    margin-top: 10px;
+}
+.login-form .form-actions button {
+    flex: 1; /* Make buttons share space */
+    margin: 0; /* Override default button margin */
+}
+.login-form .auth-status {
+    text-align: center;
+    margin-top: 15px;
+    min-height: 1.2em;
+    color: #aaa;
+}
+
+/* Main Menu Specific */
+.main-menu-container .menu-buttons {
+    width: 100%;
+    max-width: 350px; /* Consistent width with buttons */
+}
+
+/* Character Create Specific */
+.character-create-container .creation-form {
+    width: 100%;
+    max-width: 800px; /* Wider container for grid */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+.character-create-container .name-input-section {
+    width: 100%;
+    max-width: 400px; /* Limit name input width */
+    text-align: center;
+}
+.character-create-container .name-input-section label {
+    display: block;
+    margin-bottom: 8px;
+    color: #aaa;
+    font-size: 1em;
+}
+.class-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+}
+.class-card {
+    background-color: #0c0c0c;
+    border: 1px solid #333;
+    padding: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.class-card:hover {
+    border-color: #555;
+}
+.class-card.selected {
+    border-color: #e4d00a; /* Gold border for selected */
+    box-shadow: 0 0 10px rgba(228, 208, 10, 0.5);
+}
+.class-card h4 {
+    color: #e4d00a;
+    margin: 0 0 8px 0;
+    font-size: 1.2em;
+}
+.class-card .class-description {
+    font-size: 0.9em;
+    color: #aaa;
+    margin-bottom: 10px;
+    min-height: 3em; /* Reserve space */
+}
+.class-card .class-stats {
+    font-size: 0.85em;
+    color: #bbb;
+}
+.class-card .class-stats p {
+    margin: 2px 0;
+}
+.character-create-container .creation-actions {
+    display: flex;
+    justify-content: space-between; /* Space out Back and Create */
+    width: 100%;
+    max-width: 500px; /* Limit action button width */
+    margin-top: 20px;
+}
+.character-create-container .creation-actions button {
+    width: auto; /* Allow buttons to size naturally */
+    padding: 12px 30px; /* Adjust padding */
+    margin: 0;
+}
+
+/* Character Select Specific */
+.character-select-container #character-list-section {
+    width: 100%;
+    max-width: 600px; /* Limit list width */
+    margin-bottom: 30px;
+}
+.character-select-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #282828;
+    border-radius: 4px;
+    background-color: #0c0c0c;
+    max-height: 60vh; /* Limit height */
+    overflow-y: auto;
+}
+.character-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #282828;
+}
+.character-list-item:last-child {
+    border-bottom: none;
+}
+.character-info {
+    flex-grow: 1;
+    margin-right: 15px;
+}
+.character-info .char-name {
+    display: block;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #eee;
+    margin-bottom: 3px;
+}
+.character-info .char-details {
+    font-size: 0.9em;
+    color: #aaa;
+    text-transform: capitalize;
+}
+.character-actions {
+    display: flex;
+    gap: 10px; /* Space between Load/Delete */
+    flex-shrink: 0; /* Prevent buttons shrinking */
+}
+.character-actions button {
+    width: auto;
+    padding: 8px 15px; /* Smaller buttons */
+    font-size: 0.9em;
+    margin: 0;
+}
+.no-characters-message {
+    text-align: center;
+    padding: 30px;
+    color: #aaa;
+}
+.character-select-container .navigation-actions {
+    width: 100%;
+    max-width: 350px; /* Match main menu button width */
+}
+
 /* --- Player Status Bars --- */
 .player-status-bars {
     display: flex;
@@ -305,8 +600,41 @@ html, body {
     font-size: 0.9em;
     color: #888;
 }
-.zone-item.locked .zone-button i.fa-lock {
-    color: #c0392b; /* Brighter Red lock */
+.zone-item.locked .zone-button i.fa-lock,
+.zone-item.level-locked .zone-button i.fa-lock,
+.zone-item.next-to-unlock .zone-button i.fa-lock {
+    color: #c0392b; /* Brighter Red lock for all locked states */
+}
+
+/* Specific state styling */
+.zone-item.unlocked .zone-button {
+    /* Default unlocked, travelable state (if connected) */
+    /* Hover effect already defined */
+}
+
+.zone-item.locked .zone-button {
+    color: #777; /* Dim text for level lock */
+    background-color: #0a0a0a;
+    border-color: #222;
+    opacity: 0.6;
+}
+.zone-item.locked .zone-button:hover {
+     background-color: #0a0a0a; /* No hover change */
+     border-color: #222;
+     color: #777;
+}
+/* Removed next-to-unlock, level-locked specific styles */
+
+.zone-item.inaccessible .zone-button {
+    color: #444; /* Darkest text for unconnected */
+    background-color: #050505;
+    border-color: #111;
+    opacity: 0.4;
+}
+.zone-item.inaccessible .zone-button:hover {
+    background-color: #050505; /* No hover change */
+    border-color: #111;
+    color: #444;
 }
 
 /* Optional: Style for the progress text inside the button */
@@ -406,30 +734,114 @@ html, body {
 
 #action-bar {
     display: flex;
-    justify-content: center;
-    padding: 8px;
+    justify-content: space-between; /* Space out potions and skills */
+    align-items: center; /* Vertically align items */
+    padding: 8px 15px; /* Add some horizontal padding */
     background-color: #1a1a1a;
     border-top: 1px solid #282828;
     flex-shrink: 0;
 }
-#action-bar button {
-    width: 40px;
-    height: 40px;
+
+.action-bar-potions,
+.action-bar-skills {
+    display: flex;
+    gap: 8px; /* Space between buttons */
+}
+
+/* Individual action button base style */
+.action-button {
+    width: 45px; /* Slightly larger buttons */
+    height: 45px;
     background-color: #222;
     border: 1px solid #444;
-    color: #aaa;
-    font-size: 1.2em;
-    margin: 0 4px;
+    color: #ccc; /* Lighter default color */
+    font-size: 1.1em; /* Adjust font size */
     border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    position: relative; /* For quantity positioning */
+    font-weight: bold;
 }
-#action-bar button:hover {
-    background-color: #333;
-    border-color: #555;
+
+.action-button:hover:not(:disabled) {
+    background-color: #383838;
+    border-color: #666;
     color: #fff;
 }
+
+.action-button:disabled {
+    background-color: #1f1f1f;
+    border-color: #333;
+    color: #555;
+    cursor: not-allowed;
+}
+
+/* Potion specific */
+.potion-button .potion-quantity {
+    position: absolute;
+    bottom: 2px;
+    right: 3px;
+    font-size: 0.7em;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 1px 3px;
+    border-radius: 2px;
+    line-height: 1;
+}
+
+/* Skill specific (if needed later) */
+.skill-button {
+    /* Add specific skill styles if needed */
+}
+
+/* Potion Cooldown Styles */
+.action-button.on-cooldown {
+    /* Optionally change background or border slightly when on CD */
+    /* background-color: #2f2f2f; */
+}
+
+.cooldown-overlay {
+    position: absolute;
+    bottom: 0; /* Start from the bottom */
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent overlay */
+    transition: height 0.1s linear; /* Smooth transition for height change */
+    pointer-events: none; /* Allow clicks to pass through */
+    z-index: 1; /* Below button content */
+    border-radius: 0 0 2px 2px; /* Match button bottom radius */
+}
+
+.action-button .button-content {
+    position: relative; /* Ensure content is above overlay */
+    z-index: 2;
+}
+
+/* --- Auto Equip Panel (in Inventory Modal) --- */
+.auto-equip-container {
+    margin-top: 15px; /* Space above the panel */
+    flex-shrink: 0; /* Prevent shrinking */
+}
+
+.auto-equip-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Responsive grid for buttons */
+    gap: 8px; /* Space between buttons */
+    margin-top: 5px;
+}
+
+.auto-equip-button {
+    padding: 6px 10px; /* Smaller padding */
+    font-size: 0.9em;
+    text-transform: capitalize; /* Capitalize stat names */
+    width: auto; /* Allow natural width */
+    max-width: none; /* Remove max-width from base button style */
+    margin: 0; /* Remove margin from base button style */
+}
+
 
 /* --- Right Panel --- */
 #right-panel-tabs {
@@ -688,63 +1100,310 @@ html, body {
 
 
 /* --- Inventory Panel Styles --- */
+/* Updated styles for the new layout */
+
 .inventory-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* Space between sections */
+    display: flex; /* Use flexbox for side-by-side layout */
+    gap: 15px; /* Space between inventory and equipment areas */
     padding: 10px;
     height: 100%; /* Ensure it tries to fill */
+    overflow: hidden; /* Prevent panel itself from scrolling, inner areas will */
 }
 
-.inventory-grid, .equipment-slots {
-    background-color: #111; /* Section background */
+.inventory-main-area {
+    flex: 2; /* Takes up ~2/3 of the space */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent this area from overflowing */
+    min-width: 0; /* Prevent flex item from overflowing container */
+}
+
+.equipment-area {
+    flex: 1; /* Takes up ~1/3 of the space */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent this area from overflowing */
+    min-width: 0; /* Prevent flex item from overflowing container */
+}
+
+/* Container for the grid itself, allows title + grid */
+.inventory-grid-container {
+    background-color: #111;
     padding: 10px;
     border: 1px solid #282828;
     border-radius: 3px;
+    flex-grow: 1; /* Allow container to fill main area */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Hide overflow */
 }
 
-.inventory-grid h4, .equipment-slots h4 {
-    color: #e4d00a; /* Gold heading */
+/* Header within the grid container (title + gold) */
+.inventory-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.inventory-header h4 {
+    color: #e4d00a;
+    font-size: 1em;
+    margin: 0; /* Remove default margin */
+}
+
+/* Moved Gold Display Style */
+.inventory-header .gold-display {
+    color: #e4d00a; /* Gold color */
+    font-weight: bold;
+    font-size: 0.9em;
+    /* Remove background/border from previous location */
+}
+
+
+/* The actual grid */
+.inventory-grid {
+    display: grid;
+    /* Fixed 25 columns, adjust minmax for desired minimum size */
+    grid-template-columns: repeat(25, minmax(30px, 1fr));
+    /* Fixed 6 rows */
+    grid-template-rows: repeat(6, 30px); /* Adjust size as needed */
+    gap: 4px; /* Slightly smaller gap */
+    overflow: hidden; /* Prevent scrolling within the grid itself */
+    /* flex-grow: 1; /* Remove flex-grow as rows are fixed */
+    padding: 2px; /* Minimal padding */
+    /* Ensure container handles scrolling if needed, not the grid */
+}
+
+/* Individual item slots in the grid */
+.inventory-grid-item {
+    /* width/height will be determined by grid-template-rows/columns */
+    border: 1px solid #333;
+    background-color: #222;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9em;
+    font-weight: bold;
+    color: #ccc;
+    cursor: default;
+    transition: background-color 0.2s, border-color 0.2s;
+    overflow: hidden; /* Hide text overflow */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    user-select: none; /* Prevent text selection */
+    position: relative; /* Needed for quantity */
+}
+
+.inventory-grid-item:hover {
+    background-color: #3a3a3a;
+    border-color: #555;
+}
+
+.inventory-grid-item[style*="cursor: pointer"]:hover { /* Specific hover for clickable items */
+     border-color: #e4d00a; /* Gold border */
+}
+
+/* --- NEW: Rarity Border Styles --- */
+.inventory-grid-item.rarity-common { border-color: #ffffff; }
+.inventory-grid-item.rarity-magic { border-color: #6888ff; }
+.inventory-grid-item.rarity-rare { border-color: #ffff00; }
+.inventory-grid-item.rarity-unique { border-color: #a5694f; }
+.inventory-grid-item.rarity-legendary { border-color: #af00ff; }
+
+/* --- NEW: Item Quantity Style --- */
+.item-quantity {
+    position: absolute;
+    bottom: 1px;
+    right: 2px;
+    font-size: 0.75em;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 0px 3px;
+    border-radius: 2px;
+    line-height: 1;
+    font-weight: normal;
+}
+
+
+/* Equipment section */
+.equipment-slots-container {
+    background-color: #111;
+    padding: 10px;
+    border: 1px solid #282828;
+    border-radius: 3px;
+    flex-grow: 1; /* Allow container to fill equipment area */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Hide overflow */
+}
+
+.equipment-slots-container h4 {
+    color: #e4d00a;
+    font-size: 1em;
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.equipment-slots-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    overflow-y: auto; /* Allow list to scroll */
+    flex-grow: 1;
+}
+
+.equipment-slots-container li {
+    padding: 5px 8px; /* Slightly more padding */
+    margin-bottom: 3px;
+    border-radius: 2px;
+    cursor: default;
+    font-size: 0.9em;
+    color: #bbb;
+    transition: background-color 0.2s;
+    white-space: nowrap; /* Prevent long item names wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none; /* Prevent text selection */
+}
+
+.equipment-slots-container li:hover {
+    background-color: #2a2a2a;
+    color: #eee;
+}
+.equipment-slots-container li[style*="cursor: pointer"] { /* Style clickable slots */
+    cursor: pointer;
+}
+.equipment-slots-container li[style*="cursor: pointer"]:hover {
+    /* border: 1px solid #e4d00a; /* Add border or different bg? */
+    background-color: #3a3a3a;
+}
+
+
+.equipment-slots-container li strong {
+    color: #888;
+    display: inline-block;
+    width: 75px; /* Adjust alignment */
+    text-transform: capitalize;
+    margin-right: 5px;
+}
+
+/* Potion Slots Section */
+.potion-slots-container {
+    background-color: #111;
+    padding: 10px;
+    border: 1px solid #282828;
+    border-radius: 3px;
+    margin-top: 15px; /* Space above potion slots */
+    flex-shrink: 0; /* Don't shrink */
+}
+
+.potion-slots-container h4 {
+    color: #e4d00a;
     font-size: 1em;
     margin: 0 0 10px 0;
     padding-bottom: 5px;
     border-bottom: 1px solid #333;
 }
 
-.inventory-grid ul, .equipment-slots ul {
+.potion-slot {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.potion-slot label {
+    color: #888;
+    width: 50px; /* Align labels */
+    margin-right: 5px;
+    font-size: 0.9em;
+}
+
+.potion-slot select {
+    flex-grow: 1;
+    padding: 4px 6px;
+    background-color: #222;
+    border: 1px solid #444;
+    color: #ccc;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+.potion-slot select:focus {
+    outline: none;
+    border-color: #e4d00a;
+}
+
+
+/* Ground Loot Section */
+.ground-loot-container {
+    background-color: #111;
+    padding: 10px;
+    border: 1px solid #282828;
+    border-radius: 3px;
+    margin-top: 15px; /* Space above ground loot */
+    flex-shrink: 0; /* Prevent shrinking, fixed height based on content */
+    max-height: 180px; /* Limit height, approx 5-6 items + title */
+    display: flex;
+    flex-direction: column;
+}
+
+.ground-loot-container h4 {
+    color: #e4d00a;
+    font-size: 1em;
+    margin: 0 0 10px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.ground-loot-list {
     list-style: none;
     padding: 0;
     margin: 0;
+    overflow-y: auto; /* Allow scrolling if more than 10 items */
+    flex-grow: 1;
 }
 
-.inventory-grid li, .equipment-slots li {
-    padding: 4px 6px;
-    margin-bottom: 2px;
+.ground-loot-item {
+    padding: 4px 8px;
+    margin-bottom: 3px;
     border-radius: 2px;
-    cursor: default; /* Default cursor, change if clickable */
+    cursor: pointer; /* Always clickable */
     font-size: 0.9em;
     color: #bbb;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
 }
 
-.inventory-grid li:hover, .equipment-slots li:hover {
-    background-color: #2a2a2a;
+.ground-loot-item:hover {
+    background-color: #3a3a3a;
     color: #eee;
 }
 
-.equipment-slots li strong {
-    color: #888; /* Dimmer label for slot name */
-    display: inline-block;
-    width: 70px; /* Align slot names */
-    text-transform: capitalize;
+.ground-loot-empty {
+    padding: 4px 8px;
+    font-size: 0.9em;
+    color: #666; /* Dim text for empty message */
+    font-style: italic;
 }
+
 
 /* --- Item Tooltip --- */
+/* Tooltip border/color is now handled inline via style attribute in InventoryPanel.tsx */
 .item-tooltip {
     position: fixed; /* Use fixed to overlay everything */
-    background: #222; /* Darker tooltip background */
-    color: #eee;
-    border: 1px solid #555;
+    /* background: #222; /* Darker tooltip background */ /* Handled inline */
+    /* color: #eee; */ /* Handled inline */
+    /* border: 1px solid #555; */ /* Handled inline */
     padding: 10px 12px;
     border-radius: 4px;
     z-index: 1000; /* Ensure it's on top */
@@ -754,32 +1413,36 @@ html, body {
     pointer-events: none; /* Prevent tooltip from blocking mouse events */
 }
 
+/* Styles for elements INSIDE the tooltip are still needed */
 .item-tooltip h5 {
     margin: 0 0 5px 0;
-    color: #e4d00a; /* Gold item name */
+    /* color: #e4d00a; /* Gold item name */ /* Handled inline */
     font-size: 1.1em;
+    padding-bottom: 5px; /* Add padding below name */
+    /* border-bottom: 1px solid #444; */ /* Handled inline */
 }
 
 .item-tooltip p {
     margin: 3px 0;
     line-height: 1.4;
+    /* color: #eee; */ /* Handled inline */
 }
 
 .item-tooltip em {
-    color: #888;
+    /* color: #888; */ /* Handled inline */
     font-style: italic;
     font-size: 0.9em;
 }
 
 .item-tooltip hr {
     border: none;
-    border-top: 1px solid #444;
+    /* border-top: 1px solid #444; */ /* Handled inline */
     margin: 8px 0;
 }
 
 .item-tooltip h6 {
     margin: 5px 0;
-    color: #aaa;
+    /* color: #aaa; */ /* Handled inline */
     font-size: 1em;
 }
 
@@ -791,7 +1454,65 @@ html, body {
 
 .item-tooltip li {
     margin-bottom: 2px;
-    color: #ccc;
+    /* color: #ccc; */ /* Handled inline */
 }
 
 /* Specific colors for comparison are handled inline via style attribute */
+
+
+/* --- Modal Styles --- */
+.modal-overlay {
+    position: fixed; /* Cover the entire viewport */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75); /* Semi-transparent black */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000; /* Ensure it's above other content */
+}
+
+.modal-content {
+    background-color: #0c0c0c; /* Match panel background */
+    border: 1px solid #282828; /* Match panel border */
+    border-radius: 5px;
+    padding: 20px;
+    position: relative; /* For positioning the close button */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    max-height: 90vh; /* Limit height */
+    overflow: hidden; /* Prevent content spilling before inner scroll */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Specific styles for the inventory modal */
+.inventory-modal {
+    width: 80%; /* Cover most of the screen width */
+    height: 85%; /* Cover most of the screen height */
+}
+
+/* Make the InventoryPanel inside the modal scrollable */
+.inventory-modal .inventory-panel {
+    overflow-y: auto; /* Allow scrolling within the panel */
+    flex-grow: 1; /* Allow it to take up space */
+    padding-right: 10px; /* Add padding for scrollbar */
+}
+
+
+.modal-close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 1.8em;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+.modal-close-button:hover {
+    color: #fff;
+}

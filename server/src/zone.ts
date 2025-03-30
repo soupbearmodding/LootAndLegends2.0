@@ -1,9 +1,38 @@
 import WebSocket from 'ws';
 import { charactersCollection } from './db.js';
 import { safeSend } from './utils.js';
-import { ActiveConnectionsMap, ActiveEncountersMap, CombatIntervalsMap } from './types.js';
+import { ActiveConnectionsMap, ActiveEncountersMap, PlayerAttackIntervalsMap, MonsterAttackIntervalsMap } from './types.js'; // Import updated types
 import { zones, calculateMaxHp } from './gameData.js'; // Import calculateMaxHp
 import { handleFindMonster } from './combat.js'; // Import from combat module
+import { Character, Zone } from './types.js'; // Import Character and Zone types
+
+// --- Zone Status Calculation ---
+
+// Simplified status: only locked or unlocked based on level
+export type ZoneStatus = 'unlocked' | 'locked';
+
+// Simplified interface, removing kill-related fields
+export interface ZoneWithStatus extends Zone {
+    status: ZoneStatus;
+}
+
+/**
+ * Calculates the unlock status for all zones based *only* on character level.
+ * @param character The character object.
+ * @returns An array of ZoneWithStatus objects.
+ */
+export function getZoneStatuses(character: Character): ZoneWithStatus[] {
+    const allZonesArray = Array.from(zones.values());
+
+    return allZonesArray.map(zone => {
+        const isUnlocked = character.level >= zone.requiredLevel;
+        return {
+            ...zone,
+            status: isUnlocked ? 'unlocked' : 'locked',
+        };
+    });
+}
+
 
 // --- Zone Handlers ---
 
@@ -12,7 +41,8 @@ export async function handleTravel(
     payload: any,
     activeConnections: ActiveConnectionsMap,
     activeEncounters: ActiveEncountersMap,
-    combatIntervals: CombatIntervalsMap
+    playerAttackIntervals: PlayerAttackIntervalsMap, // Changed
+    monsterAttackIntervals: MonsterAttackIntervalsMap // Added
 ) {
     const connectionInfo = activeConnections.get(ws);
     if (!connectionInfo || !connectionInfo.userId || !connectionInfo.selectedCharacterId) {
@@ -29,14 +59,19 @@ export async function handleTravel(
         return;
     }
 
-    if (!payload || typeof payload.targetZoneId !== 'string') {
-        safeSend(ws, { type: 'travel_fail', payload: 'Invalid travel data' });
+    // --- Stricter Payload Validation ---
+    if (typeof payload !== 'object' || payload === null ||
+        typeof payload.targetZoneId !== 'string' || payload.targetZoneId.trim() === '')
+    {
+        safeSend(ws, { type: 'travel_fail', payload: 'Invalid payload format: Requires non-empty targetZoneId string.' });
+        console.warn(`Invalid travel payload format received: ${JSON.stringify(payload)}`);
         return;
     }
-
     const targetZoneId = payload.targetZoneId;
+    // --- End Validation ---
+
     const currentZone = zones.get(character.currentZoneId); // Use static zone data for checks
-    const targetZone = zones.get(targetZoneId);
+    const targetZone = zones.get(targetZoneId); // Use validated targetZoneId
 
     if (!currentZone || !targetZone) {
         safeSend(ws, { type: 'travel_fail', payload: 'Invalid current or target zone' });
@@ -55,17 +90,8 @@ export async function handleTravel(
         return;
     }
 
-    // --- Check Zone Unlock Requirement ---
-    if (targetZone.killsToUnlock && targetZone.killsToUnlock > 0) {
-        const killsInPreviousZone = character.zoneKills[character.currentZoneId] || 0;
-        if (killsInPreviousZone < targetZone.killsToUnlock) {
-            safeSend(ws, {
-                type: 'travel_fail',
-                payload: `Requires ${targetZone.killsToUnlock} kills in ${currentZone.name} to enter ${targetZone.name}. You have ${killsInPreviousZone}.`
-            });
-            return;
-        }
-    }
+    // --- Check Zone Unlock Requirement (REMOVED) ---
+    // Kill requirement check is removed, only level check remains above.
 
     try {
         // Update character's current zone in DB
@@ -106,12 +132,18 @@ export async function handleTravel(
             }
         });
 
-        // Clear any previous encounter and combat interval when moving zones
-        const existingInterval = combatIntervals.get(ws);
-        if (existingInterval) {
-            clearInterval(existingInterval);
-            combatIntervals.delete(ws);
-            console.log(`Cleared combat interval for ${character.name} due to zone travel.`);
+        // Clear any previous encounter and combat intervals when moving zones
+        const playerInterval = playerAttackIntervals.get(ws);
+        if (playerInterval) {
+            clearInterval(playerInterval);
+            playerAttackIntervals.delete(ws);
+            console.log(`Cleared player attack interval for ${character.name} due to zone travel.`);
+        }
+        const monsterInterval = monsterAttackIntervals.get(ws);
+        if (monsterInterval) {
+            clearInterval(monsterInterval);
+            monsterAttackIntervals.delete(ws);
+            console.log(`Cleared monster attack interval for ${character.name} due to zone travel.`);
         }
         if (activeEncounters.has(ws)) {
             activeEncounters.delete(ws);
@@ -125,8 +157,8 @@ export async function handleTravel(
             console.log(`Entering combat zone ${targetZone.name}, finding monster...`);
             // Use a small delay to ensure travel_success message is processed first by client
             setTimeout(() => {
-                // Pass the necessary maps to handleFindMonster
-                handleFindMonster(ws, {}, activeConnections, activeEncounters, combatIntervals);
+                // Pass the necessary maps to handleFindMonster (update interval maps)
+                handleFindMonster(ws, {}, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
             }, 100); // 100ms delay, adjust if needed
         }
 

@@ -1,117 +1,68 @@
-import React, { useState } from 'react';
+import React from 'react';
+
+// Define a basic type for the character list locally
+interface CharacterSummary {
+    id: string;
+    name: string;
+    class: string; // Assuming class is just a string ID/name here
+    level: number;
+}
 
 interface CharacterSelectScreenProps {
-    username: string | null;
-    characters: any[]; // Consider defining a proper Character type later
+    characters: CharacterSummary[];
     onSelect: (characterId: string) => void;
-    onCreate: (name: string, classId: string) => void;
-    onLogout: () => void;
+    onDelete: (characterId: string) => void; // Add delete handler prop
+    onBack: () => void; // Add back handler prop
 }
 
 const CharacterSelectScreen: React.FC<CharacterSelectScreenProps> = ({
-    username,
     characters,
     onSelect,
-    onCreate,
-    onLogout
+    onDelete,
+    onBack
 }) => {
-    const [charName, setCharName] = useState('');
-    const [charClass, setCharClass] = useState('warrior'); // Default class
-    const [createStatus, setCreateStatus] = useState('');
-
-    const handleCreateClick = () => {
-        const name = charName.trim();
-        if (!name || name.length < 3 || name.length > 16) {
-            setCreateStatus('Invalid character name (3-16 chars).');
-            return;
-        }
-        if (!charClass) {
-            setCreateStatus('Please select a class.');
-            return;
-        }
-        setCreateStatus('Creating character...');
-        onCreate(name, charClass);
-        // Status will be updated by App component based on server response
-        // Optionally clear form fields here or on success message from App
-        // setCharName('');
-        // setCharClass('warrior');
-    };
 
     return (
-        <div className="auth-container"> {/* Reusing auth-container styling */}
-            <div id="character-screen">
-                <h2>Welcome, {username || 'Player'}!</h2>
+        <div className="character-select-container"> {/* Use a new specific class */}
+            <div className="game-title-large">
+                <h1>LOAD GAME</h1> {/* Updated title */}
+            </div>
 
-                <div id="character-list">
-                    <h3>Select Character</h3>
-                    {characters.length > 0 ? (
-                        <ul>
-                            {characters.map(c => {
-                                const className = c.class?.name || 'Unknown Class';
-                                const level = c.level || 1;
-                                return (
-                                    <li key={c.id}>
-                                        <span>{c.name} ({className}) - Lvl {level}</span>
-                                        <button
-                                            data-char-id={c.id}
-                                            className="select-char-button"
-                                            onClick={() => onSelect(c.id)}
-                                        >
-                                            Select
-                                        </button>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    ) : (
-                        <p>No characters found.</p>
-                    )}
-                </div>
+            <div id="character-list-section"> {/* Wrapper for the list */}
+                {characters.length > 0 ? (
+                    <ul className="character-select-list"> {/* Use a specific class for styling */}
+                        {characters.map(c => (
+                            <li key={c.id} className="character-list-item">
+                                <div className="character-info">
+                                    <span className="char-name">{c.name}</span>
+                                    <span className="char-details">Lvl {c.level} {c.class}</span> {/* Simplified details */}
+                                </div>
+                                <div className="character-actions">
+                                    <button
+                                        className="button-primary" // Style as primary action
+                                        onClick={() => onSelect(c.id)}
+                                    >
+                                        Load
+                                    </button>
+                                    <button
+                                        className="button-danger" // Style for delete action
+                                        onClick={() => onDelete(c.id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="no-characters-message">No characters found. Go back to create one!</p>
+                )}
+            </div>
 
-                <hr />
+            {/* Removed character creation form */}
 
-                <div id="create-char-form">
-                    <h3>Create New Character</h3>
-                    <div>
-                        <label htmlFor="char-name">Name:</label>
-                        <input
-                            type="text"
-                            id="char-name"
-                            name="char-name"
-                            value={charName}
-                            onChange={(e) => setCharName(e.target.value)}
-                            required
-                            minLength={3}
-                            maxLength={16}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="char-class">Class:</label>
-                        <select
-                            id="char-class"
-                            name="char-class"
-                            value={charClass}
-                            onChange={(e) => setCharClass(e.target.value)}
-                        >
-                            {/* TODO: Fetch class list from game data instead of hardcoding */}
-                            <option value="warrior">Warrior</option>
-                            <option value="rogue">Rogue</option>
-                            <option value="sorcerer">Sorcerer</option>
-                            <option value="monk">Monk</option>
-                            <option value="barbarian">Barbarian</option>
-                        </select>
-                    </div>
-                    <div>
-                        <button id="create-char-button" onClick={handleCreateClick}>
-                            Create Character
-                        </button>
-                    </div>
-                    <p id="create-char-status" style={{ color: createStatus.includes('Invalid') || createStatus.includes('Please select') ? 'lightcoral' : '#aaa' }}>
-                        {createStatus || '\u00A0'}
-                    </p>
-                </div>
-
-                <button id="logout-button" onClick={onLogout}>Logout</button>
+            <div className="navigation-actions"> {/* Wrapper for back button */}
+                <button className="button-secondary" onClick={onBack}>Back</button> {/* Back button */}
             </div>
         </div>
     );
