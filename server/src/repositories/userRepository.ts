@@ -1,6 +1,14 @@
-import { Collection, UpdateFilter } from 'mongodb';
-import { usersCollection } from '../db.js'; // Assuming db.ts exports the collection
+import { Collection, UpdateFilter } from 'mongodb'; // Note: This might be Collection or MockCollection now
+import { usersCollection } from '../db.js'; // This now exports either Mongo Collection or JSON MockCollection
 import { User } from '../types.js';
+
+// --- JSON DB Fallback Comment ---
+// This repository uses the abstracted 'usersCollection' from db.ts.
+// This collection could be either a MongoDB collection or a JSON mock.
+// No specific changes are needed here to support the fallback, but if
+// removing the fallback system, ensure db.ts only exports the real
+// MongoDB collection and remove related files/logic as noted in jsonDb.ts.
+// ---------------------------------
 
 /**
  * Finds a single user by their unique ID.

@@ -1,6 +1,14 @@
-import { Collection, UpdateFilter, FindOptions } from 'mongodb';
-import { charactersCollection } from '../db.js'; // Assuming db.ts exports the collection
+import { Collection, UpdateFilter, FindOptions } from 'mongodb'; // Note: This might be Collection or MockCollection now
+import { charactersCollection } from '../db.js'; // This now exports either Mongo Collection or JSON MockCollection
 import { Character } from '../types.js';
+
+// --- JSON DB Fallback Comment ---
+// This repository uses the abstracted 'charactersCollection' from db.ts.
+// This collection could be either a MongoDB collection or a JSON mock.
+// No specific changes are needed here to support the fallback, but if
+// removing the fallback system, ensure db.ts only exports the real
+// MongoDB collection and remove related files/logic as noted in jsonDb.ts.
+// ---------------------------------
 
 /**
  * Finds a single character by its unique ID.

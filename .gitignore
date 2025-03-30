@@ -9,6 +9,7 @@
 # Server dependencies and build artifacts
 /server/node_modules/
 /server/dist/
+/server/data/ # Ignore JSON DB fallback data
 
 # Common build directories
 /dist/
