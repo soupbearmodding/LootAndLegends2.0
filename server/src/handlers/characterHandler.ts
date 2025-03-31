@@ -15,10 +15,12 @@ import { Character, SelectCharacterResult, IUserRepository, ICharacterRepository
 // Helper function to get user ID (handles dev skip logic internally for now)
 // Returns null if not logged in and not dev skip
 function getUserId(ws: WebSocket, payload: any): string | null {
-    let userId: string | undefined;
     let connectionInfo = activeConnections.get(ws);
+    let userId: string | undefined = connectionInfo?.userId; // Assign userId from connectionInfo
 
-    if (!userId) { // Should not happen if logic is correct
+    // Add a check for connectionInfo itself for robustness
+    if (!connectionInfo || !userId) {
+        console.error('Error: Could not determine userId from connection.'); // Added server log
         send(ws, { type: 'error', payload: 'User ID could not be determined.' });
         return null;
     }
