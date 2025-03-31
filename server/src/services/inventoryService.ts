@@ -536,12 +536,12 @@ export class InventoryService {
      * Adds an item instance to the character's inventory. Handles stacking.
      * @param characterId The ID of the character.
      * @param itemToAdd The Item object instance to add.
-     * @returns InventoryServiceResult indicating success/failure. Character data is not returned here as CombatService handles the final update.
+     * @returns InventoryServiceResult indicating success/failure and the updated character.
      */
-    async addItemToInventory(characterId: string, itemToAdd: Item): Promise<Omit<InventoryServiceResult, 'character'>> {
+    async addItemToInventory(characterId: string, itemToAdd: Item): Promise<InventoryServiceResult> { // Changed return type
         // Basic validation
         if (!itemToAdd || !itemToAdd.id || !itemToAdd.baseId) {
-            return { success: false, message: 'Invalid item data provided.' };
+            return { success: false, message: 'Invalid item data provided.' }; // Kept Omit<..., 'character'> implicitly
         }
 
         try {
@@ -582,15 +582,27 @@ export class InventoryService {
             // --- Update Character ---
             if (itemAdded) {
                 await this.characterRepository.update(characterId, { inventory: currentInventory });
-                return { success: true, message: 'Item added to inventory.' };
+
+                // Fetch updated character to return
+                const updatedCharacterRaw = await this.characterRepository.findById(characterId);
+                if (!updatedCharacterRaw) {
+                     console.error(`InventoryService: Failed to fetch character ${characterId} after adding item update.`);
+                     // Return success but without character data if fetch fails post-update
+                     return { success: true, message: 'Item added, but failed to retrieve updated character.' };
+                }
+                const finalCharacterData = calculateCharacterStats(updatedCharacterRaw); // Recalculate stats
+
+                return { success: true, message: 'Item added to inventory.', character: finalCharacterData }; // Return updated character
             } else {
                 // This case should ideally not be reached if inventory space is handled
                 console.error(`InventoryService: Failed to add item ${itemToAdd.name} for character ${characterId} - potentially inventory full or logic error.`);
+                // Return failure without character data
                 return { success: false, message: 'Could not add item to inventory (possibly full).' };
             }
 
         } catch (error) {
             console.error(`Error in InventoryService.addItemToInventory for character ${characterId}, item ${itemToAdd.name} (ID: ${itemToAdd.id}):`, error);
+            // Return failure without character data
             return { success: false, message: 'An internal server error occurred while adding the item to inventory.' };
         }
     }

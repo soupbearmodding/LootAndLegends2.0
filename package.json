@@ -2,5 +2,8 @@
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
     "bcrypt": "^5.1.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.17"
   }
 }

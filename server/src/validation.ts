@@ -1,5 +1,5 @@
-import { zones, monsters, characterClasses, lootTables } from './gameData.js';
-import { items, prefixes, suffixes } from './lootData.js';
+import { zones, monsters, characterClasses } from './gameData.js';
+import { items, prefixes, suffixes, lootTables } from './lootData.js';
 import { Zone, Monster, Item, CharacterClass, ValidationRule, ValidationSchema } from './types.js';
 
 // Basic validation function to check if a value is a non-negative number
@@ -84,7 +84,7 @@ function validateCharacterClasses(): string[] {
             if (!isNonNegativeNumber(charClass.baseStats.energy)) errors.push(`Class "${id}": Invalid baseStats.energy "${charClass.baseStats.energy}".`);
         }
     }
-    return errors; // Added missing return statement
+    return errors; // Corrected: Added missing return statement
 }
 
 // Validate Item data (Basic checks)
@@ -130,39 +130,80 @@ function validateItems(): string[] {
 function validateLootTables(): string[] {
     const errors: string[] = [];
     console.log(`Validating ${lootTables.size} loot tables...`);
-    for (const [id, entries] of lootTables.entries()) {
-        if (!entries) {
+    for (const [id, lootTable] of lootTables.entries()) {
+        if (!lootTable) {
             errors.push(`Loot Table ID "${id}" maps to an undefined value.`);
             continue;
         }
-        if (!Array.isArray(entries)) {
-            errors.push(`Loot Table "${id}" is not an array.`);
-            continue;
+        // Validate the main LootTable object structure
+        if (typeof lootTable !== 'object' || lootTable === null) {
+             errors.push(`Loot Table "${id}" is not a valid object.`);
+             continue; // Skip further checks if it's not an object
         }
-        entries.forEach((entry, index) => {
-            if (typeof entry !== 'object' || entry === null) {
-                errors.push(`Loot Table "${id}", entry ${index}: Invalid format (not an object).`);
-                return; // Skip further checks for this entry
-            }
-            if (typeof entry.baseId !== 'string' || !items.has(entry.baseId)) {
-                errors.push(`Loot Table "${id}", entry ${index}: Invalid or non-existent item baseId "${entry.baseId}".`);
-            }
-            if (typeof entry.chance !== 'number' || entry.chance < 0 || entry.chance > 1) {
-                errors.push(`Loot Table "${id}", entry ${index} (item "${entry.baseId}"): Invalid chance "${entry.chance}". Must be between 0 and 1.`);
-            }
-            if (entry.minQuantity !== undefined && (!Number.isInteger(entry.minQuantity) || entry.minQuantity < 1)) {
-                 errors.push(`Loot Table "${id}", entry ${index} (item "${entry.baseId}"): Invalid minQuantity "${entry.minQuantity}". Must be integer >= 1.`);
-            }
-            if (entry.maxQuantity !== undefined && (!Number.isInteger(entry.maxQuantity) || entry.maxQuantity < 1)) {
-                 errors.push(`Loot Table "${id}", entry ${index} (item "${entry.baseId}"): Invalid maxQuantity "${entry.maxQuantity}". Must be integer >= 1.`);
-            }
-             if (entry.minQuantity !== undefined && entry.maxQuantity !== undefined && entry.minQuantity > entry.maxQuantity) {
-                 errors.push(`Loot Table "${id}", entry ${index} (item "${entry.baseId}"): minQuantity (${entry.minQuantity}) cannot be greater than maxQuantity (${entry.maxQuantity}).`);
-            }
-        });
-    }
+        if (typeof lootTable.id !== 'string' || lootTable.id !== id) errors.push(`Loot Table "${id}": Mismatched id property "${lootTable.id}".`);
+        if (typeof lootTable.noDropChance !== 'number' || lootTable.noDropChance < 0 || lootTable.noDropChance > 1) errors.push(`Loot Table "${id}": Invalid noDropChance "${lootTable.noDropChance}". Must be between 0 and 1.`);
+        if (!Number.isInteger(lootTable.maxDrops) || lootTable.maxDrops < 0) errors.push(`Loot Table "${id}": Invalid maxDrops "${lootTable.maxDrops}". Must be integer >= 0.`);
+
+        // Validate the possibleDrops property is an array
+        if (!Array.isArray(lootTable.possibleDrops)) {
+            errors.push(`Loot Table "${id}": Missing or invalid possibleDrops array.`);
+        } else { // Only validate entries if possibleDrops is an array
+            // Validate each entry within the possibleDrops array
+            lootTable.possibleDrops.forEach((entry, index) => {
+                if (typeof entry !== 'object' || entry === null) {
+                    errors.push(`Loot Table "${id}", possibleDrops entry ${index}: Invalid format (not an object).`);
+                    return; // Skip further checks for this entry
+                }
+                if (typeof entry.baseId !== 'string' || !items.has(entry.baseId)) {
+                    errors.push(`Loot Table "${id}", possibleDrops entry ${index}: Invalid or non-existent item baseId "${entry.baseId}".`);
+                }
+                if (typeof entry.chance !== 'number' || entry.chance < 0 || entry.chance > 1) {
+                    errors.push(`Loot Table "${id}", possibleDrops entry ${index} (item "${entry.baseId}"): Invalid chance "${entry.chance}". Must be between 0 and 1.`);
+                }
+                // Validate quantity object if present
+                if (entry.quantity !== undefined) {
+                    if (typeof entry.quantity !== 'object' || entry.quantity === null) {
+                         errors.push(`Loot Table "${id}", possibleDrops entry ${index} (item "${entry.baseId}"): Invalid quantity format (not an object).`);
+                    } else {
+                        // Ensure quantity.min and quantity.max are numbers before comparing
+                        const minQty = entry.quantity.min;
+                        const maxQty = entry.quantity.max;
+                        if (!Number.isInteger(minQty) || minQty < 1) {
+                             errors.push(`Loot Table "${id}", possibleDrops entry ${index} (item "${entry.baseId}"): Invalid quantity.min "${minQty}". Must be integer >= 1.`);
+                        }
+                        if (!Number.isInteger(maxQty) || maxQty < 1) {
+                             errors.push(`Loot Table "${id}", possibleDrops entry ${index} (item "${entry.baseId}"): Invalid quantity.max "${maxQty}". Must be integer >= 1.`);
+                        }
+                         // Only compare if both are valid numbers
+                         if (Number.isInteger(minQty) && Number.isInteger(maxQty) && minQty > maxQty) {
+                             errors.push(`Loot Table "${id}", possibleDrops entry ${index} (item "${entry.baseId}"): quantity.min (${minQty}) cannot be greater than quantity.max (${maxQty}).`);
+                        }
+                    }
+                }
+                // Validate magicFindSensitive if present
+                 if (entry.magicFindSensitive !== undefined && typeof entry.magicFindSensitive !== 'boolean') {
+                     errors.push(`Loot Table "${id}", possibleDrops entry ${index} (item "${entry.baseId}"): Invalid magicFindSensitive value "${entry.magicFindSensitive}". Must be boolean or undefined.`);
+                 }
+            }); // End forEach
+        } // End else block for Array.isArray check
+
+        // Validate qualityChances if present
+        if (lootTable.qualityChances !== undefined) {
+             if (typeof lootTable.qualityChances !== 'object' || lootTable.qualityChances === null) {
+                 errors.push(`Loot Table "${id}": Invalid qualityChances format (not an object).`);
+             } else {
+                 if (typeof lootTable.qualityChances.magic !== 'number' || lootTable.qualityChances.magic < 0 || lootTable.qualityChances.magic > 1) {
+                     errors.push(`Loot Table "${id}": Invalid qualityChances.magic "${lootTable.qualityChances.magic}". Must be between 0 and 1.`);
+                 }
+                 if (typeof lootTable.qualityChances.rare !== 'number' || lootTable.qualityChances.rare < 0 || lootTable.qualityChances.rare > 1) {
+                     errors.push(`Loot Table "${id}": Invalid qualityChances.rare "${lootTable.qualityChances.rare}". Must be between 0 and 1.`);
+                 }
+                 // Add checks for other qualities (unique) if they are added later
+             }
+        }
+    } // End main for loop
     return errors;
-}
+} // End function validateLootTables
 
 
 // --- Runtime Payload Validation ---

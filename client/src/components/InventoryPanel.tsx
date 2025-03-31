@@ -122,22 +122,23 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
 
 
     // --- Helper Functions ---
+    // Updated to return Tailwind classes
     const getRarityClass = (rarity?: string): string => {
         switch (rarity) {
-            case 'magic': return 'rarity-magic';
-            case 'rare': return 'rarity-rare';
-            case 'unique': return 'rarity-unique';
-            case 'legendary': return 'rarity-legendary';
-            case 'common': default: return 'rarity-common';
+            case 'magic': return 'text-blue-400 border-blue-400';
+            case 'rare': return 'text-yellow-400 border-yellow-400';
+            case 'unique': return 'text-orange-400 border-orange-400'; // Example color
+            case 'legendary': return 'text-purple-500 border-purple-500';
+            case 'common': default: return 'text-white border-gray-500';
         }
     };
-    const getRarityColor = (rarity?: string): string => {
+    const getRarityColor = (rarity?: string): string => { // Keep this for tooltip border maybe? Or remove if not needed.
         switch (rarity) {
             case 'magic': return '#6888ff';
             case 'rare': return '#ffff00';
             case 'unique': return '#a5694f';
             case 'legendary': return '#af00ff';
-            case 'common': default: return '#ffffff';
+            case 'common': default: return '#ffffff'; // White for common text
         }
     };
     const getItemShorthand = (nameInput: string | undefined): string => {
@@ -150,7 +151,9 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
 
     // --- Render Functions ---
     const renderInventoryGrid = () => {
-        const gridSize = 150;
+        const columns = 10;
+        const rows = 6;
+        const gridSize = columns * rows; // 10 wide, 6 down = 60 slots
         const gridItems: (Item | null)[] = Array(gridSize).fill(null);
         const itemsToDisplay = character?.inventory.filter(item => item.baseId !== 'gold_coins') || [];
         itemsToDisplay.forEach((item, index) => {
@@ -158,36 +161,40 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
         });
         const goldAmount = character?.gold ?? 0;
 
+        // Tailwind styled Inventory Grid
         return (
-            <div className="inventory-grid-container">
-                <div className="inventory-header">
-                    <h4>Inventory</h4>
-                    <div className="currency-display">
-                        <span>Gold: {goldAmount}</span>
-                        <span style={{ marginLeft: '10px' }}>Essence: {character?.monsterEssence ?? 0}</span>
-                        <span style={{ marginLeft: '10px' }}>Scrap: {character?.scrapMetal ?? 0}</span>
+            <div className="inventory-grid-container mb-4">
+                <div className="inventory-header flex justify-between items-center mb-2 border-b border-gray-600 pb-1">
+                    <h4 className="text-lg font-semibold">Inventory</h4>
+                    <div className="currency-display text-sm space-x-3">
+                        <span>Gold: <span className="text-yellow-400">{goldAmount}</span></span>
+                        <span>Essence: <span className="text-purple-400">{character?.monsterEssence ?? 0}</span></span>
+                        <span>Scrap: <span className="text-gray-400">{character?.scrapMetal ?? 0}</span></span>
                     </div>
                 </div>
-                <div className="inventory-grid">
+                {/* Improved grid styling */}
+                <div className="grid grid-cols-10 gap-1 bg-gray-900/50 p-2 rounded border border-gray-700 shadow-inner">
                     {gridItems.map((item, index) => (
                         <div
                             key={item ? item.id : `empty-${index}`}
-                            className={`inventory-grid-item ${item ? getRarityClass(item.rarity) : ''}`}
+                            className={`aspect-square border flex items-center justify-center text-sm font-semibold relative transition-colors duration-150 ${item ? getRarityClass(item.rarity) : 'border-gray-600/50'} ${item ? 'bg-gray-800 hover:bg-gray-700 shadow-md' : 'bg-gray-800/30'}`}
                             onMouseEnter={(e) => item && handleItemMouseEnter(item, e)}
                             onMouseLeave={handleItemMouseLeave}
                             onClick={() => item && item.equipmentSlot && onEquipItem(item.id)}
                             onContextMenu={(e) => {
                                 if (item) {
                                     e.preventDefault();
-                                    setHoveredItem(null);
+                                    setHoveredItem(null); // Hide tooltip before selling
                                     onSellItem(item.id);
                                 }
                             }}
                             style={{ cursor: item ? 'pointer' : 'default' }}
+                            title={item ? `Left-click to equip\nRight-click to sell ${item.name}` : 'Empty slot'}
                         >
-                            {item ? getItemShorthand(item.baseName || item.name) : ''}
+                            {/* Slightly larger text for shorthand */}
+                            <span className="z-10">{item ? getItemShorthand(item.baseName || item.name) : ''}</span>
                             {item && item.quantity && item.quantity > 1 && (
-                                <span className="item-quantity">{item.quantity}</span>
+                                <span className="absolute bottom-0 right-0 text-[9px] bg-black/80 px-1 rounded-tl leading-tight">{item.quantity}</span>
                             )}
                         </div>
                     ))}
@@ -198,15 +205,16 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
 
     const renderGroundLoot = () => {
         const groundItems = character?.groundLoot ?? [];
+        // Tailwind styled Ground Loot
         return (
-            <div className="ground-loot-container">
-                <h4>Ground Loot (Last 10)</h4>
-                <ul className="ground-loot-list">
-                    {groundItems.length === 0 && <li className="ground-loot-empty">Nothing on the ground.</li>}
+            <div className="ground-loot-container mt-4">
+                <h4 className="text-lg font-semibold mb-2 border-b border-gray-600 pb-1">Ground Loot (Last 10)</h4>
+                <ul className="space-y-1 text-sm max-h-32 overflow-y-auto"> {/* Scrollable list */}
+                    {groundItems.length === 0 && <li className="text-gray-500 italic">Nothing on the ground.</li>}
                     {groundItems.map(item => (
                         <li
                             key={item.id}
-                            className="ground-loot-item"
+                            className={`p-1 rounded cursor-pointer hover:bg-gray-700 ${getRarityClass(item.rarity)}`} // Use rarity class for text color
                             onMouseEnter={(e) => handleItemMouseEnter(item, e)}
                             onMouseLeave={handleItemMouseLeave}
                             onClick={() => onLootGroundItem(item.id)}
@@ -222,10 +230,12 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
 
     const renderEquipmentSlots = () => {
         const slots: EquipmentSlot[] = ['head', 'chest', 'waist', 'hands', 'feet', 'mainHand', 'offHand', 'amulet', 'ring1', 'ring2'];
+        // Tailwind styled Equipment Slots
         return (
-            <div className="equipment-slots-container">
-                <h4>Equipped</h4>
-                <ul>
+            <div className="equipment-slots-container mb-4">
+                <h4 className="text-lg font-semibold mb-2 border-b border-gray-600 pb-1">Equipped</h4>
+                {/* Removed max-height, allow natural flow */}
+                <ul className="space-y-1.5 text-sm pr-1"> {/* Increased spacing slightly */}
                     {slots.map(slot => {
                         const item = Object.prototype.hasOwnProperty.call(character.equipment, slot)
                             ? character.equipment[slot]
@@ -233,13 +243,15 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
                         return (
                             <li
                                 key={slot}
+                                className={`flex justify-between items-center p-1 rounded ${item ? 'cursor-pointer hover:bg-gray-700' : ''}`}
                                 onMouseEnter={(e) => item && handleItemMouseEnter(item, e)}
                                 onMouseLeave={handleItemMouseLeave}
                                 onClick={() => item && onUnequipItem(slot)}
-                                style={{ cursor: item ? 'pointer' : 'default' }}
                                 title={item ? `Unequip ${item.name}` : 'Slot empty'}
                             >
-                                <strong>{slot}:</strong> {item ? <span style={{ color: getRarityColor(item.rarity) }}>{item.name}</span> : '(Empty)'}
+                                {/* Improved alignment and spacing */}
+                                <strong className="capitalize mr-2 w-20 flex-shrink-0">{slot.replace(/([A-Z])/g, ' $1')}:</strong>
+                                {item ? <span className={`truncate ${getRarityClass(item.rarity)}`}>{item.name}</span> : <span className="text-gray-500 italic">(Empty)</span>}
                             </li>
                         );
                     })}
@@ -251,15 +263,15 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
     // --- Render Auto-Equip Panel ---
     const renderAutoEquipPanel = () => {
         const statsToEquip: (keyof ItemStats)[] = ['strength', 'dexterity', 'vitality', 'energy'];
-
+        // Tailwind styled Auto-Equip
         return (
-            <div className="auto-equip-container panel-section"> {/* Reuse panel-section style */}
-                <h4>Auto Equip Best Stats</h4>
-                <div className="auto-equip-buttons">
+            <div className="auto-equip-container mt-4">
+                <h4 className="text-lg font-semibold mb-2 border-b border-gray-600 pb-1">Auto Equip Best Stats</h4>
+                <div className="grid grid-cols-2 gap-2">
                     {statsToEquip.map(stat => (
                         <button
                             key={stat}
-                            className="button-secondary auto-equip-button"
+                            className="py-1 px-2 rounded focus:outline-none focus:shadow-outline text-white font-bold text-sm bg-gray-600 hover:bg-gray-700"
                             onClick={() => onAutoEquipBestStat(stat)}
                             onMouseEnter={(e) => handleAutoEquipMouseEnter(stat, e)}
                             onMouseLeave={handleAutoEquipMouseLeave}
@@ -306,18 +318,39 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
             }
         }
 
-        const rarityColor = getRarityColor(itemToShow.rarity);
+        const rarityColor = getRarityColor(itemToShow.rarity); // Keep using this for border/title color
+        const rarityTextClass = getRarityClass(itemToShow.rarity).split(' ')[0]; // Extract text color class
 
+        // Tailwind styled Tooltip
         return (
-            <div className="item-tooltip" style={{ position: 'fixed', left: itemTooltipPosition.x, top: itemTooltipPosition.y, border: `2px solid ${rarityColor}`, background: '#333', color: rarityColor, padding: '10px', borderRadius: '4px', zIndex: 1000, minWidth: '200px', pointerEvents: 'none' }}>
-                <h5 style={{ color: rarityColor, margin: '0 0 5px 0', borderBottom: `1px solid ${rarityColor}` }}>{itemToShow.name}</h5>
-                <p style={{ color: '#fff', margin: '5px 0' }}><em>{itemToShow.type}{itemToShow.equipmentSlot ? ` (${itemToShow.equipmentSlot})` : ''}</em></p>
-                <p style={{ color: '#fff', margin: '5px 0' }}>{itemToShow.description}</p>
+            <div
+                className="fixed bg-gray-900 border-2 rounded shadow-lg p-3 text-sm z-[1000] pointer-events-none max-w-xs"
+                style={{ left: itemTooltipPosition.x, top: itemTooltipPosition.y, borderColor: rarityColor }}
+            >
+                <h5 className={`font-bold mb-1 pb-1 border-b ${rarityTextClass}`} style={{ borderColor: rarityColor }}>{itemToShow.name}</h5>
+                <p className="text-gray-400 italic mb-1">{itemToShow.type}{itemToShow.equipmentSlot ? ` (${itemToShow.equipmentSlot})` : ''}</p>
+                <p className="text-gray-300 mb-2">{itemToShow.description}</p>
                 {itemToShow.stats && Object.keys(itemToShow.stats).length > 0 && (
-                    <> <hr style={{ borderColor: rarityColor, opacity: 0.5 }}/> <h6 style={{ color: '#fff', margin: '5px 0' }}>Stats:</h6> <ul style={{ color: '#fff', listStyle: 'none', paddingLeft: '10px', margin: '5px 0' }}> {Object.entries(itemToShow.stats).map(([stat, value]) => ( <li key={stat} style={{ color: '#68c7ff' }}>{stat}: +{value}</li> ))} </ul> </>
+                    <>
+                        <hr className="border-gray-600 my-1"/>
+                        <h6 className="font-semibold text-gray-200 mb-1">Stats:</h6>
+                        <ul className="list-none pl-2 space-y-0.5">
+                            {Object.entries(itemToShow.stats).map(([stat, value]) => (
+                                <li key={stat} className="text-blue-300">{stat}: +{value}</li>
+                            ))}
+                        </ul>
+                    </>
                 )}
                 {isInventoryItem && isEquippable && (
-                    <> <hr style={{ borderColor: rarityColor, opacity: 0.5 }}/> <h6 style={{ color: '#fff', margin: '5px 0' }}>Comparison vs Equipped:</h6> {comparisonElements.length > 0 ? ( <ul style={{ listStyle: 'none', paddingLeft: '10px', margin: '5px 0' }}>{comparisonElements}</ul> ) : ( <p style={{ color: '#aaa', margin: '5px 0' }}>(No stat changes or slot empty)</p> )} </>
+                    <>
+                        <hr className="border-gray-600 my-1"/>
+                        <h6 className="font-semibold text-gray-200 mb-1">Comparison vs Equipped:</h6>
+                        {comparisonElements.length > 0 ? (
+                            <ul className="list-none pl-2 space-y-0.5">{comparisonElements}</ul>
+                        ) : (
+                            <p className="text-gray-500 italic">(No stat changes or slot empty)</p>
+                        )}
+                    </>
                 )}
             </div>
         );
@@ -327,41 +360,50 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
     const renderAutoEquipTooltip = () => {
         if (!hoveredAutoEquipStat) return null;
 
-        // Simple text display using pre-wrap to handle newlines
+        // Tailwind styled Auto-Equip Tooltip
         return (
-            <div className="auto-equip-tooltip" style={{ position: 'fixed', left: autoEquipTooltipPosition.x, top: autoEquipTooltipPosition.y, background: '#333', color: '#fff', border: '1px solid #ccc', padding: '10px', borderRadius: '4px', zIndex: 1000, whiteSpace: 'pre-wrap', pointerEvents: 'none' }}>
-                <h6 style={{ margin: '0 0 5px 0', borderBottom: '1px solid #ccc' }}>Net Stat Changes:</h6>
+            <div
+                className="fixed bg-gray-900 border border-gray-500 rounded shadow-lg p-3 text-xs z-[1000] pointer-events-none max-w-xs"
+                style={{ left: autoEquipTooltipPosition.x, top: autoEquipTooltipPosition.y }}
+            >
+                <h6 className="font-semibold text-gray-200 mb-1 pb-1 border-b border-gray-600">Net Stat Changes:</h6>
                  {autoEquipTooltipContent.split('\n').map((line, index) => {
                      const parts = line.split(':');
                      const statName = parts[0];
-                     const valueStr = parts[1] ? parts[1].trim() : undefined; // Check if parts[1] exists
+                     const valueStr = parts[1]?.trim();
                      let value = NaN;
-                     let color = '#fff'; // Default color
+                     let colorClass = 'text-gray-300'; // Default color class
 
                      if (valueStr !== undefined) {
                          value = parseInt(valueStr, 10);
-                         color = isNaN(value) ? '#fff' : (value > 0 ? 'lightgreen' : 'salmon');
+                         colorClass = isNaN(value) ? 'text-gray-300' : (value > 0 ? 'text-green-400' : 'text-red-400');
                      } else if (line === 'No changes') {
-                         color = '#aaa'; // Grey out "No changes"
+                         colorClass = 'text-gray-500 italic';
                      }
 
-                     return <div key={index} style={{ color }}>{line}</div>;
+                     return <div key={index} className={colorClass}>{line}</div>;
                  })}
             </div>
         );
     };
 
-
+    // Tailwind styled main panel layout - Reverted widths
     return (
-        <div className="inventory-panel">
-            <div className="inventory-main-area">
+        <div className="inventory-panel flex flex-col md:flex-row gap-4 p-2 h-full"> {/* Use full height passed by modal */}
+            {/* Left Side: Inventory & Ground Loot - Reverted width */}
+            <div className="inventory-main-area flex-grow md:w-2/3 flex flex-col">
                  {renderInventoryGrid()}
-                 {renderGroundLoot()}
+                 <div className="flex-shrink-0 mt-auto pt-2"> {/* Push ground loot down, add top padding */}
+                    {renderGroundLoot()}
+                 </div>
             </div>
-            <div className="equipment-area">
+             {/* Right Side: Equipment & Auto-Equip - Adjusted flex properties */}
+            <div className="equipment-area flex-shrink-0 md:w-1/3 flex flex-col justify-between"> {/* Use justify-between */}
                 {renderEquipmentSlots()}
-                {/* Replace potion slots with auto-equip panel */}
-                {renderAutoEquipPanel()}
+                {/* Removed mt-auto wrapper, added direct margin */}
+                <div className="mt-4">
+                    {renderAutoEquipPanel()}
+                </div>
             </div>
             {renderItemTooltip()}
             {renderAutoEquipTooltip()} {/* Render the new tooltip */}

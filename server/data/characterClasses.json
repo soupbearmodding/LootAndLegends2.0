@@ -1,0 +1,7 @@
+{
+  "warrior": { "name": "Warrior", "description": "Master of weapons and close combat", "baseStats": { "strength": 30, "dexterity": 20, "vitality": 25, "energy": 10 } },
+  "rogue": { "name": "Rogue", "description": "Master of ranged combat and traps", "baseStats": { "strength": 20, "dexterity": 30, "vitality": 20, "energy": 15 } },
+  "sorcerer": { "name": "Sorcerer", "description": "Master of elemental magic", "baseStats": { "strength": 15, "dexterity": 15, "vitality": 20, "energy": 35 } },
+  "monk": { "name": "Monk", "description": "Master of martial arts and holy magic", "baseStats": { "strength": 25, "dexterity": 25, "vitality": 20, "energy": 15 } },
+  "barbarian": { "name": "Barbarian", "description": "Master of melee combat and battle cries", "baseStats": { "strength": 40, "dexterity": 20, "vitality": 25, "energy": 0 } }
+}

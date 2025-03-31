@@ -280,49 +280,82 @@ export class CombatService {
                 console.log(`CombatService: Resource Gain - ${character.name} gained ${essenceDropped} Essence, ${scrapDropped} Scrap.`);
 
                 // --- Generate Loot ---
-                let droppedLoot: Item[] = [];
+                let generatedLoot: Item[] = [];
                 if (defeatedMonster.lootTableId) {
-                    // Assuming generateLootFromTable exists and works
-                    droppedLoot = generateLootFromTable(defeatedMonster.lootTableId);
-                    console.log(`CombatService: Loot generated for ${defeatedMonster.name}: ${droppedLoot.length} items.`);
+                    generatedLoot = generateLootFromTable(defeatedMonster.lootTableId);
+                    console.log(`CombatService: Loot generated for ${defeatedMonster.name}: ${generatedLoot.length} items.`);
                 }
 
-                // --- Add Loot to Inventory using InventoryService ---
-                if (droppedLoot.length > 0) {
-                    for (const newItem of droppedLoot) {
+                // --- Process Gold Drops Separately ---
+                let goldDropped = 0;
+                const itemsToAddToInventory: Item[] = [];
+                for (const lootItem of generatedLoot) {
+                    if (lootItem.baseId === 'gold_coins') {
+                        goldDropped += lootItem.quantity ?? 1; // Sum up gold quantity
+                    } else {
+                        itemsToAddToInventory.push(lootItem); // Keep actual items
+                    }
+                }
+
+                if (goldDropped > 0) {
+                    character.gold = (character.gold ?? 0) + goldDropped;
+                    updateData.gold = character.gold; // Add gold to the main DB update
+                    console.log(`CombatService: Gold Gain - ${character.name} gained ${goldDropped} Gold. Total: ${character.gold}.`);
+                }
+
+                // --- Add Actual Items to Inventory using InventoryService ---
+                let characterAfterLoot = character; // Start with the character state after potential gold update
+                if (itemsToAddToInventory.length > 0) {
+                    for (const newItem of itemsToAddToInventory) { // Iterate only over non-gold items
                         try {
-                            // Call InventoryService to handle adding the item
-                            // Note: addItemToInventory should handle stacking logic internally
-                            // We pass the character ID and the generated item instance
-                            await this.inventoryService.addItemToInventory(character.id, newItem);
-                            // InventoryService should ideally trigger its own character_update message
-                            // or the client should refetch inventory if needed.
+                            // Call InventoryService to handle adding the actual item
+                            // Capture the result which now includes the updated character
+                            const addItemResult = await this.inventoryService.addItemToInventory(characterAfterLoot.id, newItem);
+                            if (addItemResult.success && addItemResult.character) {
+                                // Update our local character reference *after each successful item add*
+                                // This ensures subsequent calls (if any) operate on the latest inventory state
+                                characterAfterLoot = addItemResult.character;
+                            } else if (!addItemResult.success) {
+                                // Log error if adding item failed, but continue processing other loot
+                                console.error(`CombatService: Failed to add item ${newItem.name} (ID: ${newItem.id}) to inventory for character ${characterAfterLoot.id}: ${addItemResult.message}`);
+                            }
                         } catch (inventoryError) {
-                            console.error(`CombatService: Failed to add item ${newItem.name} (ID: ${newItem.id}) to inventory for character ${character.id}:`, inventoryError);
-                            // Decide how to handle partial failures - log and continue?
+                            console.error(`CombatService: Exception while adding item ${newItem.name} (ID: ${newItem.id}) to inventory for character ${characterAfterLoot.id}:`, inventoryError);
                         }
                     }
-                    // Refresh character data after potential inventory changes IF needed by subsequent logic
-                    // character = await this.characterRepository.findById(characterId) ?? character;
+                    // No need to manually refetch character here, characterAfterLoot holds the latest state after all item adds
                 }
-                // Remove inventory from direct updateData here, as InventoryService handles it.
-                // --- Save Character Updates (XP, Level, Stats only) ---
+
+                // --- Save Character Updates (XP, Level, Stats, Resources, Gold - Inventory is saved by InventoryService) ---
+                // updateData already contains XP, level, stats, resources, and potentially gold
                 await this.characterRepository.update(character.id, updateData);
 
                 // --- Prepare Character Update Payload for Client ---
-                 const finalTotalXpForCurrentLevel = xpForLevel(character.level);
-                 const finalXpToNextLevelBracket = xpRequiredForLevel(character.level); // Use helper
-                 const finalCurrentLevelXp = character.experience - finalTotalXpForCurrentLevel;
+                // Use the character state *after* loot has been added and potentially stats recalculated
+                 const finalCharacterData = characterAfterLoot; // Use the potentially updated character from inventory service
+                 const finalTotalXpForCurrentLevel = xpForLevel(finalCharacterData.level);
+                 const finalXpToNextLevelBracket = xpRequiredForLevel(finalCharacterData.level);
+                 const finalCurrentLevelXp = finalCharacterData.experience - finalTotalXpForCurrentLevel;
 
                  const characterUpdatePayload: any = {
-                     experience: character.experience,
+                     experience: finalCharacterData.experience,
                      currentLevelXp: finalCurrentLevelXp,
                      xpToNextLevelBracket: finalXpToNextLevelBracket,
-                     monsterEssence: character.monsterEssence, // Add resource to payload
-                     scrapMetal: character.scrapMetal, // Add resource to payload
-                     // Remove inventory from this payload; rely on InventoryService updates
+                     monsterEssence: finalCharacterData.monsterEssence,
+                     scrapMetal: finalCharacterData.scrapMetal,
+                     // Include the final inventory state after adding items
+                     inventory: finalCharacterData.inventory,
+                     equipment: finalCharacterData.equipment,
+                     gold: finalCharacterData.gold, // Ensure gold is included
                  };
                  if (leveledUp) {
+                     // Use the final character data for level-up info as well
+                     characterUpdatePayload.level = finalCharacterData.level;
+                     characterUpdatePayload.stats = finalCharacterData.stats;
+                     characterUpdatePayload.maxHp = finalCharacterData.maxHp;
+                     characterUpdatePayload.currentHp = finalCharacterData.currentHp;
+                     // characterUpdatePayload.maxMana = finalCharacterData.maxMana; // If mana exists
+                     // characterUpdatePayload.currentMana = finalCharacterData.currentMana;
                      characterUpdatePayload.level = character.level;
                      characterUpdatePayload.stats = character.stats;
                      characterUpdatePayload.maxHp = character.maxHp;
@@ -341,7 +374,7 @@ export class CombatService {
                     encounterEnded: true,
                     endReason: `Defeated ${defeatedMonster.name}! Gained ${xpGained} XP.`,
                     characterUpdate: characterUpdatePayload,
-                    loot: droppedLoot
+                    loot: itemsToAddToInventory // Send only actual items, not the gold object
                 };
             } else {
                 // Monster survived

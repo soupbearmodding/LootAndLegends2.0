@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 
 // https://vitejs.dev/config/
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   // Set base to './' for correct asset paths in Electron build
@@ -25,4 +26,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  // Let Vite automatically use postcss.config.cjs
 });

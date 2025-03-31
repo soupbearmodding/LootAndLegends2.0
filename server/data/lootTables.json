@@ -1,0 +1,1076 @@
+{
+  "goblin_lvl1": {
+    "id": "goblin_lvl1",
+    "noDropChance": 0.25,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.75, "quantity": { "min": 2, "max": 12 }, "magicFindSensitive": false },
+      { "baseId": "minor_health_potion", "chance": 0.20, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "rusty_dagger", "chance": 0.15 },
+      { "baseId": "club", "chance": 0.15 },
+      { "baseId": "leather_cap", "chance": 0.10 },
+      { "baseId": "quilted_armor", "chance": 0.08 },
+      { "baseId": "sash", "chance": 0.12 }
+    ],
+    "qualityChances": {
+      "magic": 0.10,
+      "rare": 0.01
+    }
+  },
+  "skeleton_lvl3": {
+    "id": "skeleton_lvl3",
+    "noDropChance": 0.15,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.85, "quantity": { "min": 8, "max": 30 }, "magicFindSensitive": false },
+      { "baseId": "minor_health_potion", "chance": 0.25, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "minor_mana_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "dagger", "chance": 0.18 },
+      { "baseId": "short_sword", "chance": 0.15 },
+      { "baseId": "spiked_club", "chance": 0.12 },
+      { "baseId": "hand_axe", "chance": 0.10 },
+      { "baseId": "skull_cap", "chance": 0.12 },
+      { "baseId": "leather_armor", "chance": 0.10 },
+      { "baseId": "leather_gloves", "chance": 0.15 },
+      { "baseId": "leather_boots", "chance": 0.15 },
+      { "baseId": "leather_belt", "chance": 0.18 },
+      { "baseId": "buckler", "chance": 0.08 }
+    ],
+    "qualityChances": {
+      "magic": 0.15,
+      "rare": 0.03
+    }
+  },
+  "common_lvl_1_5": {
+    "id": "common_lvl_1_5",
+    "noDropChance": 0.30,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.70, "quantity": { "min": 1, "max": 10 }, "magicFindSensitive": false },
+      { "baseId": "minor_health_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "rusty_dagger", "chance": 0.10 },
+      { "baseId": "club", "chance": 0.10 },
+      { "baseId": "leather_cap", "chance": 0.08 },
+      { "baseId": "quilted_armor", "chance": 0.06 },
+      { "baseId": "sash", "chance": 0.10 }
+    ],
+    "qualityChances": { "magic": 0.08, "rare": 0.01 }
+  },
+  "undead_lvl_1_5": {
+    "id": "undead_lvl_1_5",
+    "noDropChance": 0.20,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.65, "quantity": { "min": 3, "max": 15 }, "magicFindSensitive": false },
+      { "baseId": "minor_health_potion", "chance": 0.18, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "short_sword", "chance": 0.12 },
+      { "baseId": "hand_axe", "chance": 0.10 },
+      { "baseId": "skull_cap", "chance": 0.10 },
+      { "baseId": "leather_armor", "chance": 0.08 },
+      { "baseId": "leather_boots", "chance": 0.10 },
+      { "baseId": "buckler", "chance": 0.05 }
+    ],
+    "qualityChances": { "magic": 0.10, "rare": 0.015 }
+  },
+  "beast_lvl_1_5": {
+    "id": "beast_lvl_1_5",
+    "noDropChance": 0.35,
+    "maxDrops": 2,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.50, "quantity": { "min": 1, "max": 8 }, "magicFindSensitive": false },
+      { "baseId": "quilted_armor", "chance": 0.10 },
+      { "baseId": "leather_gloves", "chance": 0.12 },
+      { "baseId": "sash", "chance": 0.15 }
+    ],
+    "qualityChances": { "magic": 0.05, "rare": 0.005 }
+  },
+  "shaman_lvl_1_5": {
+    "id": "shaman_lvl_1_5",
+    "noDropChance": 0.15,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.75, "quantity": { "min": 5, "max": 20 }, "magicFindSensitive": false },
+      { "baseId": "minor_mana_potion", "chance": 0.25, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "minor_health_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "short_staff", "chance": 0.15 },
+      { "baseId": "wand", "chance": 0.12 },
+      { "baseId": "skull_cap", "chance": 0.10 },
+      { "baseId": "sash", "chance": 0.15 },
+      { "baseId": "ring", "chance": 0.02 }
+    ],
+    "qualityChances": { "magic": 0.12, "rare": 0.02 }
+  },
+  "undead_lvl_5_10": {
+    "id": "undead_lvl_5_10",
+    "noDropChance": 0.18,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.80, "quantity": { "min": 10, "max": 40 }, "magicFindSensitive": false },
+      { "baseId": "light_health_potion", "chance": 0.20, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "minor_mana_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "scimitar", "chance": 0.10 },
+      { "baseId": "battle_axe", "chance": 0.08 },
+      { "baseId": "mace", "chance": 0.08 },
+      { "baseId": "long_bow", "chance": 0.07 },
+      { "baseId": "helm", "chance": 0.12 },
+      { "baseId": "hard_leather_armor", "chance": 0.10 },
+      { "baseId": "chain_gloves", "chance": 0.10 },
+      { "baseId": "heavy_boots", "chance": 0.10 },
+      { "baseId": "leather_belt", "chance": 0.12 },
+      { "baseId": "small_shield", "chance": 0.08 },
+      { "baseId": "bone_wand", "chance": 0.05 },
+      { "baseId": "bone_shield", "chance": 0.04 }
+    ],
+    "qualityChances": { "magic": 0.18, "rare": 0.04 }
+  },
+  "humanoid_lvl_5_10": {
+    "id": "humanoid_lvl_5_10",
+    "noDropChance": 0.22,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.85, "quantity": { "min": 15, "max": 50 }, "magicFindSensitive": false },
+      { "baseId": "light_health_potion", "chance": 0.25, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "key", "chance": 0.05, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "saber", "chance": 0.10 },
+      { "baseId": "hatchet", "chance": 0.10 },
+      { "baseId": "morning_star", "chance": 0.08 },
+      { "baseId": "hunters_bow", "chance": 0.12 },
+      { "baseId": "helm", "chance": 0.10 },
+      { "baseId": "studded_leather", "chance": 0.09 },
+      { "baseId": "heavy_gloves", "chance": 0.12 },
+      { "baseId": "heavy_boots", "chance": 0.12 },
+      { "baseId": "heavy_belt", "chance": 0.10 },
+      { "baseId": "kite_shield", "chance": 0.06 },
+      { "baseId": "amulet", "chance": 0.015 }
+    ],
+    "qualityChances": { "magic": 0.16, "rare": 0.035 }
+  },
+  "beast_lvl_5_10": {
+    "id": "beast_lvl_5_10",
+    "noDropChance": 0.30,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.60, "quantity": { "min": 8, "max": 35 }, "magicFindSensitive": false },
+      { "baseId": "light_health_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "studded_leather", "chance": 0.10 },
+      { "baseId": "heavy_gloves", "chance": 0.12 },
+      { "baseId": "heavy_boots", "chance": 0.12 },
+      { "baseId": "heavy_belt", "chance": 0.15 }
+    ],
+    "qualityChances": { "magic": 0.10, "rare": 0.01 }
+  },
+  "demon_lvl_5_10": {
+    "id": "demon_lvl_5_10",
+    "noDropChance": 0.15,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.70, "quantity": { "min": 20, "max": 60 }, "magicFindSensitive": false },
+      { "baseId": "light_health_potion", "chance": 0.22, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "light_mana_potion", "chance": 0.18, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "kris", "chance": 0.12 },
+      { "baseId": "falchion", "chance": 0.08 },
+      { "baseId": "flail", "chance": 0.07 },
+      { "baseId": "yew_wand", "chance": 0.10 },
+      { "baseId": "ring_mail", "chance": 0.08 },
+      { "baseId": "chain_gloves", "chance": 0.10 },
+      { "baseId": "chain_boots", "chance": 0.10 },
+      { "baseId": "ring", "chance": 0.03 },
+      { "baseId": "amulet", "chance": 0.02 }
+    ],
+    "qualityChances": { "magic": 0.20, "rare": 0.05 }
+  },
+  "shaman_lvl_5_10": {
+    "id": "shaman_lvl_5_10",
+    "noDropChance": 0.10,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.80, "quantity": { "min": 25, "max": 70 }, "magicFindSensitive": false },
+      { "baseId": "light_mana_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "light_health_potion", "chance": 0.20, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.05, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "gnarled_staff", "chance": 0.15 },
+      { "baseId": "bone_wand", "chance": 0.12 },
+      { "baseId": "scepter", "chance": 0.10 },
+      { "baseId": "helm", "chance": 0.08 },
+      { "baseId": "studded_leather", "chance": 0.07 },
+      { "baseId": "heavy_belt", "chance": 0.12 },
+      { "baseId": "ring", "chance": 0.04 },
+      { "baseId": "amulet", "chance": 0.03 }
+    ],
+    "qualityChances": { "magic": 0.22, "rare": 0.06 }
+  },
+  "beast_lvl_10_15": {
+    "id": "beast_lvl_10_15",
+    "noDropChance": 0.25,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.70, "quantity": { "min": 30, "max": 80 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.20, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "ring_mail", "chance": 0.10 },
+      { "baseId": "chain_gloves", "chance": 0.12 },
+      { "baseId": "chain_boots", "chance": 0.12 },
+      { "baseId": "plated_belt", "chance": 0.15 }
+    ],
+    "qualityChances": { "magic": 0.15, "rare": 0.02 }
+  },
+  "undead_lvl_10_15": {
+    "id": "undead_lvl_10_15",
+    "noDropChance": 0.15,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.85, "quantity": { "min": 40, "max": 100 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.25, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "mana_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "broad_sword", "chance": 0.10 },
+      { "baseId": "war_axe", "chance": 0.08 },
+      { "baseId": "war_hammer", "chance": 0.07 },
+      { "baseId": "composite_bow", "chance": 0.07 },
+      { "baseId": "great_helm", "chance": 0.12 },
+      { "baseId": "scale_mail", "chance": 0.10 },
+      { "baseId": "plate_gauntlets", "chance": 0.10 },
+      { "baseId": "chain_boots", "chance": 0.10 },
+      { "baseId": "plated_belt", "chance": 0.12 },
+      { "baseId": "kite_shield", "chance": 0.08 },
+      { "baseId": "bone_shield", "chance": 0.06 },
+      { "baseId": "amulet", "chance": 0.02 }
+    ],
+    "qualityChances": { "magic": 0.25, "rare": 0.07 }
+  },
+  "demon_lvl_10_15": {
+    "id": "demon_lvl_10_15",
+    "noDropChance": 0.12,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.75, "quantity": { "min": 50, "max": 120 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.28, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "mana_potion", "chance": 0.22, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.08, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "rondel", "chance": 0.10 },
+      { "baseId": "bastard_sword", "chance": 0.08 },
+      { "baseId": "war_scepter", "chance": 0.09 },
+      { "baseId": "long_staff", "chance": 0.07 },
+      { "baseId": "chain_mail", "chance": 0.09 },
+      { "baseId": "plate_gauntlets", "chance": 0.11 },
+      { "baseId": "plate_greaves", "chance": 0.11 },
+      { "baseId": "ring", "chance": 0.05 },
+      { "baseId": "amulet", "chance": 0.04 }
+    ],
+    "qualityChances": { "magic": 0.28, "rare": 0.08 }
+  },
+  "humanoid_lvl_10_15": {
+    "id": "humanoid_lvl_10_15",
+    "noDropChance": 0.20,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.90, "quantity": { "min": 45, "max": 110 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "key", "chance": 0.08, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "falchion", "chance": 0.10 },
+      { "baseId": "battle_axe", "chance": 0.10 },
+      { "baseId": "flail", "chance": 0.08 },
+      { "baseId": "long_bow", "chance": 0.12 },
+      { "baseId": "great_helm", "chance": 0.10 },
+      { "baseId": "splint_mail", "chance": 0.09 },
+      { "baseId": "plate_gauntlets", "chance": 0.12 },
+      { "baseId": "plate_greaves", "chance": 0.12 },
+      { "baseId": "plated_belt", "chance": 0.10 },
+      { "baseId": "tower_shield", "chance": 0.06 },
+      { "baseId": "ring", "chance": 0.02 }
+    ],
+    "qualityChances": { "magic": 0.20, "rare": 0.05 }
+  },
+  "shaman_lvl_10_15": {
+    "id": "shaman_lvl_10_15",
+    "noDropChance": 0.08,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.85, "quantity": { "min": 60, "max": 150 }, "magicFindSensitive": false },
+      { "baseId": "mana_potion", "chance": 0.35, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.25, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.10, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "battle_staff", "chance": 0.15 },
+      { "baseId": "bone_wand", "chance": 0.12 },
+      { "baseId": "grand_scepter", "chance": 0.10 },
+      { "baseId": "crown", "chance": 0.08 },
+      { "baseId": "scale_mail", "chance": 0.07 },
+      { "baseId": "plated_belt", "chance": 0.12 },
+      { "baseId": "ring", "chance": 0.06 },
+      { "baseId": "amulet", "chance": 0.05 }
+    ],
+    "qualityChances": { "magic": 0.30, "rare": 0.09 }
+  },
+  "undead_lvl_15_20": {
+    "id": "undead_lvl_15_20",
+    "noDropChance": 0.14,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.88, "quantity": { "min": 60, "max": 140 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "mana_potion", "chance": 0.20, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "bastard_sword", "chance": 0.10 },
+      { "baseId": "war_axe", "chance": 0.09 },
+      { "baseId": "maul", "chance": 0.06 },
+      { "baseId": "composite_bow", "chance": 0.08 },
+      { "baseId": "crown", "chance": 0.10 },
+      { "baseId": "splint_mail", "chance": 0.11 },
+      { "baseId": "plate_gauntlets", "chance": 0.12 },
+      { "baseId": "plate_greaves", "chance": 0.12 },
+      { "baseId": "plated_belt", "chance": 0.14 },
+      { "baseId": "tower_shield", "chance": 0.07 },
+      { "baseId": "grand_scepter", "chance": 0.05 }
+    ],
+    "qualityChances": { "magic": 0.28, "rare": 0.08 }
+  },
+  "demon_lvl_15_20": {
+    "id": "demon_lvl_15_20",
+    "noDropChance": 0.10,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.80, "quantity": { "min": 70, "max": 160 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.32, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "mana_potion", "chance": 0.25, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.12, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "kris", "chance": 0.12 },
+      { "baseId": "great_sword", "chance": 0.07 },
+      { "baseId": "war_scepter", "chance": 0.10 },
+      { "baseId": "battle_staff", "chance": 0.08 },
+      { "baseId": "plate_mail", "chance": 0.09 },
+      { "baseId": "plate_gauntlets", "chance": 0.13 },
+      { "baseId": "plate_greaves", "chance": 0.13 },
+      { "baseId": "ring", "chance": 0.07 },
+      { "baseId": "amulet", "chance": 0.06 }
+    ],
+    "qualityChances": { "magic": 0.32, "rare": 0.10 }
+  },
+  "beast_lvl_15_20": {
+    "id": "beast_lvl_15_20",
+    "noDropChance": 0.22,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.75, "quantity": { "min": 50, "max": 120 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.25, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "splint_mail", "chance": 0.12 },
+      { "baseId": "plate_gauntlets", "chance": 0.14 },
+      { "baseId": "plate_greaves", "chance": 0.14 },
+      { "baseId": "plated_belt", "chance": 0.17 }
+    ],
+    "qualityChances": { "magic": 0.18, "rare": 0.03 }
+  },
+  "construct_lvl_15_20": {
+    "id": "construct_lvl_15_20",
+    "noDropChance": 0.30,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.60, "quantity": { "min": 80, "max": 180 }, "magicFindSensitive": false },
+      { "baseId": "mana_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "war_hammer", "chance": 0.10 },
+      { "baseId": "great_helm", "chance": 0.15 },
+      { "baseId": "plate_mail", "chance": 0.12 },
+      { "baseId": "tower_shield", "chance": 0.10 }
+    ],
+    "qualityChances": { "magic": 0.20, "rare": 0.04 }
+  },
+  "humanoid_lvl_15_20": {
+    "id": "humanoid_lvl_15_20",
+    "noDropChance": 0.18,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.92, "quantity": { "min": 65, "max": 150 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.35, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "key", "chance": 0.10, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "broad_sword", "chance": 0.12 },
+      { "baseId": "war_axe", "chance": 0.11 },
+      { "baseId": "flail", "chance": 0.09 },
+      { "baseId": "composite_bow", "chance": 0.13 },
+      { "baseId": "crown", "chance": 0.11 },
+      { "baseId": "chain_mail", "chance": 0.10 },
+      { "baseId": "plate_gauntlets", "chance": 0.13 },
+      { "baseId": "plate_greaves", "chance": 0.13 },
+      { "baseId": "plated_belt", "chance": 0.12 },
+      { "baseId": "kite_shield", "chance": 0.08 },
+      { "baseId": "ring", "chance": 0.03 }
+    ],
+    "qualityChances": { "magic": 0.22, "rare": 0.06 }
+  },
+  "undead_lvl_20_25": {
+    "id": "undead_lvl_20_25",
+    "noDropChance": 0.12,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.90, "quantity": { "min": 90, "max": 200 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.25, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "mana_potion", "chance": 0.22, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "bastard_sword", "chance": 0.11 },
+      { "baseId": "great_axe", "chance": 0.07 },
+      { "baseId": "war_hammer", "chance": 0.08 },
+      { "baseId": "long_bow", "chance": 0.09 },
+      { "baseId": "great_helm", "chance": 0.13 },
+      { "baseId": "plate_mail", "chance": 0.12 },
+      { "baseId": "plate_gauntlets", "chance": 0.14 },
+      { "baseId": "plate_greaves", "chance": 0.14 },
+      { "baseId": "plated_belt", "chance": 0.15 },
+      { "baseId": "tower_shield", "chance": 0.09 },
+      { "baseId": "grand_scepter", "chance": 0.06 }
+    ],
+    "qualityChances": { "magic": 0.30, "rare": 0.09 }
+  },
+  "demon_lvl_20_25": {
+    "id": "demon_lvl_20_25",
+    "noDropChance": 0.08,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.85, "quantity": { "min": 100, "max": 220 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.28, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.20, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.15, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "rondel", "chance": 0.13 },
+      { "baseId": "great_sword", "chance": 0.08 },
+      { "baseId": "war_scepter", "chance": 0.11 },
+      { "baseId": "battle_staff", "chance": 0.09 },
+      { "baseId": "field_plate", "chance": 0.10 },
+      { "baseId": "plate_gauntlets", "chance": 0.15 },
+      { "baseId": "plate_greaves", "chance": 0.15 },
+      { "baseId": "ring", "chance": 0.09 },
+      { "baseId": "amulet", "chance": 0.08 }
+    ],
+    "qualityChances": { "magic": 0.35, "rare": 0.12 }
+  },
+  "beast_lvl_20_25": {
+    "id": "beast_lvl_20_25",
+    "noDropChance": 0.20,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.80, "quantity": { "min": 80, "max": 180 }, "magicFindSensitive": false },
+      { "baseId": "health_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "plate_mail", "chance": 0.13 },
+      { "baseId": "plate_gauntlets", "chance": 0.16 },
+      { "baseId": "plate_greaves", "chance": 0.16 },
+      { "baseId": "plated_belt", "chance": 0.18 }
+    ],
+    "qualityChances": { "magic": 0.20, "rare": 0.04 }
+  },
+  "humanoid_lvl_20_25": {
+    "id": "humanoid_lvl_20_25",
+    "noDropChance": 0.16,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.94, "quantity": { "min": 95, "max": 210 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.30, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "key", "chance": 0.12, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "falchion", "chance": 0.13 },
+      { "baseId": "great_axe", "chance": 0.08 },
+      { "baseId": "maul", "chance": 0.07 },
+      { "baseId": "composite_bow", "chance": 0.14 },
+      { "baseId": "crown", "chance": 0.12 },
+      { "baseId": "splint_mail", "chance": 0.11 },
+      { "baseId": "plate_gauntlets", "chance": 0.15 },
+      { "baseId": "plate_greaves", "chance": 0.15 },
+      { "baseId": "plated_belt", "chance": 0.13 },
+      { "baseId": "tower_shield", "chance": 0.10 },
+      { "baseId": "ring", "chance": 0.04 }
+    ],
+    "qualityChances": { "magic": 0.25, "rare": 0.07 }
+  },
+  "shaman_lvl_20_25": {
+    "id": "shaman_lvl_20_25",
+    "noDropChance": 0.06,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.90, "quantity": { "min": 120, "max": 250 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.25, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.18, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "battle_staff", "chance": 0.16 },
+      { "baseId": "bone_wand", "chance": 0.14 },
+      { "baseId": "grand_scepter", "chance": 0.12 },
+      { "baseId": "crown", "chance": 0.10 },
+      { "baseId": "field_plate", "chance": 0.08 },
+      { "baseId": "plated_belt", "chance": 0.14 },
+      { "baseId": "ring", "chance": 0.08 },
+      { "baseId": "amulet", "chance": 0.07 }
+    ],
+    "qualityChances": { "magic": 0.38, "rare": 0.13 }
+  },
+  "demon_beast_lvl_25_30": {
+    "id": "demon_beast_lvl_25_30",
+    "noDropChance": 0.10,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.88, "quantity": { "min": 150, "max": 300 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.20, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.10 },
+      { "baseId": "great_axe", "chance": 0.10 },
+      { "baseId": "maul", "chance": 0.09 },
+      { "baseId": "gothic_plate", "chance": 0.08 },
+      { "baseId": "plate_gauntlets", "chance": 0.16 },
+      { "baseId": "plate_greaves", "chance": 0.16 },
+      { "baseId": "plated_belt", "chance": 0.18 },
+      { "baseId": "tower_shield", "chance": 0.11 }
+    ],
+    "qualityChances": { "magic": 0.33, "rare": 0.11 }
+  },
+  "beast_lvl_25_30": {
+    "id": "beast_lvl_25_30",
+    "noDropChance": 0.18,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.85, "quantity": { "min": 120, "max": 250 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.35, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "field_plate", "chance": 0.14 },
+      { "baseId": "plate_gauntlets", "chance": 0.18 },
+      { "baseId": "plate_greaves", "chance": 0.18 },
+      { "baseId": "plated_belt", "chance": 0.20 }
+    ],
+    "qualityChances": { "magic": 0.22, "rare": 0.05 }
+  },
+  "demon_lvl_25_30": {
+    "id": "demon_lvl_25_30",
+    "noDropChance": 0.05,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.90, "quantity": { "min": 180, "max": 350 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.35, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.28, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.20, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "bastard_sword", "chance": 0.12 },
+      { "baseId": "great_sword", "chance": 0.10 },
+      { "baseId": "war_scepter", "chance": 0.12 },
+      { "baseId": "battle_staff", "chance": 0.10 },
+      { "baseId": "gothic_plate", "chance": 0.11 },
+      { "baseId": "plate_gauntlets", "chance": 0.17 },
+      { "baseId": "plate_greaves", "chance": 0.17 },
+      { "baseId": "ring", "chance": 0.11 },
+      { "baseId": "amulet", "chance": 0.10 }
+    ],
+    "qualityChances": { "magic": 0.40, "rare": 0.15 }
+  },
+  "undead_lvl_25_30": {
+    "id": "undead_lvl_25_30",
+    "noDropChance": 0.10,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.92, "quantity": { "min": 140, "max": 280 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.32, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.25, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.12 },
+      { "baseId": "war_axe", "chance": 0.10 },
+      { "baseId": "maul", "chance": 0.09 },
+      { "baseId": "long_bow", "chance": 0.10 },
+      { "baseId": "crown", "chance": 0.14 },
+      { "baseId": "field_plate", "chance": 0.13 },
+      { "baseId": "plate_gauntlets", "chance": 0.16 },
+      { "baseId": "plate_greaves", "chance": 0.16 },
+      { "baseId": "plated_belt", "chance": 0.17 },
+      { "baseId": "tower_shield", "chance": 0.10 },
+      { "baseId": "war_scepter", "chance": 0.07 }
+    ],
+    "qualityChances": { "magic": 0.33, "rare": 0.10 }
+  },
+  "construct_lvl_25_30": {
+    "id": "construct_lvl_25_30",
+    "noDropChance": 0.25,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.70, "quantity": { "min": 150, "max": 320 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.20, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "maul", "chance": 0.12 },
+      { "baseId": "crown", "chance": 0.18 },
+      { "baseId": "gothic_plate", "chance": 0.15 },
+      { "baseId": "tower_shield", "chance": 0.12 }
+    ],
+    "qualityChances": { "magic": 0.25, "rare": 0.06 }
+  },
+  "shaman_lvl_25_30": {
+    "id": "shaman_lvl_25_30",
+    "noDropChance": 0.04,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.92, "quantity": { "min": 200, "max": 400 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.40, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.22, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "battle_staff", "chance": 0.18 },
+      { "baseId": "bone_wand", "chance": 0.16 },
+      { "baseId": "war_scepter", "chance": 0.14 },
+      { "baseId": "crown", "chance": 0.12 },
+      { "baseId": "gothic_plate", "chance": 0.09 },
+      { "baseId": "plated_belt", "chance": 0.16 },
+      { "baseId": "ring", "chance": 0.10 },
+      { "baseId": "amulet", "chance": 0.09 }
+    ],
+    "qualityChances": { "magic": 0.42, "rare": 0.16 }
+  },
+  "demon_lvl_30_35": {
+    "id": "demon_lvl_30_35",
+    "noDropChance": 0.07,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.91, "quantity": { "min": 200, "max": 400 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.38, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.22, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.11 },
+      { "baseId": "maul", "chance": 0.10 },
+      { "baseId": "war_scepter", "chance": 0.13 },
+      { "baseId": "battle_staff", "chance": 0.11 },
+      { "baseId": "gothic_plate", "chance": 0.12 },
+      { "baseId": "plate_gauntlets", "chance": 0.18 },
+      { "baseId": "plate_greaves", "chance": 0.18 },
+      { "baseId": "ring", "chance": 0.12 },
+      { "baseId": "amulet", "chance": 0.11 }
+    ],
+    "qualityChances": { "magic": 0.45, "rare": 0.18 }
+  },
+  "undead_lvl_30_35": {
+    "id": "undead_lvl_30_35",
+    "noDropChance": 0.11,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.93, "quantity": { "min": 160, "max": 320 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.35, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.28, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.13 },
+      { "baseId": "great_axe", "chance": 0.11 },
+      { "baseId": "maul", "chance": 0.10 },
+      { "baseId": "composite_bow", "chance": 0.11 },
+      { "baseId": "crown", "chance": 0.15 },
+      { "baseId": "field_plate", "chance": 0.14 },
+      { "baseId": "plate_gauntlets", "chance": 0.17 },
+      { "baseId": "plate_greaves", "chance": 0.17 },
+      { "baseId": "plated_belt", "chance": 0.18 },
+      { "baseId": "tower_shield", "chance": 0.11 },
+      { "baseId": "war_scepter", "chance": 0.08 }
+    ],
+    "qualityChances": { "magic": 0.36, "rare": 0.12 }
+  },
+  "demon_lvl_35_40": {
+    "id": "demon_lvl_35_40",
+    "noDropChance": 0.06,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.92, "quantity": { "min": 250, "max": 500 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.40, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.32, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.25, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.13 },
+      { "baseId": "maul", "chance": 0.12 },
+      { "baseId": "war_scepter", "chance": 0.14 },
+      { "baseId": "battle_staff", "chance": 0.12 },
+      { "baseId": "gothic_plate", "chance": 0.14 },
+      { "baseId": "plate_gauntlets", "chance": 0.20 },
+      { "baseId": "plate_greaves", "chance": 0.20 },
+      { "baseId": "ring", "chance": 0.14 },
+      { "baseId": "amulet", "chance": 0.13 }
+    ],
+    "qualityChances": { "magic": 0.50, "rare": 0.20 }
+  },
+  "demon_mage_lvl_35_40": {
+    "id": "demon_mage_lvl_35_40",
+    "noDropChance": 0.05,
+    "maxDrops": 6,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.90, "quantity": { "min": 280, "max": 550 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.45, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.35, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.28, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "battle_staff", "chance": 0.20 },
+      { "baseId": "bone_wand", "chance": 0.18 },
+      { "baseId": "war_scepter", "chance": 0.16 },
+      { "baseId": "crown", "chance": 0.14 },
+      { "baseId": "gothic_plate", "chance": 0.10 },
+      { "baseId": "plated_belt", "chance": 0.18 },
+      { "baseId": "ring", "chance": 0.12 },
+      { "baseId": "amulet", "chance": 0.11 }
+    ],
+    "qualityChances": { "magic": 0.55, "rare": 0.22 }
+  },
+  "undead_lvl_35_40": {
+    "id": "undead_lvl_35_40",
+    "noDropChance": 0.09,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.94, "quantity": { "min": 200, "max": 400 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.38, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.14 },
+      { "baseId": "great_axe", "chance": 0.12 },
+      { "baseId": "maul", "chance": 0.11 },
+      { "baseId": "composite_bow", "chance": 0.12 },
+      { "baseId": "crown", "chance": 0.16 },
+      { "baseId": "field_plate", "chance": 0.15 },
+      { "baseId": "plate_gauntlets", "chance": 0.18 },
+      { "baseId": "plate_greaves", "chance": 0.18 },
+      { "baseId": "plated_belt", "chance": 0.19 },
+      { "baseId": "tower_shield", "chance": 0.12 },
+      { "baseId": "war_scepter", "chance": 0.09 }
+    ],
+    "qualityChances": { "magic": 0.40, "rare": 0.14 }
+  },
+  "demon_knight_lvl_35_40": {
+    "id": "demon_knight_lvl_35_40",
+    "noDropChance": 0.08,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.90, "quantity": { "min": 260, "max": 520 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.42, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.25, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.15 },
+      { "baseId": "maul", "chance": 0.13 },
+      { "baseId": "war_scepter", "chance": 0.12 },
+      { "baseId": "gothic_plate", "chance": 0.15 },
+      { "baseId": "plate_gauntlets", "chance": 0.22 },
+      { "baseId": "plate_greaves", "chance": 0.22 },
+      { "baseId": "plated_belt", "chance": 0.20 },
+      { "baseId": "tower_shield", "chance": 0.14 },
+      { "baseId": "ring", "chance": 0.08 },
+      { "baseId": "amulet", "chance": 0.07 }
+    ],
+    "qualityChances": { "magic": 0.48, "rare": 0.19 }
+  },
+  "demon_lvl_40_45": {
+    "id": "demon_lvl_40_45",
+    "noDropChance": 0.05,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.93, "quantity": { "min": 300, "max": 600 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.45, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.35, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.30, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.14 },
+      { "baseId": "maul", "chance": 0.13 },
+      { "baseId": "war_scepter", "chance": 0.15 },
+      { "baseId": "battle_staff", "chance": 0.13 },
+      { "baseId": "gothic_plate", "chance": 0.16 },
+      { "baseId": "plate_gauntlets", "chance": 0.22 },
+      { "baseId": "plate_greaves", "chance": 0.22 },
+      { "baseId": "ring", "chance": 0.16 },
+      { "baseId": "amulet", "chance": 0.15 }
+    ],
+    "qualityChances": { "magic": 0.55, "rare": 0.25 }
+  },
+  "undead_lvl_40_45": {
+    "id": "undead_lvl_40_45",
+    "noDropChance": 0.08,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.95, "quantity": { "min": 250, "max": 500 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.40, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.32, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.15 },
+      { "baseId": "great_axe", "chance": 0.13 },
+      { "baseId": "maul", "chance": 0.12 },
+      { "baseId": "composite_bow", "chance": 0.13 },
+      { "baseId": "crown", "chance": 0.18 },
+      { "baseId": "gothic_plate", "chance": 0.16 },
+      { "baseId": "plate_gauntlets", "chance": 0.20 },
+      { "baseId": "plate_greaves", "chance": 0.20 },
+      { "baseId": "plated_belt", "chance": 0.21 },
+      { "baseId": "tower_shield", "chance": 0.13 },
+      { "baseId": "war_scepter", "chance": 0.10 }
+    ],
+    "qualityChances": { "magic": 0.45, "rare": 0.18 }
+  },
+  "demon_mage_lvl_40_45": {
+    "id": "demon_mage_lvl_40_45",
+    "noDropChance": 0.04,
+    "maxDrops": 6,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.92, "quantity": { "min": 320, "max": 650 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.50, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.40, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.32, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "battle_staff", "chance": 0.22 },
+      { "baseId": "bone_wand", "chance": 0.20 },
+      { "baseId": "war_scepter", "chance": 0.18 },
+      { "baseId": "crown", "chance": 0.16 },
+      { "baseId": "gothic_plate", "chance": 0.12 },
+      { "baseId": "plated_belt", "chance": 0.20 },
+      { "baseId": "ring", "chance": 0.15 },
+      { "baseId": "amulet", "chance": 0.14 }
+    ],
+    "qualityChances": { "magic": 0.60, "rare": 0.28 }
+  },
+  "demon_knight_lvl_40_45": {
+    "id": "demon_knight_lvl_40_45",
+    "noDropChance": 0.07,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.91, "quantity": { "min": 310, "max": 620 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.48, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.28, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.16 },
+      { "baseId": "maul", "chance": 0.14 },
+      { "baseId": "war_scepter", "chance": 0.13 },
+      { "baseId": "gothic_plate", "chance": 0.17 },
+      { "baseId": "plate_gauntlets", "chance": 0.24 },
+      { "baseId": "plate_greaves", "chance": 0.24 },
+      { "baseId": "plated_belt", "chance": 0.22 },
+      { "baseId": "tower_shield", "chance": 0.15 },
+      { "baseId": "ring", "chance": 0.10 },
+      { "baseId": "amulet", "chance": 0.09 }
+    ],
+    "qualityChances": { "magic": 0.52, "rare": 0.23 }
+  },
+  "demon_beast_lvl_40_45": {
+    "id": "demon_beast_lvl_40_45",
+    "noDropChance": 0.09,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.90, "quantity": { "min": 280, "max": 560 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.40, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.22, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.12 },
+      { "baseId": "great_axe", "chance": 0.12 },
+      { "baseId": "maul", "chance": 0.11 },
+      { "baseId": "gothic_plate", "chance": 0.10 },
+      { "baseId": "plate_gauntlets", "chance": 0.18 },
+      { "baseId": "plate_greaves", "chance": 0.18 },
+      { "baseId": "plated_belt", "chance": 0.20 },
+      { "baseId": "tower_shield", "chance": 0.13 }
+    ],
+    "qualityChances": { "magic": 0.40, "rare": 0.15 }
+  },
+  "demon_beast_lvl_45_50": {
+    "id": "demon_beast_lvl_45_50",
+    "noDropChance": 0.08,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.91, "quantity": { "min": 320, "max": 640 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.42, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.25, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.13 },
+      { "baseId": "great_axe", "chance": 0.13 },
+      { "baseId": "maul", "chance": 0.12 },
+      { "baseId": "gothic_plate", "chance": 0.12 },
+      { "baseId": "plate_gauntlets", "chance": 0.20 },
+      { "baseId": "plate_greaves", "chance": 0.20 },
+      { "baseId": "plated_belt", "chance": 0.22 },
+      { "baseId": "tower_shield", "chance": 0.14 }
+    ],
+    "qualityChances": { "magic": 0.48, "rare": 0.20 }
+  },
+  "demon_knight_lvl_45_50": {
+    "id": "demon_knight_lvl_45_50",
+    "noDropChance": 0.06,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.92, "quantity": { "min": 350, "max": 700 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.50, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.30, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.17 },
+      { "baseId": "maul", "chance": 0.15 },
+      { "baseId": "war_scepter", "chance": 0.14 },
+      { "baseId": "gothic_plate", "chance": 0.18 },
+      { "baseId": "plate_gauntlets", "chance": 0.25 },
+      { "baseId": "plate_greaves", "chance": 0.25 },
+      { "baseId": "plated_belt", "chance": 0.24 },
+      { "baseId": "tower_shield", "chance": 0.16 },
+      { "baseId": "ring", "chance": 0.12 },
+      { "baseId": "amulet", "chance": 0.11 }
+    ],
+    "qualityChances": { "magic": 0.58, "rare": 0.26 }
+  },
+  "demon_lvl_45_50": {
+    "id": "demon_lvl_45_50",
+    "noDropChance": 0.04,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.94, "quantity": { "min": 330, "max": 660 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.48, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.38, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.33, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.15 },
+      { "baseId": "maul", "chance": 0.14 },
+      { "baseId": "war_scepter", "chance": 0.16 },
+      { "baseId": "battle_staff", "chance": 0.14 },
+      { "baseId": "gothic_plate", "chance": 0.17 },
+      { "baseId": "plate_gauntlets", "chance": 0.24 },
+      { "baseId": "plate_greaves", "chance": 0.24 },
+      { "baseId": "ring", "chance": 0.18 },
+      { "baseId": "amulet", "chance": 0.17 }
+    ],
+    "qualityChances": { "magic": 0.60, "rare": 0.28 }
+  },
+  "undead_lvl_50_55": {
+    "id": "undead_lvl_50_55",
+    "noDropChance": 0.07,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.96, "quantity": { "min": 300, "max": 600 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.45, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.35, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.16 },
+      { "baseId": "great_axe", "chance": 0.14 },
+      { "baseId": "maul", "chance": 0.13 },
+      { "baseId": "composite_bow", "chance": 0.14 },
+      { "baseId": "crown", "chance": 0.20 },
+      { "baseId": "gothic_plate", "chance": 0.18 },
+      { "baseId": "plate_gauntlets", "chance": 0.22 },
+      { "baseId": "plate_greaves", "chance": 0.22 },
+      { "baseId": "plated_belt", "chance": 0.23 },
+      { "baseId": "tower_shield", "chance": 0.15 },
+      { "baseId": "war_scepter", "chance": 0.12 }
+    ],
+    "qualityChances": { "magic": 0.50, "rare": 0.22 }
+  },
+  "demon_mage_lvl_50_55": {
+    "id": "demon_mage_lvl_50_55",
+    "noDropChance": 0.03,
+    "maxDrops": 6,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.93, "quantity": { "min": 380, "max": 750 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.55, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.45, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.35, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "battle_staff", "chance": 0.24 },
+      { "baseId": "bone_wand", "chance": 0.22 },
+      { "baseId": "war_scepter", "chance": 0.20 },
+      { "baseId": "crown", "chance": 0.18 },
+      { "baseId": "gothic_plate", "chance": 0.14 },
+      { "baseId": "plated_belt", "chance": 0.22 },
+      { "baseId": "ring", "chance": 0.18 },
+      { "baseId": "amulet", "chance": 0.17 }
+    ],
+    "qualityChances": { "magic": 0.65, "rare": 0.32 }
+  },
+  "demon_beast_lvl_50_55": {
+    "id": "demon_beast_lvl_50_55",
+    "noDropChance": 0.08,
+    "maxDrops": 4,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.92, "quantity": { "min": 340, "max": 680 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.45, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.25, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.14 },
+      { "baseId": "great_axe", "chance": 0.14 },
+      { "baseId": "maul", "chance": 0.13 },
+      { "baseId": "gothic_plate", "chance": 0.12 },
+      { "baseId": "plate_gauntlets", "chance": 0.22 },
+      { "baseId": "plate_greaves", "chance": 0.22 },
+      { "baseId": "plated_belt", "chance": 0.24 },
+      { "baseId": "tower_shield", "chance": 0.15 }
+    ],
+    "qualityChances": { "magic": 0.45, "rare": 0.18 }
+  },
+  "demon_knight_lvl_50_55": {
+    "id": "demon_knight_lvl_50_55",
+    "noDropChance": 0.06,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.93, "quantity": { "min": 370, "max": 740 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.52, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.32, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.18 },
+      { "baseId": "maul", "chance": 0.16 },
+      { "baseId": "war_scepter", "chance": 0.15 },
+      { "baseId": "gothic_plate", "chance": 0.20 },
+      { "baseId": "plate_gauntlets", "chance": 0.27 },
+      { "baseId": "plate_greaves", "chance": 0.27 },
+      { "baseId": "plated_belt", "chance": 0.26 },
+      { "baseId": "tower_shield", "chance": 0.18 },
+      { "baseId": "ring", "chance": 0.14 },
+      { "baseId": "amulet", "chance": 0.13 }
+    ],
+    "qualityChances": { "magic": 0.62, "rare": 0.30 }
+  },
+  "beast_lvl_50_55": {
+    "id": "beast_lvl_50_55",
+    "noDropChance": 0.15,
+    "maxDrops": 3,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.88, "quantity": { "min": 300, "max": 600 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.40, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "gothic_plate", "chance": 0.15 },
+      { "baseId": "plate_gauntlets", "chance": 0.20 },
+      { "baseId": "plate_greaves", "chance": 0.20 },
+      { "baseId": "plated_belt", "chance": 0.22 }
+    ],
+    "qualityChances": { "magic": 0.30, "rare": 0.08 }
+  },
+  "demon_lvl_55_60": {
+    "id": "demon_lvl_55_60",
+    "noDropChance": 0.04,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.94, "quantity": { "min": 400, "max": 800 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.50, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.40, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.35, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.16 },
+      { "baseId": "maul", "chance": 0.15 },
+      { "baseId": "war_scepter", "chance": 0.17 },
+      { "baseId": "battle_staff", "chance": 0.15 },
+      { "baseId": "gothic_plate", "chance": 0.18 },
+      { "baseId": "plate_gauntlets", "chance": 0.25 },
+      { "baseId": "plate_greaves", "chance": 0.25 },
+      { "baseId": "ring", "chance": 0.20 },
+      { "baseId": "amulet", "chance": 0.19 }
+    ],
+    "qualityChances": { "magic": 0.68, "rare": 0.35 }
+  },
+  "demon_mage_lvl_55_60": {
+    "id": "demon_mage_lvl_55_60",
+    "noDropChance": 0.02,
+    "maxDrops": 6,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.94, "quantity": { "min": 450, "max": 900 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.60, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.50, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.40, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "battle_staff", "chance": 0.26 },
+      { "baseId": "bone_wand", "chance": 0.24 },
+      { "baseId": "war_scepter", "chance": 0.22 },
+      { "baseId": "crown", "chance": 0.20 },
+      { "baseId": "gothic_plate", "chance": 0.16 },
+      { "baseId": "plated_belt", "chance": 0.24 },
+      { "baseId": "ring", "chance": 0.20 },
+      { "baseId": "amulet", "chance": 0.19 }
+    ],
+    "qualityChances": { "magic": 0.75, "rare": 0.40 }
+  },
+  "demon_knight_lvl_55_60": {
+    "id": "demon_knight_lvl_55_60",
+    "noDropChance": 0.05,
+    "maxDrops": 5,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.94, "quantity": { "min": 420, "max": 840 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.55, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.35, "quantity": { "min": 1, "max": 1 }, "magicFindSensitive": false },
+      { "baseId": "great_sword", "chance": 0.20 },
+      { "baseId": "maul", "chance": 0.18 },
+      { "baseId": "war_scepter", "chance": 0.17 },
+      { "baseId": "gothic_plate", "chance": 0.22 },
+      { "baseId": "plate_gauntlets", "chance": 0.30 },
+      { "baseId": "plate_greaves", "chance": 0.30 },
+      { "baseId": "plated_belt", "chance": 0.28 },
+      { "baseId": "tower_shield", "chance": 0.20 },
+      { "baseId": "ring", "chance": 0.16 },
+      { "baseId": "amulet", "chance": 0.15 }
+    ],
+    "qualityChances": { "magic": 0.70, "rare": 0.38 }
+  },
+  "secret_cow_level": {
+    "id": "secret_cow_level",
+    "noDropChance": 0.05,
+    "maxDrops": 6,
+    "possibleDrops": [
+      { "baseId": "gold_coins", "chance": 0.95, "quantity": { "min": 500, "max": 1000 }, "magicFindSensitive": false },
+      { "baseId": "greater_health_potion", "chance": 0.50, "quantity": { "min": 2, "max": 4 }, "magicFindSensitive": false },
+      { "baseId": "greater_mana_potion", "chance": 0.40, "quantity": { "min": 1, "max": 3 }, "magicFindSensitive": false },
+      { "baseId": "rejuvenation_potion", "chance": 0.30, "quantity": { "min": 1, "max": 2 }, "magicFindSensitive": false },
+      { "baseId": "halberd", "chance": 0.25 },
+      { "baseId": "scythe", "chance": 0.20 },
+      { "baseId": "great_axe", "chance": 0.22 },
+      { "baseId": "maul", "chance": 0.20 },
+      { "baseId": "gothic_plate", "chance": 0.18 },
+      { "baseId": "plate_gauntlets", "chance": 0.25 },
+      { "baseId": "plate_greaves", "chance": 0.25 },
+      { "baseId": "plated_belt", "chance": 0.28 },
+      { "baseId": "tower_shield", "chance": 0.15 },
+      { "baseId": "ring", "chance": 0.15 },
+      { "baseId": "amulet", "chance": 0.15 }
+    ],
+    "qualityChances": { "magic": 0.65, "rare": 0.30 }
+  }
+}

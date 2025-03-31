@@ -55,41 +55,45 @@ const OptionsScreen: React.FC<OptionsScreenProps> = ({
             saveTime: new Date().toLocaleString() // Placeholder time
         } : null;
 
+        // Tailwind styled Save/Load tab
+        const buttonBase = "py-2 px-4 rounded focus:outline-none focus:shadow-outline text-white font-bold text-sm";
+        const buttonPrimary = `${buttonBase} bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed`;
+        const buttonSecondary = `${buttonBase} bg-gray-600 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed`;
+        const buttonDanger = `${buttonBase} bg-red-600 hover:bg-red-700`;
+
         return (
-            <div className="save-load-content">
-                <h4>Save Slots</h4>
+            <div className="save-load-content space-y-4">
+                <h4 className="text-lg font-semibold text-yellow-400">Save Slots</h4>
                 {saveSlot ? (
-                    <div className="save-slot current">
+                    <div className="bg-gray-700 p-3 rounded flex justify-between items-center">
                         <div className="save-info">
-                            {/* Removed class display */}
-                            <span className="save-name">{saveSlot.name} (Lvl {saveSlot.level})</span>
-                            <span className="save-time">Current Session</span>
-                            {/* <span className="save-time">Saved: {saveSlot.saveTime}</span> */}
+                            <span className="font-semibold block">{saveSlot.name} (Lvl {saveSlot.level})</span>
+                            <span className="text-xs text-gray-400">Current Session</span>
                         </div>
-                        <div className="save-actions">
-                            <button onClick={handleSaveDb} disabled={!!statusMessage}>Save (DB)</button>
-                            <button onClick={handleLoadDb} disabled={!!statusMessage}>Load (DB)</button>
-                            {/* Removed JSON buttons */}
+                        <div className="save-actions space-x-2">
+                            <button className={buttonPrimary} onClick={handleSaveDb} disabled={!!statusMessage}>Save (DB)</button>
+                            <button className={buttonSecondary} onClick={handleLoadDb} disabled={true || !!statusMessage}>Load (DB)</button> {/* Load disabled for now */}
                         </div>
                     </div>
                 ) : (
-                    <p>No character data available.</p>
+                    <p className="text-gray-400 italic">No character data available.</p>
                 )}
                 {/* Add logic here later to list multiple save files if needed */}
-                <hr />
-                <div className="options-general-actions">
-                     <button onClick={onReturnToCharacterSelect}>Return to Character Select</button>
-                     <button onClick={onLogout}>Logout</button>
+                <hr className="border-gray-600 my-4"/>
+                <div className="options-general-actions flex justify-center space-x-4">
+                     <button className={buttonSecondary} onClick={onReturnToCharacterSelect}>Return to Character Select</button>
+                     <button className={buttonDanger} onClick={onLogout}>Logout</button>
                 </div>
             </div>
         );
     };
 
     const renderOptionsTab = () => {
+        // Tailwind styled Options tab
         return (
-            <div className="options-content">
-                <h4>Game Options</h4>
-                <p>Options settings (e.g., sound, graphics) not implemented yet.</p>
+            <div className="options-content space-y-4">
+                <h4 className="text-lg font-semibold text-yellow-400">Game Options</h4>
+                <p className="text-gray-400 italic">Options settings (e.g., sound, graphics) not implemented yet.</p>
                 {/* Add actual options controls here later */}
             </div>
         );
@@ -99,32 +103,38 @@ const OptionsScreen: React.FC<OptionsScreenProps> = ({
         return null;
     }
 
+    // Tailwind styled Options Modal
+    const tabBaseStyle = "flex-1 py-2 px-4 text-center text-gray-400 bg-gray-800 border-b-2 border-transparent hover:bg-gray-700 hover:text-gray-200 transition duration-150 ease-in-out focus:outline-none";
+    const tabActiveStyle = "text-white font-semibold border-yellow-400 bg-gray-900";
+
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content options-screen-modal" onClick={e => e.stopPropagation()}>
-                <button className="modal-close-button" onClick={onClose}>&times;</button>
-                <div className="options-screen-header">
-                    <h3>Game Menu</h3>
+        // Use Tailwind for overlay and modal container
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-gray-800 rounded shadow-xl p-4 max-w-lg w-full text-gray-200 relative flex flex-col" onClick={e => e.stopPropagation()}>
+                <button className="absolute top-2 right-3 text-gray-400 hover:text-white text-2xl font-bold" onClick={onClose}>&times;</button>
+                <div className="mb-4 text-center border-b border-gray-700 pb-2">
+                    <h3 className="text-xl font-bold text-yellow-400">Game Menu</h3>
                 </div>
-                <div className="options-screen-tabs">
+                <div className="flex flex-shrink-0 border-b border-gray-700 mb-4"> {/* Tab buttons container */}
                     <button
-                        className={`tab-button ${activeTab === 'saveLoad' ? 'active' : ''}`}
+                        className={`${tabBaseStyle} ${activeTab === 'saveLoad' ? tabActiveStyle : ''}`}
                         onClick={() => setActiveTab('saveLoad')}
                     >
                         Save / Load
                     </button>
                     <button
-                        className={`tab-button ${activeTab === 'options' ? 'active' : ''}`}
+                        className={`${tabBaseStyle} ${activeTab === 'options' ? tabActiveStyle : ''}`}
                         onClick={() => setActiveTab('options')}
                     >
                         Options
                     </button>
                 </div>
-                <div className="options-screen-content">
+                <div className="flex-grow overflow-y-auto mb-4"> {/* Tab content area */}
                     {activeTab === 'saveLoad' && renderSaveLoadTab()}
                     {activeTab === 'options' && renderOptionsTab()}
                 </div>
-                 {statusMessage && <p className="options-status-message">{statusMessage}</p>}
+                 {/* Status message styling */}
+                 {statusMessage && <p className="text-center text-sm text-yellow-300 mt-auto h-4">{statusMessage}</p>}
             </div>
         </div>
     );

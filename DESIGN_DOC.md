@@ -6,7 +6,7 @@ Loot & Legends is a UI-heavy RPG built with TypeScript and Electron. It features
 
 ## 2. Technology Stack
 
-*   **Client:** Electron, TypeScript, HTML, CSS
+*   **Client:** Electron, TypeScript, React, Tailwind CSS (for styling)
 *   **Server:** Node.js, TypeScript
 *   **Communication:** WebSockets (`ws` library)
 *   **Data Persistence:** MongoDB (`mongodb` driver)
@@ -15,16 +15,17 @@ Loot & Legends is a UI-heavy RPG built with TypeScript and Electron. It features
 
 *   **Server-Authoritative:** All game actions (combat, movement, item usage, etc.) are validated and processed by the server. The client sends requests to the server, and the server responds with the updated game state.
 *   **Real-time Communication:** WebSockets are used for continuous communication between the client and server.
-*   **Modular Server:** The server logic is broken down into smaller, manageable modules (auth, character, combat, zone, gameData, types, utils).
+*   **Modular Server:** The server logic is broken down into smaller, manageable modules (auth, character, combat, zone, data loading, types, utils).
+*   **Data-Driven Design:** Core game data (items, affixes, loot tables, monsters, zones, character classes, quality weights) is defined in JSON files within `server/data/` and loaded dynamically at runtime. This allows for significant content expansion (like the current ~100 monsters, expanded zones, and loot tables) primarily through data modification.
 
 ## 4. Key Features (Implemented)
 
 *   **User Authentication:** Secure login and registration using bcrypt for password hashing.
-*   **Character Creation & Selection:** Players can create characters with a chosen class and name, and select from their existing characters.
-*   **Zone System:** Static zone data defined on the server. Players can navigate between connected zones, respecting level requirements.
-*   **Basic Auto-Combat:** Automatic combat encounters start when entering non-town zones. Player and monster exchange attacks at fixed intervals. Basic HP/XP updates are handled. Player death and monster defeat end the encounter. Includes basic loot generation (items, gold, resources) and defense calculation.
+*   **Character Creation & Selection:** Players can create characters with a chosen class and name, and select from their existing characters. Character class base stats defined in `server/data/characterClasses.json`.
+*   **Zone System:** Zone data (connections, monsters, level requirements) defined in `server/data/zones.json`. Players can navigate between connected zones, respecting level requirements. *(Content significantly expanded to include ~40 zones covering levels 1-60).*
+*   **Basic Auto-Combat:** Automatic combat encounters start when entering non-town zones. Monster data (stats, level, loot) defined in `server/data/monsters.json`. *(Content significantly expanded to include ~100 monsters covering levels 1-60).* Player and monster exchange attacks at fixed intervals. Basic HP/XP updates are handled. Player death and monster defeat end the encounter. Includes basic loot generation (items, gold, resources) and defense calculation.
 *   **Offline Progress (Basic):** Calculates and awards placeholder XP/Gold based on time offline when selecting a character. Records logout time.
-*   **Loot & Inventory System (Foundation):** Items defined with stats/rarity. Loot tables assigned to monsters. Basic inventory management (add, stack) and equipping/unequipping implemented. Item stats affect combat calculations.
+*   **Loot & Inventory System (Foundation):** Base items, affixes (prefixes/suffixes), affix tiers, and loot tables defined in JSON files (`server/data/items.json`, `server/data/prefixes.json`, `server/data/suffixes.json`, `server/data/affixTiers.json`, `server/data/lootTables.json`). Item quality weights defined in `server/data/qualityWeights.json`. Loot tables assigned to monsters. *(Loot tables significantly expanded to cover all monster level ranges up to 60).* Basic inventory management (add, stack) and equipping/unequipping implemented. Item stats affect combat calculations.
 *   **Passive Resource Gathering:** Monsters drop basic resources (Monster Essence, Scrap Metal) upon defeat. Resources tracked per character.
 *   **Simple Crafting:** Basic recipes defined for creating potions. Crafting service/handler implemented. Client UI allows viewing recipes and crafting items using gathered resources.
 *   **Item Upgrading (Foundation):** Items track upgrade count/max based on rarity. Service logic allows upgrading affixes on Magic/Rare items or adding a T1 affix to Gray/White items using resources. Basic UI integrated into Crafting Panel.
@@ -69,9 +70,11 @@ Loot & Legends is a UI-heavy RPG built with TypeScript and Electron. It features
 14. **Passive Resource Gathering:** Implement resource drops from monsters and character tracking. **[COMPLETED]**
 15. **Simple Crafting:** Implement basic recipes, crafting service/handler, and client UI for item creation. **[COMPLETED]**
 16. **Item Upgrading (Foundation):** Add upgrade tracking to items, implement backend service logic for adding/upgrading affixes, integrate basic UI into crafting panel. **[COMPLETED]**
-17. **UI Overhaul & Polish:** Redesign the UI for a better look and feel. Implement proper UI feedback mechanisms (including crafting/upgrade interactions). *(Next Major Focus)*
-18. **Combat Enhancements:** Add skills, status effects, more complex damage formulas.
-19. **Build & Deployment:** Configure Electron builds for distribution.
+17. **Tailwind CSS Setup:** Install and configure Tailwind CSS for the client project. **[COMPLETED]** *(Note: Initial attempt with Tailwind v4 failed due to build process issues in the Vite/Electron environment. Downgraded to Tailwind v3.4.17, which resolved the style generation problem.)*
+18. **Content Expansion (Monsters, Zones, Loot):** Added ~100 monsters, ~40 zones, and corresponding loot tables covering levels 1-60. **[COMPLETED]**
+19. **UI Overhaul & Polish:** Redesign the UI using Tailwind CSS for a better look and feel. Implement proper UI feedback mechanisms (including crafting/upgrade interactions). *(In Progress - Initial styling applied to main game screen: Zones, Stats, Encounter Area)*
+20. **Combat Enhancements:** Add skills, status effects, more complex damage formulas.
+21. **Build & Deployment:** Configure Electron builds for distribution.
 
 ## 7. Design Document Maintenance
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import '../styles.css'; // Moved import here
 
 import LoginScreen from './components/LoginScreen';
 import MainMenuScreen from './components/MainMenuScreen';

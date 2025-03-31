@@ -25,8 +25,10 @@ function createWindow() {
     if (process.env.VITE_DEV_SERVER_URL) {
         mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
     } else {
-        // Load the index.html file from the Vite build output directory (dist)
-        mainWindow.loadFile(path.join(__dirname, '../dist/index.html'));
+        // Load the index.html file using loadURL with file:// protocol
+        const indexPath = path.join(__dirname, '../dist/index.html');
+        const indexUrl = new URL(`file://${indexPath}`).toString();
+        mainWindow.loadURL(indexUrl);
     }
 
     // Open the DevTools (optional)

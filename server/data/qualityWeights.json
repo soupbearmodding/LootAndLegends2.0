@@ -1,0 +1,8 @@
+[
+  { "quality": "Gray", "weight": 25 },
+  { "quality": "White", "weight": 40 },
+  { "quality": "Green", "weight": 20 },
+  { "quality": "Blue", "weight": 10 },
+  { "quality": "Purple", "weight": 4 },
+  { "quality": "Red", "weight": 1 }
+]

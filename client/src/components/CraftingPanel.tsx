@@ -142,19 +142,20 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
 
     const renderCraftTab = () => (
         <>
-            {itemCraftRecipes.length === 0 && <p>No item crafting recipes available.</p>}
-            <ul className="crafting-recipe-list">
+            {itemCraftRecipes.length === 0 && <p className="text-gray-400 italic">No item crafting recipes available.</p>}
+            <ul className="space-y-2"> {/* Use Tailwind for spacing */}
                 {itemCraftRecipes.map((recipe) => {
                     const affordable = canAfford(recipe.cost);
                     return (
-                        <li key={recipe.id} className={`crafting-recipe-item ${affordable ? '' : 'unaffordable'}`}>
-                            <div className="recipe-info">
-                                <strong>{recipe.name}</strong>
-                                <p>{recipe.description}</p>
-                                <small>Cost: {formatCost(recipe.cost)}</small>
+                        <li key={recipe.id} className={`flex justify-between items-center p-3 bg-gray-800 border border-gray-700 rounded ${affordable ? '' : 'opacity-60'}`}>
+                            <div className="recipe-info mr-4">
+                                <strong className="block text-gray-100 mb-1">{recipe.name}</strong>
+                                <p className="text-sm text-gray-400 mb-1">{recipe.description}</p>
+                                <small className="text-xs text-gray-500">Cost: {formatCost(recipe.cost)}</small>
                             </div>
+                            {/* Apply Tailwind classes to Craft button */}
                             <button
-                                className="button-primary"
+                                className={`px-4 py-2 rounded text-sm font-medium transition duration-150 ease-in-out ${affordable ? 'bg-yellow-600 hover:bg-yellow-500 text-black cursor-pointer' : 'bg-gray-600 text-gray-400 cursor-not-allowed'}`}
                                 onClick={() => handleCraftClick(recipe.id)}
                                 disabled={!affordable}
                                 title={affordable ? `Craft ${recipe.name}` : 'Not enough resources'}
@@ -197,39 +198,44 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
                              (selectedAffixForUpgrade) ); // Green/Blue need an affix selected
 
         return (
-            <div className="upgrade-tab-content">
+            <div className="upgrade-tab-content flex flex-col space-y-4"> {/* Use flex column and spacing */}
                 {/* Recipe Selection */}
                 <div className="upgrade-recipe-selection">
-                    <h5>Select Upgrade Recipe:</h5>
-                    {upgradeRecipes.length === 0 && <p>No upgrade recipes available.</p>}
-                    {upgradeRecipes.map(recipe => (
-                        <button
-                            key={recipe.id}
-                            className={`button-secondary ${selectedUpgradeRecipe?.id === recipe.id ? 'active' : ''}`}
-                            onClick={() => handleUpgradeRecipeSelect(recipe)}
-                            // Disable if character cannot afford
-                            disabled={!canAfford(recipe.cost)}
-                            title={canAfford(recipe.cost) ? recipe.description : `Cannot afford: ${formatCost(recipe.cost)}`}
-                        >
-                            {recipe.name}
-                        </button>
-                    ))}
+                    <h5 className="text-yellow-400 mb-2">Select Upgrade Recipe:</h5>
+                    {upgradeRecipes.length === 0 && <p className="text-gray-400 italic">No upgrade recipes available.</p>}
+                    <div className="flex flex-wrap gap-2"> {/* Wrap buttons */}
+                        {upgradeRecipes.map(recipe => {
+                             const affordable = canAfford(recipe.cost);
+                             return (
+                                <button
+                                    key={recipe.id}
+                                    className={`px-3 py-1 rounded text-sm border transition duration-150 ease-in-out ${selectedUpgradeRecipe?.id === recipe.id ? 'bg-yellow-600 border-yellow-500 text-black' : affordable ? 'bg-gray-700 border-gray-600 hover:bg-gray-600 hover:border-gray-500 text-gray-300' : 'bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed'}`}
+                                    onClick={() => handleUpgradeRecipeSelect(recipe)}
+                                    disabled={!affordable}
+                                    title={affordable ? recipe.description : `Cannot afford: ${formatCost(recipe.cost)}`}
+                                >
+                                    {recipe.name}
+                                </button>
+                             );
+                        })}
+                    </div>
                 </div>
 
                 {/* Item Selection & Details */}
                 {selectedUpgradeRecipe && (
-                    <div className="upgrade-item-area">
+                    <div className="upgrade-item-area flex gap-4 border-t border-gray-700 pt-4"> {/* Flex layout */}
                         {/* Item Selection List */}
-                        <div className="upgrade-item-list">
-                            <h5>Select Item to Upgrade:</h5>
-                            {upgradeableItems.length === 0 && <p>No items match this recipe or are upgradeable.</p>}
-                            <ul>
+                        <div className="upgrade-item-list flex-1 max-h-60 overflow-y-auto border border-gray-700 p-2 bg-gray-900 rounded"> {/* Style list */}
+                            <h5 className="text-yellow-400 mb-2 text-sm">Select Item to Upgrade:</h5>
+                            {upgradeableItems.length === 0 && <p className="text-gray-500 italic text-sm">No items match this recipe or are upgradeable.</p>}
+                            <ul className="space-y-1"> {/* Spacing for items */}
                                 {upgradeableItems.map(item => (
                                     <li
                                         key={item.id}
                                         onClick={() => handleItemSelectForUpgrade(item)}
-                                        className={selectedItemForUpgrade?.id === item.id ? 'selected' : ''}
+                                        className={`p-1 rounded cursor-pointer text-sm truncate ${selectedItemForUpgrade?.id === item.id ? 'bg-gray-600 font-bold' : 'hover:bg-gray-700'}`}
                                         style={{ color: getRarityColor(item.rarity) }}
+                                        title={item.name}
                                     >
                                         {item.name} ({item.upgradeCount ?? 0}/{item.maxUpgrades ?? 0})
                                     </li>
@@ -239,17 +245,15 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
 
                         {/* Item Details & Affix Selection */}
                         {selectedItemForUpgrade && (
-                            <div className="upgrade-item-details">
-                                <h5>{selectedItemForUpgrade.name} <span style={{fontSize: '0.8em'}}>({selectedItemForUpgrade.upgradeCount ?? 0}/{selectedItemForUpgrade.maxUpgrades ?? 0} Upgrades)</span></h5>
-                                {/* Display Base Stats if needed */}
+                            <div className="upgrade-item-details flex-1 border border-gray-700 p-3 bg-gray-800 rounded"> {/* Style details */}
+                                <h5 className="text-yellow-400 mb-1 text-base">{selectedItemForUpgrade.name} <span className="text-xs text-gray-400">({selectedItemForUpgrade.upgradeCount ?? 0}/{selectedItemForUpgrade.maxUpgrades ?? 0} Upgrades)</span></h5>
                                 {/* Affix List */}
                                 {(selectedItemForUpgrade.quality === 'Green' || selectedItemForUpgrade.quality === 'Blue') && (
-                                    <>
-                                        <h6>Select Affix to Enhance:</h6>
-                                        {selectedItemAffixes.length === 0 && <p>(No affixes)</p>}
-                                        <ul>
+                                    <div className="mt-2">
+                                        <h6 className="text-sm text-gray-400 mb-1">Select Affix to Enhance:</h6>
+                                        {selectedItemAffixes.length === 0 && <p className="text-xs text-gray-500 italic">(No affixes)</p>}
+                                        <ul className="space-y-1 text-xs">
                                             {selectedItemAffixes.map(affix => {
-                                                // Basic check if affix can be upgraded (more robust check needed on backend)
                                                 // TODO: Implement client-side check based on affixTiers data if available
                                                 const isMaxTier = false;
                                                 const isSelectable = !isMaxTier;
@@ -257,7 +261,7 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
                                                     <li
                                                         key={affix.id}
                                                         onClick={() => isSelectable && handleAffixSelectForUpgrade(affix)}
-                                                        className={`${selectedAffixForUpgrade?.id === affix.id ? 'selected' : ''} ${isSelectable ? 'selectable' : 'unselectable'}`}
+                                                        className={`p-1 rounded ${selectedAffixForUpgrade?.id === affix.id ? 'bg-blue-800 text-white font-semibold' : isSelectable ? 'cursor-pointer hover:bg-gray-700 text-blue-300' : 'text-gray-500 cursor-not-allowed'}`}
                                                         title={isSelectable ? `Select ${affix.name}` : 'Affix cannot be upgraded further'}
                                                     >
                                                         {affix.name} ({affix.type})
@@ -265,11 +269,11 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
                                                 );
                                             })}
                                         </ul>
-                                    </>
+                                    </div>
                                 )}
                                 {/* Upgrade Button */}
                                 <button
-                                    className="button-primary upgrade-button"
+                                    className={`w-full mt-4 px-4 py-2 rounded text-sm font-medium transition duration-150 ease-in-out ${canUpgrade ? 'bg-green-600 hover:bg-green-500 text-white cursor-pointer' : 'bg-gray-600 text-gray-400 cursor-not-allowed'}`}
                                     onClick={handleUpgradeClick}
                                     disabled={!canUpgrade}
                                     title={canUpgrade ? `Upgrade Item (Cost: ${formatCost(selectedUpgradeRecipe.cost)})` : 'Select item/affix or cannot afford'}
@@ -287,13 +291,22 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
     // Log activeTab value just before returning JSX
     console.log("CraftingPanel rendering, activeTab:", activeTab);
 
+    // Define base and active styles for tabs using Tailwind
+    const tabBaseStyle = "flex-grow py-2 px-4 text-center text-gray-400 bg-gray-800 border-b-2 border-transparent hover:bg-gray-700 hover:text-gray-200 transition duration-150 ease-in-out focus:outline-none";
+    const tabActiveStyle = "text-white font-semibold border-yellow-400 bg-gray-900"; // Use slightly darker bg for active tab body
+
     return (
-        <div className="crafting-panel panel-section">
-            <div className="tab-buttons">
-                <button onClick={() => setActiveTab('craft')} className={activeTab === 'craft' ? 'active' : ''}>Craft Items</button>
-                <button onClick={() => setActiveTab('upgrade')} className={activeTab === 'upgrade' ? 'active' : ''}>Upgrade Items</button>
+        // Apply Tailwind classes to the main container and tab structure
+        <div className="flex flex-col h-full bg-gray-900 text-gray-300 rounded-lg shadow-lg"> {/* Use flex column, set height and background */}
+            <div className="flex flex-shrink-0 border-b border-gray-700"> {/* Tab buttons container */}
+                <button onClick={() => setActiveTab('craft')} className={`${tabBaseStyle} ${activeTab === 'craft' ? tabActiveStyle : ''}`}>
+                    Craft Items
+                </button>
+                <button onClick={() => setActiveTab('upgrade')} className={`${tabBaseStyle} ${activeTab === 'upgrade' ? tabActiveStyle : ''}`}>
+                    Upgrade Items
+                </button>
             </div>
-            <div className="tab-content">
+            <div className="flex-grow overflow-y-auto p-4"> {/* Tab content area */}
                 {activeTab === 'craft' && renderCraftTab()}
                 {activeTab === 'upgrade' && renderUpgradeTab()}
             </div>

@@ -37,16 +37,18 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
         handleLoginClick();
     };
 
+    // Basic Tailwind styling example
     return (
-        <div className="login-container">
-            <div className="game-title-large">
-                <h1>LOOT & LEGENDS</h1>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-gray-200 p-4">
+            <div className="mb-8">
+                <h1 className="text-5xl font-bold text-yellow-400">LOOT & LEGENDS</h1>
             </div>
 
-            <form className="login-form" onSubmit={handleFormSubmit}>
-                <div className="form-group">
-                    <label htmlFor="username">Username:</label>
+            <form className="bg-gray-800 p-6 rounded shadow-md w-full max-w-sm" onSubmit={handleFormSubmit}>
+                <div className="mb-4">
+                    <label htmlFor="username" className="block text-sm font-bold mb-2">Username:</label>
                     <input
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-300"
                         type="text"
                         id="username"
                         name="username"
@@ -56,9 +58,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
                         autoComplete="username"
                     />
                 </div>
-                <div className="form-group">
-                    <label htmlFor="password">Password:</label>
+                <div className="mb-6">
+                    <label htmlFor="password" className="block text-sm font-bold mb-2">Password:</label>
                     <input
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline bg-gray-300"
                         type="password"
                         id="password"
                         name="password"
@@ -68,12 +71,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
                         autoComplete="current-password"
                     />
                 </div>
-                <div className="form-actions" style={{ flexWrap: 'wrap' }}> {/* Allow wrapping */}
-                    <button type="submit" className="button-primary">Login</button>
-                    <button type="button" className="button-secondary" onClick={handleRegisterClick}>Register</button>
+                <div className="flex items-center justify-between mb-4 space-x-2"> {/* Allow wrapping */}
+                    <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Login</button>
+                    <button type="button" className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" onClick={handleRegisterClick}>Register</button>
                     {/* Skip Login Button Removed */}
                 </div>
-                <p className="auth-status" style={{ color: statusMessage.includes('failed') || statusMessage.includes('required') || statusMessage.includes('must be') ? 'lightcoral' : '#aaa' }}>
+                <p className={`text-center text-sm h-4 ${statusMessage.includes('failed') || statusMessage.includes('required') || statusMessage.includes('must be') ? 'text-red-400' : 'text-gray-400'}`}>
                     {statusMessage || '\u00A0'} {/* Use non-breaking space to maintain height */}
                 </p>
             </form>
