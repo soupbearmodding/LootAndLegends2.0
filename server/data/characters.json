@@ -1,0 +1,1209 @@
+[
+  {
+    "_id": "67e95edb519928c71f355b3f",
+    "id": "46da6bb0-9863-456a-b588-9524accc400d",
+    "userId": "97a37dc5-77a7-495a-95ce-aa5b4aa2733b",
+    "name": "soup",
+    "class": "barbarian",
+    "level": 20,
+    "experience": 8728,
+    "stats": {
+      "strength": 59,
+      "dexterity": 39,
+      "vitality": 44,
+      "energy": 19
+    },
+    "maxHp": 270,
+    "currentHp": 270,
+    "maxMana": 20,
+    "currentMana": 20,
+    "currentZoneId": "town",
+    "inventory": [
+      {
+        "baseId": "gold_coins",
+        "name": "Gold Coins",
+        "type": "misc",
+        "description": "The currency of the realm.",
+        "quantity": 3297,
+        "id": "c629a243-97c2-445b-9f76-4cb2dd0a6e05",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": []
+      },
+      {
+        "baseId": "minor_health_potion",
+        "name": "Minor Health Potion",
+        "type": "potion",
+        "description": "Restores 25 health.",
+        "quantity": 135,
+        "sellValue": 5,
+        "effect": {
+          "health": 25
+        },
+        "id": "ee049de2-7159-4509-bba0-fff718b8c9b5",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": []
+      },
+      {
+        "baseId": "dagger",
+        "name": "Swift Burly Dagger of the Snake",
+        "type": "weapon",
+        "description": "A standard dagger.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 2,
+          "vitality": 2,
+          "maxMana": 10
+        },
+        "attackSpeed": 1700,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 8,
+        "id": "80bfaffa-9909-4d46-9247-e5328d4a1b88",
+        "quality": "Purple",
+        "prefixes": [
+          {
+            "id": "ias_p1",
+            "name": "Swift",
+            "type": "prefix",
+            "levelReq": 5,
+            "increasedAttackSpeed": 0.05
+          },
+          {
+            "id": "vit_p1b",
+            "name": "Burly",
+            "type": "prefix",
+            "levelReq": 3,
+            "statModifiers": {
+              "vitality": 2
+            }
+          }
+        ],
+        "suffixes": [
+          {
+            "id": "mana_s2",
+            "name": "of the Snake",
+            "type": "suffix",
+            "levelReq": 7,
+            "statModifiers": {
+              "maxMana": 10
+            }
+          }
+        ],
+        "rarity": "unique"
+      },
+      {
+        "baseId": "long_sword",
+        "name": "Long Sword",
+        "type": "weapon",
+        "description": "A standard military sword.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 3,
+          "dexterity": 2
+        },
+        "attackSpeed": 2100,
+        "damage": {
+          "min": 4,
+          "max": 10
+        },
+        "sellValue": 15,
+        "id": "9eeb4d05-0823-4cf2-a216-e4074e9dbbc6",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "short_staff",
+        "name": "Short Staff",
+        "type": "weapon",
+        "description": "A simple wooden staff.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "energy": 2
+        },
+        "attackSpeed": 2400,
+        "damage": {
+          "min": 1,
+          "max": 4
+        },
+        "sellValue": 8,
+        "id": "aeba272d-b8f9-423d-b038-297839db073b",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "spiked_club",
+        "name": "Spiked Club",
+        "type": "weapon",
+        "description": "A club enhanced with spikes.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 4
+        },
+        "attackSpeed": 2350,
+        "damage": {
+          "min": 4,
+          "max": 8
+        },
+        "sellValue": 9,
+        "id": "19e9b87a-e009-4777-953c-ceaf72b4a9fe",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "buckler",
+        "name": "Buckler",
+        "type": "armor",
+        "description": "A small shield.",
+        "equipmentSlot": "offHand",
+        "stats": {
+          "dexterity": 1
+        },
+        "defense": 5,
+        "blockChance": 0.1,
+        "sellValue": 6,
+        "id": "13174aa9-96c8-4e05-b52c-608a17617719",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "skull_cap",
+        "name": "Tough Skull Cap of Lightning",
+        "type": "armor",
+        "description": "A reinforced leather cap.",
+        "equipmentSlot": "head",
+        "stats": {
+          "vitality": 2,
+          "strength": 2,
+          "lightningRes": 10
+        },
+        "defense": 5,
+        "sellValue": 7,
+        "id": "72682995-4ba8-4a6b-a772-919e08a9e169",
+        "quality": "Blue",
+        "prefixes": [
+          {
+            "id": "str_p1b",
+            "name": "Tough",
+            "type": "prefix",
+            "levelReq": 3,
+            "statModifiers": {
+              "strength": 2
+            }
+          }
+        ],
+        "suffixes": [
+          {
+            "id": "res_light_s2",
+            "name": "of Lightning",
+            "type": "suffix",
+            "levelReq": 10,
+            "statModifiers": {
+              "lightningRes": 10
+            }
+          }
+        ],
+        "rarity": "rare"
+      },
+      {
+        "baseId": "hand_axe",
+        "name": "Hand Axe",
+        "type": "weapon",
+        "description": "A small axe for one hand.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 3
+        },
+        "attackSpeed": 2200,
+        "damage": {
+          "min": 3,
+          "max": 8
+        },
+        "sellValue": 10,
+        "id": "c464fac8-1d8a-4899-afea-3b47b46017da",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "spiked_club",
+        "name": "Shocking Spiked Club",
+        "type": "weapon",
+        "description": "A club enhanced with spikes.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 4,
+          "lightningRes": 10
+        },
+        "attackSpeed": 2350,
+        "damage": {
+          "min": 4,
+          "max": 8
+        },
+        "sellValue": 9,
+        "id": "3e9ea2be-6974-470a-a70f-352bb7454f11",
+        "quality": "Green",
+        "prefixes": [
+          {
+            "id": "res_light_p2",
+            "name": "Shocking",
+            "type": "prefix",
+            "levelReq": 10,
+            "statModifiers": {
+              "lightningRes": 10
+            }
+          }
+        ],
+        "suffixes": [],
+        "rarity": "magic"
+      },
+      {
+        "baseId": "leather_gloves",
+        "name": "Leather Gloves of Ice",
+        "type": "armor",
+        "description": "Simple leather gloves.",
+        "equipmentSlot": "hands",
+        "stats": {
+          "dexterity": 1,
+          "coldRes": 10
+        },
+        "defense": 2,
+        "sellValue": 4,
+        "id": "6b4a220b-b952-43d6-9e75-d317a0c84a29",
+        "quality": "Green",
+        "prefixes": [],
+        "suffixes": [
+          {
+            "id": "res_cold_s2",
+            "name": "of Ice",
+            "type": "suffix",
+            "levelReq": 10,
+            "statModifiers": {
+              "coldRes": 10
+            }
+          }
+        ],
+        "rarity": "magic"
+      },
+      {
+        "baseId": "sash",
+        "name": "Sash of the Ox",
+        "type": "armor",
+        "description": "A simple cloth sash.",
+        "equipmentSlot": "waist",
+        "stats": {
+          "strength": 3
+        },
+        "defense": 1,
+        "sellValue": 2,
+        "id": "434132ae-377b-49d5-b776-ee78b5334bfd",
+        "quality": "Green",
+        "prefixes": [],
+        "suffixes": [
+          {
+            "id": "str_s2",
+            "name": "of the Ox",
+            "type": "suffix",
+            "levelReq": 8,
+            "statModifiers": {
+              "strength": 3
+            }
+          }
+        ],
+        "rarity": "magic"
+      },
+      {
+        "baseId": "hand_axe",
+        "name": "Hand Axe",
+        "type": "weapon",
+        "description": "A small axe for one hand.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 3
+        },
+        "attackSpeed": 2200,
+        "damage": {
+          "min": 3,
+          "max": 8
+        },
+        "sellValue": 10,
+        "id": "ffb15012-6ce0-4666-a8c4-3bf956f21259",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "leather_armor",
+        "name": "Leather Armor",
+        "type": "armor",
+        "description": "Armor made from hardened leather.",
+        "equipmentSlot": "chest",
+        "stats": {
+          "vitality": 3
+        },
+        "defense": 12,
+        "sellValue": 10,
+        "id": "5f1b42c1-ad51-42ee-a1a1-05ed48348031",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "sash",
+        "name": "Sash",
+        "type": "armor",
+        "description": "A simple cloth sash.",
+        "equipmentSlot": "waist",
+        "stats": {},
+        "defense": 1,
+        "sellValue": 2,
+        "id": "ff79c03c-7d6c-4178-b593-3b7107551cc9",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "long_sword",
+        "name": "Long Sword of the Snake",
+        "type": "weapon",
+        "description": "A standard military sword.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 3,
+          "dexterity": 2,
+          "maxMana": 10
+        },
+        "attackSpeed": 2100,
+        "damage": {
+          "min": 4,
+          "max": 10
+        },
+        "sellValue": 15,
+        "id": "c8f12f36-da4f-44fa-8a12-bbd418623e5d",
+        "quality": "Green",
+        "prefixes": [],
+        "suffixes": [
+          {
+            "id": "mana_s2",
+            "name": "of the Snake",
+            "type": "suffix",
+            "levelReq": 7,
+            "statModifiers": {
+              "maxMana": 10
+            }
+          }
+        ],
+        "rarity": "magic"
+      },
+      {
+        "baseId": "spiked_club",
+        "name": "Spiked Club of Strength",
+        "type": "weapon",
+        "description": "A club enhanced with spikes.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 5
+        },
+        "attackSpeed": 2350,
+        "damage": {
+          "min": 4,
+          "max": 8
+        },
+        "sellValue": 9,
+        "id": "2652ac89-6139-4128-bd4e-0ee8a4a70d90",
+        "quality": "Green",
+        "prefixes": [],
+        "suffixes": [
+          {
+            "id": "str_s1",
+            "name": "of Strength",
+            "type": "suffix",
+            "levelReq": 1,
+            "statModifiers": {
+              "strength": 1
+            }
+          }
+        ],
+        "rarity": "magic"
+      },
+      {
+        "baseId": "long_sword",
+        "name": "Long Sword",
+        "type": "weapon",
+        "description": "A standard military sword.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 3,
+          "dexterity": 2
+        },
+        "attackSpeed": 2100,
+        "damage": {
+          "min": 4,
+          "max": 10
+        },
+        "sellValue": 15,
+        "id": "4c50f0ef-5afa-4bcc-b22f-d9ce00878c3f",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "short_bow",
+        "name": "Short Bow",
+        "type": "weapon",
+        "description": "A simple hunting bow.",
+        "equipmentSlot": "mainHand",
+        "twoHanded": true,
+        "stats": {
+          "dexterity": 3
+        },
+        "attackSpeed": 2000,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 10,
+        "id": "66df0712-0361-41bc-bcfb-e36bd65040a0",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "scimitar",
+        "name": "Scimitar",
+        "type": "weapon",
+        "description": "A curved sword, fast and light.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 3
+        },
+        "attackSpeed": 1900,
+        "damage": {
+          "min": 3,
+          "max": 7
+        },
+        "sellValue": 12,
+        "id": "43585c20-a07e-4aea-9bc1-fe4f23f73e18",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "long_sword",
+        "name": "Long Sword",
+        "type": "weapon",
+        "description": "A standard military sword.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 3,
+          "dexterity": 2
+        },
+        "attackSpeed": 2100,
+        "damage": {
+          "min": 4,
+          "max": 10
+        },
+        "sellValue": 15,
+        "id": "f14fa9c5-031e-4e64-96b3-8185594f3b33",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "sash",
+        "name": "Sash",
+        "type": "armor",
+        "description": "A simple cloth sash.",
+        "equipmentSlot": "waist",
+        "stats": {},
+        "defense": 1,
+        "sellValue": 2,
+        "id": "477ee94f-3353-4793-89b6-bf3033175c9e",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "sash",
+        "name": "Sash",
+        "type": "armor",
+        "description": "A simple cloth sash.",
+        "equipmentSlot": "waist",
+        "stats": {},
+        "defense": 1,
+        "sellValue": 2,
+        "id": "04bc0de0-3384-42e1-b6f9-ada298615064",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "dagger",
+        "name": "Dagger",
+        "type": "weapon",
+        "description": "A standard dagger.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 2
+        },
+        "attackSpeed": 1700,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 8,
+        "id": "19ea6875-305d-43eb-97d8-7219385676bd",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "dagger",
+        "name": "Dagger",
+        "type": "weapon",
+        "description": "A standard dagger.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 2
+        },
+        "attackSpeed": 1700,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 8,
+        "id": "44404326-d7fc-4ac9-8bef-3cc55600d61d",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "hand_axe",
+        "name": "Hand Axe",
+        "type": "weapon",
+        "description": "A small axe for one hand.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "strength": 3
+        },
+        "attackSpeed": 2200,
+        "damage": {
+          "min": 3,
+          "max": 8
+        },
+        "sellValue": 10,
+        "id": "aa13c9b3-4d07-4b91-9359-aa1422fa9e27",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "short_staff",
+        "name": "Short Staff",
+        "type": "weapon",
+        "description": "A simple wooden staff.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "energy": 2
+        },
+        "attackSpeed": 2400,
+        "damage": {
+          "min": 1,
+          "max": 4
+        },
+        "sellValue": 8,
+        "id": "00539735-ad3f-4ffb-9dd0-e060ad665edc",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "leather_gloves",
+        "name": "Burly Lion Leather Gloves of the Snake",
+        "type": "armor",
+        "description": "Simple leather gloves.",
+        "equipmentSlot": "hands",
+        "stats": {
+          "dexterity": 1,
+          "vitality": 7,
+          "maxMana": 10
+        },
+        "defense": 2,
+        "sellValue": 4,
+        "id": "73fc33e1-24a9-4182-9216-606565090631",
+        "quality": "Purple",
+        "prefixes": [
+          {
+            "id": "vit_p1b",
+            "name": "Burly",
+            "type": "prefix",
+            "levelReq": 3,
+            "statModifiers": {
+              "vitality": 2
+            }
+          },
+          {
+            "id": "vit_p2b",
+            "name": "Lion",
+            "type": "prefix",
+            "levelReq": 12,
+            "statModifiers": {
+              "vitality": 5
+            }
+          }
+        ],
+        "suffixes": [
+          {
+            "id": "mana_s2",
+            "name": "of the Snake",
+            "type": "suffix",
+            "levelReq": 7,
+            "statModifiers": {
+              "maxMana": 10
+            }
+          }
+        ],
+        "rarity": "unique"
+      },
+      {
+        "baseId": "skull_cap",
+        "name": "Skull Cap of Pestilence",
+        "type": "armor",
+        "description": "A reinforced leather cap.",
+        "equipmentSlot": "head",
+        "stats": {
+          "vitality": 2
+        },
+        "defense": 5,
+        "sellValue": 7,
+        "id": "d974bb0c-fa56-4c7b-9c3c-cc1c4259fc29",
+        "quality": "Green",
+        "prefixes": [],
+        "suffixes": [
+          {
+            "id": "dmg_poison_s1",
+            "name": "of Pestilence",
+            "type": "suffix",
+            "levelReq": 6,
+            "addedDamage": {
+              "poison": {
+                "damage": 5,
+                "duration": 3
+              }
+            }
+          }
+        ],
+        "rarity": "magic"
+      },
+      {
+        "baseId": "dagger",
+        "name": "Sparking Dagger",
+        "type": "weapon",
+        "description": "A standard dagger.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 2,
+          "energy": 3
+        },
+        "attackSpeed": 1700,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 8,
+        "id": "6baddad9-5ac0-462f-ae1a-530dc1b6b74c",
+        "quality": "Green",
+        "prefixes": [
+          {
+            "id": "enr_p2",
+            "name": "Sparking",
+            "type": "prefix",
+            "levelReq": 8,
+            "statModifiers": {
+              "energy": 3
+            }
+          }
+        ],
+        "suffixes": [],
+        "rarity": "magic"
+      },
+      {
+        "baseId": "buckler",
+        "name": "Buckler",
+        "type": "armor",
+        "description": "A small shield.",
+        "equipmentSlot": "offHand",
+        "stats": {
+          "dexterity": 1
+        },
+        "defense": 5,
+        "blockChance": 0.1,
+        "sellValue": 6,
+        "id": "7f4ac8c3-a150-4401-a567-b88272e072b4",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "dagger",
+        "name": "Dagger",
+        "type": "weapon",
+        "description": "A standard dagger.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 2
+        },
+        "attackSpeed": 1700,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 8,
+        "id": "c54c103b-d06b-40b4-9233-6bdd1a463b40",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "leather_armor",
+        "name": "Leather Armor",
+        "type": "armor",
+        "description": "Armor made from hardened leather.",
+        "equipmentSlot": "chest",
+        "stats": {
+          "vitality": 3
+        },
+        "defense": 12,
+        "sellValue": 10,
+        "id": "d6f37bb0-2689-4729-aa80-281f7babe598",
+        "quality": "Gray",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "scimitar",
+        "name": "Scimitar",
+        "type": "weapon",
+        "description": "A curved sword, fast and light.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 3
+        },
+        "attackSpeed": 1900,
+        "damage": {
+          "min": 3,
+          "max": 7
+        },
+        "sellValue": 12,
+        "id": "f4c837f2-b75a-4a34-b29b-b76f26028a6b",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "sash",
+        "name": "Sash",
+        "type": "armor",
+        "description": "A simple cloth sash.",
+        "equipmentSlot": "waist",
+        "stats": {},
+        "defense": 1,
+        "sellValue": 2,
+        "id": "4ed34cfc-d184-4d77-8c9c-c18a3c457109",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      {
+        "baseId": "dagger",
+        "name": "Dagger",
+        "type": "weapon",
+        "description": "A standard dagger.",
+        "equipmentSlot": "mainHand",
+        "stats": {
+          "dexterity": 2
+        },
+        "attackSpeed": 1700,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 8,
+        "id": "7db0ed3e-da5f-41ec-8643-afb02682d252",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      }
+    ],
+    "equipment": {
+      "hands": {
+        "baseId": "leather_gloves",
+        "name": "Leather Gloves",
+        "type": "armor",
+        "description": "Simple leather gloves.",
+        "equipmentSlot": "hands",
+        "stats": {
+          "dexterity": 1
+        },
+        "defense": 2,
+        "sellValue": 4,
+        "id": "d23e0342-e2b0-43dc-8dc0-77c67c4cd748",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": [],
+        "rarity": "common"
+      },
+      "mainHand": {
+        "baseId": "short_bow",
+        "name": "Venomous Short Bow of Might of the Ox",
+        "type": "weapon",
+        "description": "A simple hunting bow.",
+        "equipmentSlot": "mainHand",
+        "twoHanded": true,
+        "stats": {
+          "dexterity": 3,
+          "poisonRes": 10,
+          "strength": 5
+        },
+        "attackSpeed": 2000,
+        "damage": {
+          "min": 2,
+          "max": 5
+        },
+        "sellValue": 10,
+        "id": "18a4c76f-bdb4-4e66-bfb7-b572b2172d2a",
+        "quality": "Purple",
+        "prefixes": [
+          {
+            "id": "res_poison_p2",
+            "name": "Venomous",
+            "type": "prefix",
+            "levelReq": 10,
+            "statModifiers": {
+              "poisonRes": 10
+            }
+          }
+        ],
+        "suffixes": [
+          {
+            "id": "str_s1b",
+            "name": "of Might",
+            "type": "suffix",
+            "levelReq": 3,
+            "statModifiers": {
+              "strength": 2
+            }
+          },
+          {
+            "id": "str_s2",
+            "name": "of the Ox",
+            "type": "suffix",
+            "levelReq": 8,
+            "statModifiers": {
+              "strength": 3
+            }
+          }
+        ],
+        "rarity": "unique"
+      },
+      "waist": {
+        "baseId": "sash",
+        "name": "Sash of the Cat",
+        "type": "armor",
+        "description": "A simple cloth sash.",
+        "equipmentSlot": "waist",
+        "stats": {
+          "dexterity": 3
+        },
+        "defense": 1,
+        "sellValue": 2,
+        "id": "cb8f7d91-20fd-471f-8856-25363442a901",
+        "quality": "Green",
+        "prefixes": [],
+        "suffixes": [
+          {
+            "id": "dex_s2",
+            "name": "of the Cat",
+            "type": "suffix",
+            "levelReq": 8,
+            "statModifiers": {
+              "dexterity": 3
+            }
+          }
+        ],
+        "rarity": "magic"
+      },
+      "head": {
+        "baseId": "skull_cap",
+        "name": "Skull Cap of the Cat",
+        "type": "armor",
+        "description": "A reinforced leather cap.",
+        "equipmentSlot": "head",
+        "stats": {
+          "vitality": 2,
+          "dexterity": 3
+        },
+        "defense": 5,
+        "sellValue": 7,
+        "id": "736e5f8f-360b-4230-8cf7-bc4c36bb07fe",
+        "quality": "Green",
+        "prefixes": [],
+        "suffixes": [
+          {
+            "id": "dex_s2",
+            "name": "of the Cat",
+            "type": "suffix",
+            "levelReq": 8,
+            "statModifiers": {
+              "dexterity": 3
+            }
+          }
+        ],
+        "rarity": "magic"
+      },
+      "feet": {
+        "baseId": "leather_boots",
+        "name": "Agile Leather Boots of Venom",
+        "type": "armor",
+        "description": "Simple leather boots.",
+        "equipmentSlot": "feet",
+        "stats": {
+          "vitality": 1,
+          "dexterity": 1,
+          "poisonRes": 10
+        },
+        "defense": 2,
+        "sellValue": 4,
+        "id": "a3102a43-3fee-4a61-b22d-860d20105962",
+        "quality": "Blue",
+        "prefixes": [
+          {
+            "id": "dex_p1",
+            "name": "Agile",
+            "type": "prefix",
+            "levelReq": 1,
+            "statModifiers": {
+              "dexterity": 1
+            }
+          }
+        ],
+        "suffixes": [
+          {
+            "id": "res_poison_s2",
+            "name": "of Venom",
+            "type": "suffix",
+            "levelReq": 10,
+            "statModifiers": {
+              "poisonRes": 10
+            }
+          }
+        ],
+        "rarity": "rare"
+      },
+      "offHand": {
+        "baseId": "buckler",
+        "name": "Grand Buckler",
+        "type": "armor",
+        "description": "A small shield.",
+        "equipmentSlot": "offHand",
+        "stats": {
+          "dexterity": 6
+        },
+        "defense": 5,
+        "blockChance": 0.1,
+        "sellValue": 6,
+        "id": "4253b493-657e-4ed6-ba8d-0f31bb3a9941",
+        "quality": "Green",
+        "prefixes": [
+          {
+            "id": "dex_p2b",
+            "name": "Grand",
+            "type": "prefix",
+            "levelReq": 12,
+            "statModifiers": {
+              "dexterity": 5
+            }
+          }
+        ],
+        "suffixes": [],
+        "rarity": "magic"
+      },
+      "chest": {
+        "baseId": "leather_armor",
+        "name": "Venomous Cooling Leather Armor of Skill of Dexterity",
+        "type": "armor",
+        "description": "Armor made from hardened leather.",
+        "equipmentSlot": "chest",
+        "stats": {
+          "vitality": 3,
+          "poisonRes": 10,
+          "coldRes": 5,
+          "dexterity": 3
+        },
+        "defense": 12,
+        "sellValue": 10,
+        "id": "97c38385-941c-4865-840f-378178c4f37f",
+        "quality": "Red",
+        "prefixes": [
+          {
+            "id": "res_poison_p2",
+            "name": "Venomous",
+            "type": "prefix",
+            "levelReq": 10,
+            "statModifiers": {
+              "poisonRes": 10
+            }
+          },
+          {
+            "id": "res_cold_p1",
+            "name": "Cooling",
+            "type": "prefix",
+            "levelReq": 3,
+            "statModifiers": {
+              "coldRes": 5
+            }
+          }
+        ],
+        "suffixes": [
+          {
+            "id": "dex_s1b",
+            "name": "of Skill",
+            "type": "suffix",
+            "levelReq": 3,
+            "statModifiers": {
+              "dexterity": 2
+            }
+          },
+          {
+            "id": "dex_s1",
+            "name": "of Dexterity",
+            "type": "suffix",
+            "levelReq": 1,
+            "statModifiers": {
+              "dexterity": 1
+            }
+          }
+        ],
+        "rarity": "legendary"
+      }
+    },
+    "groundLoot": [],
+    "gold": 1174,
+    "potionSlot1": "minor_health_potion",
+    "potionSlot2": null,
+    "currentLevelXp": 447,
+    "xpToNextLevelBracket": 663
+  },
+  {
+    "_id": "67e9a8c01e627a141adb5905",
+    "id": "3e945ab8-694c-460f-88df-e692db2e8742",
+    "class": "rogue",
+    "currentHp": 144,
+    "currentMana": 50,
+    "currentZoneId": "whispering_woods",
+    "equipment": {},
+    "experience": 15,
+    "gold": 0,
+    "groundLoot": [],
+    "inventory": [
+      {
+        "baseId": "gold_coins",
+        "name": "Gold Coins",
+        "type": "misc",
+        "description": "The currency of the realm.",
+        "quantity": 4,
+        "id": "d16a6370-b090-4583-8982-b73c8bf32e39",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": []
+      },
+      {
+        "baseId": "minor_health_potion",
+        "name": "Minor Health Potion",
+        "type": "potion",
+        "description": "Restores 25 health.",
+        "quantity": 1,
+        "sellValue": 5,
+        "effect": {
+          "health": 25
+        },
+        "id": "2fb160a2-8d92-40ba-95b7-3c9371a06c00",
+        "quality": "White",
+        "prefixes": [],
+        "suffixes": []
+      }
+    ],
+    "level": 1,
+    "maxHp": 150,
+    "maxMana": 50,
+    "name": "Soups",
+    "potionSlot1": null,
+    "potionSlot2": null,
+    "stats": {
+      "strength": 20,
+      "dexterity": 30,
+      "vitality": 20,
+      "energy": 15
+    },
+    "userId": "dev-user-skipped-login",
+    "currentLevelXp": 15,
+    "xpToNextLevelBracket": 100
+  },
+  {
+    "_id": "67e9a9631e627a141adb5906",
+    "id": "0635a440-c6c8-43cf-b4ad-0a6d48c64fc1",
+    "class": "rogue",
+    "currentHp": 149,
+    "currentMana": 50,
+    "currentZoneId": "whispering_woods",
+    "equipment": {},
+    "experience": 0,
+    "gold": 0,
+    "groundLoot": [],
+    "inventory": [],
+    "level": 1,
+    "maxHp": 150,
+    "maxMana": 50,
+    "name": "Souper",
+    "potionSlot1": null,
+    "potionSlot2": null,
+    "stats": {
+      "strength": 20,
+      "dexterity": 30,
+      "vitality": 20,
+      "energy": 15
+    },
+    "userId": "dev-user-skipped-login"
+  }
+]

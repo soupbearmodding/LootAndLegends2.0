@@ -1,14 +1,15 @@
-import { Collection, UpdateFilter, FindOptions } from 'mongodb'; // Note: This might be Collection or MockCollection now
-import { charactersCollection } from '../db.js'; // This now exports either Mongo Collection or JSON MockCollection
+import { Collection, UpdateFilter, FindOptions } from 'mongodb';
+import { charactersCollection } from '../db.js';
 import { Character } from '../types.js';
 
-// --- JSON DB Fallback Comment ---
-// This repository uses the abstracted 'charactersCollection' from db.ts.
-// This collection could be either a MongoDB collection or a JSON mock.
-// No specific changes are needed here to support the fallback, but if
-// removing the fallback system, ensure db.ts only exports the real
-// MongoDB collection and remove related files/logic as noted in jsonDb.ts.
-// ---------------------------------
+// Interface describing the shape of the CharacterRepository
+export interface ICharacterRepository {
+    findById(id: string): Promise<Character | null>;
+    findByUserId(userId: string): Promise<Character[]>;
+    save(character: Character): Promise<void>;
+    update(id: string, updates: Partial<Character>): Promise<void>;
+    deleteById(id: string): Promise<boolean>;
+}
 
 /**
  * Finds a single character by its unique ID.
@@ -48,11 +49,14 @@ async function findByUserId(userId: string): Promise<Character[]> {
  */
 async function save(character: Character): Promise<void> {
      try {
+        // Separate the ID from the rest of the data for the $set operation
+        const { id, ...characterDataToSet } = character;
+
         // Use updateOne with upsert:true to either insert or update
         const result = await charactersCollection.updateOne(
-            { id: character.id }, // Filter by character ID
-            { $set: character }, // Set the entire character document
-            { upsert: true } // Create if it doesn't exist
+            { id: id }, // Filter by character ID
+            { $set: characterDataToSet }, // Set the character data *without* the id
+            { upsert: true } // Create if it doesn't exist (will include id on insert)
         );
 
         if (result.upsertedCount > 0) {
@@ -117,11 +121,11 @@ async function deleteById(id: string): Promise<boolean> {
     }
 }
 
-// Export the repository functions
-export const CharacterRepository = {
+// Export the repository functions conforming to the interface
+export const CharacterRepository: ICharacterRepository = {
     findById,
     findByUserId,
     save,
-    update, // Export the new update function
+    update,
     deleteById
 };

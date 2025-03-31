@@ -399,6 +399,17 @@ function App() {
                  }));
                  setCharacters(formattedUpdatedChars);
                  break;
+            // Removed JSON load/save message handlers
+            // --- Handle DB save confirmation (optional) ---
+             case 'save_success':
+                 console.log('Character saved to DB:', message.payload.message);
+                 // Optionally show confirmation in UI
+                 break;
+             case 'save_fail':
+                 console.error('Failed to save character to DB:', message.payload);
+                 // TODO: Display error message in UI
+                 break;
+            // ------------------------------------
             case 'error':
                 console.error('Server error message:', message.payload);
                  break;
@@ -564,7 +575,13 @@ function App() {
     };
 
     const handleCreateCharacter = (name: string, classId: string) => {
-        sendToServer('create_character', { name, classId }, browserWsRef);
+        const payload: { name: string; classId: string; devUserId?: string } = { name, classId };
+        // --- DEV ONLY: Include dummy ID if login was skipped ---
+        if (userId === 'dev-user-skipped-login') {
+            payload.devUserId = userId;
+        }
+        // ----------------------------------------------------
+        sendToServer('create_character', payload, browserWsRef);
     };
 
     const handleDeleteCharacter = (characterId: string) => {
@@ -611,6 +628,18 @@ function App() {
         sendToServer('auto_equip_best_stat', { stat }, browserWsRef);
     };
 
+    // --- Handler to return to character select from in-game ---
+    const handleReturnToCharacterSelect = () => {
+        console.log("Returning to character select screen...");
+        // Clear game-specific state, keep user/character list
+        setSelectedCharacterData(null);
+        setCurrentZoneData(null);
+        setZoneStatuses([]);
+        setCurrentEncounter(null);
+        setCurrentView('selectCharacter');
+        // Optionally send a message to server if needed (e.g., 'leave_game_instance')
+    };
+
     const handleOptions = () => {
         console.log("Options clicked (not implemented)");
         // TODO: Implement options screen or logic
@@ -622,13 +651,30 @@ function App() {
         // window.electronAPI?.invoke('close-app');
     };
 
+    // --- DEV ONLY: Skip Login Handler ---
+    const handleSkipLogin = () => {
+        console.log("DEV: Skipping login, going to character create.");
+        // Set a dummy user ID and username if needed by subsequent screens,
+        // or adjust those screens to handle null user info during dev skip.
+        // For now, let's set dummy values.
+        setUserId('dev-user-skipped-login');
+        setUsername('DevUser');
+        setCharacters([]); // Ensure character list is empty
+        setCurrentView('createCharacter');
+    };
+    // ---------------------------------
+
 
     // --- Render Logic ---
     const renderCurrentScreen = () => {
         switch (currentView) {
             case 'login':
-                // Pass register handler too
-                return <LoginScreen onLogin={handleLogin} onRegister={handleRegister} />;
+                // Pass register and skip handlers
+                return <LoginScreen
+                            onLogin={handleLogin}
+                            onRegister={handleRegister}
+                            onSkipLogin={handleSkipLogin} // Pass the skip handler
+                       />;
             case 'mainMenu':
                 return <MainMenuScreen
                             onNewGame={handleShowCreate}
@@ -664,10 +710,14 @@ function App() {
                              onSellItem={handleSellItem} // Pass the sell handler
                              onLootGroundItem={handleLootGroundItem} // Pass the ground loot handler
                              onAssignPotionSlot={handleAssignPotionSlot} // Pass the assign potion handler
-                             onUsePotionSlot={handleUsePotionSlot} // Pass the use potion handler
-                             onAutoEquipBestStat={handleAutoEquipBestStat} // Pass the new handler
-                        />;
-             default:
+                              onUsePotionSlot={handleUsePotionSlot} // Pass the use potion handler
+                              onAutoEquipBestStat={handleAutoEquipBestStat} // Pass the new handler
+                              onReturnToCharacterSelect={handleReturnToCharacterSelect} // Pass the return handler
+                              // Pass sendToServer function so InGameScreen can send messages directly
+                              sendWsMessage={(type: string, payload: any) => sendToServer(type, payload, browserWsRef)}
+                              // Removed onCharacterDataLoaded prop
+                         />;
+              default:
                 return <div>Error: Unknown View State</div>;
         }
     };

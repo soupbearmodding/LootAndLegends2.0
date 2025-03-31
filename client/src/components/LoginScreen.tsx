@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 interface LoginScreenProps {
     onLogin: (username: string, password: string) => void;
     onRegister: (username: string, password: string) => void;
+    onSkipLogin: () => void; // Add prop for skipping login
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
+const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister, onSkipLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [statusMessage, setStatusMessage] = useState('');
@@ -68,9 +69,21 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {
                         autoComplete="current-password"
                     />
                 </div>
-                <div className="form-actions">
+                <div className="form-actions" style={{ flexWrap: 'wrap' }}> {/* Allow wrapping */}
                     <button type="submit" className="button-primary">Login</button>
                     <button type="button" className="button-secondary" onClick={handleRegisterClick}>Register</button>
+                    {/* --- DEV ONLY: Skip Login Button --- */}
+                    {/* Remove this button before production */}
+                    <button
+                        type="button"
+                        onClick={onSkipLogin}
+                        className="button-secondary"
+                        style={{ borderColor: '#ff8c00', color: '#ff8c00', flexBasis: '100%', marginTop: '10px' }} // Distinct style, full width, margin top
+                        title="DEV ONLY: Skip login and go to character create"
+                    >
+                        Skip Login (DEV)
+                    </button>
+                    {/* --------------------------------- */}
                 </div>
                 <p className="auth-status" style={{ color: statusMessage.includes('failed') || statusMessage.includes('required') || statusMessage.includes('must be') ? 'lightcoral' : '#aaa' }}>
                     {statusMessage || '\u00A0'} {/* Use non-breaking space to maintain height */}

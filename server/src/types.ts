@@ -11,6 +11,15 @@ export interface UserCredentials {
     password: string;
 }
 
+// Specific payload types for validation
+export interface RegisterPayload extends UserCredentials {
+    // Inherits username and password
+}
+
+export interface LoginPayload extends UserCredentials {
+    // Inherits username and password
+}
+
 export interface User {
     id: string;
     username: string;
@@ -129,8 +138,16 @@ export interface Affix {
     type: 'prefix' | 'suffix';
     statModifiers?: Partial<ItemStats>;
 }
+
+// Type for the value stored in the activeConnections map
+export interface ConnectionData {
+    userId: string;
+    username: string; // Added username based on usage in authHandler
+    selectedCharacterId: string | null; // Explicitly allow null
+}
+
 // Type for the map storing active WebSocket connections and their associated user/character info
-export type ActiveConnectionsMap = Map<WebSocket, { userId: string; selectedCharacterId?: string }>;
+export type ActiveConnectionsMap = Map<WebSocket, ConnectionData>;
 
 // Type for the map storing active combat encounters
 export type ActiveEncountersMap = Map<WebSocket, Monster>;

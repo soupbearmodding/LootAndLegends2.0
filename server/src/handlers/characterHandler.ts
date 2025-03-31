@@ -1,146 +1,213 @@
 import WebSocket from 'ws';
-import { CharacterService } from '../services/characterService.js';
-import { safeSend } from '../utils.js';
-import { ActiveConnectionsMap, Character } from '../types.js';
-import { UserRepository } from '../repositories/userRepository.js'; // Needed for updated list after create/delete
-import { CharacterRepository } from '../repositories/characterRepository.js'; // Import CharacterRepository
+import { CharacterService, SelectCharacterResult } from '../services/characterService.js';
+import { IUserRepository, UserRepository } from '../repositories/userRepository.js'; // Import interface and repo
+import { ICharacterRepository, CharacterRepository } from '../repositories/characterRepository.js'; // Import interface and repo
+import { send } from '../websocketUtils.js'; // Use send from utils
+import { activeConnections } from '../server.js';
+import {
+    validatePayload,
+    CreateCharacterPayloadSchema,
+    SelectCharacterPayloadSchema,
+    DeleteCharacterPayloadSchema
+} from '../validation.js';
+import { Character } from '../types.js';
 
-// --- Input Validation Helpers ---
+// Helper function to get user ID (handles dev skip logic internally for now)
+// Returns null if not logged in and not dev skip
+function getUserId(ws: WebSocket, payload: any): string | null {
+    let userId: string | undefined;
+    let connectionInfo = activeConnections.get(ws);
 
-function isValidCharacterCreatePayload(payload: any): payload is { name: string; classId: string } {
-    return (
-        typeof payload === 'object' && payload !== null &&
-        typeof payload.name === 'string' && payload.name.trim() !== '' &&
-        typeof payload.classId === 'string' && payload.classId.trim() !== ''
-    );
+    // --- DEV ONLY Check ---
+    if (payload?.devUserId === 'dev-user-skipped-login') {
+        console.warn("DEV MODE: Using skipped login user ID.");
+        userId = 'dev-user-skipped-login';
+        if (!connectionInfo) {
+            activeConnections.set(ws, { userId: userId, username: 'dev-skip', selectedCharacterId: null });
+        } else if (connectionInfo.userId !== userId) {
+            connectionInfo.userId = userId;
+            connectionInfo.username = 'dev-skip'; // Assign dummy username
+            activeConnections.set(ws, connectionInfo);
+        }
+    } else {
+        // --- Regular Login Check ---
+        if (!connectionInfo || !connectionInfo.userId) {
+            send(ws, { type: 'error', payload: 'User not logged in' });
+            return null;
+        }
+        userId = connectionInfo.userId;
+    }
+    // --- End DEV ONLY Check ---
+
+    if (!userId) { // Should not happen if logic is correct
+        send(ws, { type: 'error', payload: 'User ID could not be determined.' });
+        return null;
+    }
+    return userId;
 }
 
-function isValidCharacterSelectPayload(payload: any): payload is { characterId: string } {
-    return (
-        typeof payload === 'object' && payload !== null &&
-        typeof payload.characterId === 'string' && payload.characterId.trim() !== ''
-    );
-}
 
-function isValidCharacterDeletePayload(payload: any): payload is { characterId: string } {
-    return (
-        typeof payload === 'object' && payload !== null &&
-        typeof payload.characterId === 'string' && payload.characterId.trim() !== ''
-    );
-}
+export class CharacterHandler {
+    private characterService: CharacterService;
+    // Inject repositories needed for list updates directly in handler (could be moved to service later)
+    private userRepository: IUserRepository;
+    private characterRepository: ICharacterRepository;
 
-// --- Character Handlers ---
-
-export async function handleCreateCharacter(ws: WebSocket, payload: any, activeConnections: ActiveConnectionsMap) {
-    const connectionInfo = activeConnections.get(ws);
-    if (!connectionInfo || !connectionInfo.userId) {
-        safeSend(ws, { type: 'create_character_fail', payload: 'User not logged in' });
-        return;
-    }
-    const userId = connectionInfo.userId;
-
-    if (!isValidCharacterCreatePayload(payload)) {
-        safeSend(ws, { type: 'create_character_fail', payload: 'Invalid payload format: Requires non-empty name and classId strings.' });
-        console.warn(`Invalid create_character payload format received: ${JSON.stringify(payload)}`);
-        return;
+    constructor(
+        characterService: CharacterService,
+        userRepository: IUserRepository,
+        characterRepository: ICharacterRepository
+    ) {
+        this.characterService = characterService;
+        this.userRepository = userRepository;
+        this.characterRepository = characterRepository;
     }
 
-    // Trim and lowercase classId before passing to service
-    const name = payload.name.trim();
-    const classId = payload.classId.trim().toLowerCase();
+    /**
+     * Handles character creation request.
+     */
+    async handleCreateCharacter(ws: WebSocket, payload: unknown): Promise<void> {
+        const userId = getUserId(ws, payload); // Use helper to get userId (handles dev skip)
+        if (!userId) return; // Error sent by helper
 
-    try {
-        const newCharacter = await CharacterService.createCharacter(userId, name, classId);
+        if (!validatePayload(payload, CreateCharacterPayloadSchema)) {
+            send(ws, { type: 'create_character_fail', payload: 'Invalid payload format.' });
+            return;
+        }
+        // We know payload is an object with name and classId now
+        const data = payload as { name: string; classId: string; devUserId?: string };
+        const name = data.name.trim();
+        const classId = data.classId.trim().toLowerCase();
 
-        // Send success message with the new character data
-        safeSend(ws, { type: 'create_character_success', payload: newCharacter });
+        try {
+            // Use injected service instance
+            const newCharacter = await this.characterService.createCharacter(userId, name, classId);
 
-        // Send updated character list to client after creation
-        // Fetch updated list using UserRepository
-        const userCharacters = await UserRepository.findByUsername( // Assuming username is available or fetch user first
-             (await UserRepository.findById(userId))?.username ?? ''
-        ).then(user => user ? CharacterRepository.findByUserId(user.id) : []); // Fetch characters based on user's updated list
+            send(ws, { type: 'create_character_success', payload: newCharacter });
 
-        safeSend(ws, { type: 'character_list_update', payload: userCharacters });
-
-    } catch (error: any) {
-        console.error("Handler: Character creation error:", error);
-        safeSend(ws, { type: 'create_character_fail', payload: error.message || 'Server error during character creation' });
-    }
-}
-
-export async function handleSelectCharacter(ws: WebSocket, payload: any, activeConnections: ActiveConnectionsMap) {
-    const connectionInfo = activeConnections.get(ws);
-    if (!connectionInfo || !connectionInfo.userId) {
-        safeSend(ws, { type: 'select_character_fail', payload: 'User not logged in' });
-        return;
-    }
-    const userId = connectionInfo.userId;
-
-    if (!isValidCharacterSelectPayload(payload)) {
-        safeSend(ws, { type: 'select_character_fail', payload: 'Invalid payload format: Requires non-empty characterId string.' });
-        console.warn(`Invalid select_character payload format received: ${JSON.stringify(payload)}`);
-        return;
-    }
-    const characterId = payload.characterId;
-
-    try {
-        const { characterData, currentZoneData, zoneStatuses } = await CharacterService.selectCharacter(userId, characterId);
-
-        // Update the connection info with the selected character ID
-        connectionInfo.selectedCharacterId = characterId;
-        activeConnections.set(ws, connectionInfo); // Update the map entry
-
-        console.log(`Handler: User ${userId} selected character ${characterId}.`);
-
-        // Send confirmation and initial game state
-        safeSend(ws, {
-            type: 'select_character_success',
-            payload: {
-                message: `Character ${characterData.name} selected. Welcome to ${currentZoneData?.name ?? 'the game'}!`,
-                characterData: characterData,
-                currentZoneData: currentZoneData,
-                zoneStatuses: zoneStatuses
+            // Send updated character list (Skip for DEV user)
+            if (userId !== 'dev-user-skipped-login') {
+                await this.sendUpdatedCharacterList(ws, userId);
             }
-        });
 
-    } catch (error: any) {
-         console.error("Handler: Select character error:", error);
-         safeSend(ws, { type: 'select_character_fail', payload: error.message || 'Server error during character selection' });
+        } catch (error: any) {
+            console.error("Handler: Character creation error:", error);
+            send(ws, { type: 'create_character_fail', payload: error.message || 'Server error during character creation' });
+        }
+    }
+
+    /**
+     * Handles character selection request.
+     */
+    async handleSelectCharacter(ws: WebSocket, payload: unknown): Promise<void> {
+        if (!validatePayload(payload, SelectCharacterPayloadSchema)) {
+            send(ws, { type: 'select_character_fail', payload: 'Invalid payload format.' });
+            return;
+        }
+        const { characterId } = payload as { characterId: string };
+
+        // Use helper to get userId (handles dev skip based on character's owner)
+        // Need to fetch character first for dev skip check
+        let isDevSkip = false;
+        let potentialOwnerId: string | undefined;
+        try {
+            const characterToCheck = await this.characterRepository.findById(characterId);
+            potentialOwnerId = characterToCheck?.userId;
+            if (potentialOwnerId === 'dev-user-skipped-login') {
+                isDevSkip = true;
+            }
+        } catch (fetchError) {
+             console.error("Handler: Error fetching character during dev skip check:", fetchError);
+             send(ws, { type: 'select_character_fail', payload: 'Error checking character.' });
+             return;
+        }
+
+        const userId = getUserId(ws, isDevSkip ? { devUserId: 'dev-user-skipped-login' } : {});
+        if (!userId) return; // Error sent by helper
+
+        // Re-verify ownership if not dev skip (belt-and-suspenders)
+        if (!isDevSkip && potentialOwnerId !== userId) {
+             send(ws, { type: 'select_character_fail', payload: 'Character does not belong to user.' });
+             return;
+        }
+
+
+        try {
+            // Use injected service instance
+            const result: SelectCharacterResult = await this.characterService.selectCharacter(userId, characterId);
+
+            // Update connection info
+            const connectionInfo = activeConnections.get(ws);
+            if (connectionInfo) { // Should always exist if userId was determined
+                connectionInfo.selectedCharacterId = characterId;
+                activeConnections.set(ws, connectionInfo);
+                console.log(`Handler: User ${userId} selected character ${characterId}.`);
+
+                 send(ws, {
+                    type: 'select_character_success',
+                    payload: {
+                        message: `Character ${result.characterData.name} selected. Welcome to ${result.currentZoneData?.name ?? 'the game'}!`,
+                        characterData: result.characterData,
+                        currentZoneData: result.currentZoneData,
+                        zoneStatuses: result.zoneStatuses
+                    }
+                });
+            } else {
+                 console.error("Handler: Connection info unexpectedly missing after userId check in selectCharacter.");
+                 send(ws, { type: 'select_character_fail', payload: 'Internal connection error.' });
+            }
+
+        } catch (error: any) {
+             console.error("Handler: Select character error:", error);
+             send(ws, { type: 'select_character_fail', payload: error.message || 'Server error during character selection' });
+        }
+    }
+
+    /**
+     * Handles character deletion request.
+     */
+    async handleDeleteCharacter(ws: WebSocket, payload: unknown): Promise<void> {
+        const userId = getUserId(ws, payload); // Use helper (dev skip doesn't apply directly here)
+        if (!userId) return;
+
+        if (!validatePayload(payload, DeleteCharacterPayloadSchema)) {
+            send(ws, { type: 'delete_character_fail', payload: 'Invalid payload format.' });
+            return;
+        }
+        const { characterId } = payload as { characterId: string };
+
+        try {
+            // Use injected service instance
+            await this.characterService.deleteCharacter(userId, characterId);
+
+            console.log(`Handler: Character ${characterId} deleted by user ${userId}.`);
+            send(ws, { type: 'delete_character_success', payload: { characterId: characterId } });
+
+            // Send updated character list (Skip for DEV user)
+             if (userId !== 'dev-user-skipped-login') {
+                await this.sendUpdatedCharacterList(ws, userId);
+            }
+
+        } catch (error: any) {
+            console.error("Handler: Delete character error:", error);
+            send(ws, { type: 'delete_character_fail', payload: error.message || 'Server error during character deletion' });
+        }
+    }
+
+    /**
+     * Fetches and sends the updated character list for a user.
+     */
+    private async sendUpdatedCharacterList(ws: WebSocket, userId: string): Promise<void> {
+         try {
+            // Use injected repository
+            const userCharacters = await this.characterRepository.findByUserId(userId);
+            send(ws, { type: 'character_list_update', payload: userCharacters });
+        } catch (listError) {
+            console.error(`Handler: Error fetching character list for user ${userId}:`, listError);
+            // Optionally send an error to the client, but often just logging is sufficient here
+        }
     }
 }
 
-
-export async function handleDeleteCharacter(ws: WebSocket, payload: any, activeConnections: ActiveConnectionsMap) {
-    const connectionInfo = activeConnections.get(ws);
-    if (!connectionInfo || !connectionInfo.userId) {
-        safeSend(ws, { type: 'delete_character_fail', payload: 'User not logged in' });
-        return;
-    }
-    const userId = connectionInfo.userId;
-
-    if (!isValidCharacterDeletePayload(payload)) {
-        safeSend(ws, { type: 'delete_character_fail', payload: 'Invalid payload format: Requires non-empty characterId string.' });
-        console.warn(`Invalid delete_character payload format received: ${JSON.stringify(payload)}`);
-        return;
-    }
-    const characterId = payload.characterId;
-
-    try {
-        await CharacterService.deleteCharacter(userId, characterId);
-
-        console.log(`Handler: Character ${characterId} deleted by user ${userId}.`);
-        safeSend(ws, { type: 'delete_character_success', payload: { characterId: characterId } }); // Send back the ID
-
-        // Send updated character list to client after deletion
-        const userCharacters = await UserRepository.findByUsername(
-             (await UserRepository.findById(userId))?.username ?? ''
-        ).then(user => user ? CharacterRepository.findByUserId(user.id) : []);
-
-        safeSend(ws, { type: 'character_list_update', payload: userCharacters });
-
-    } catch (error: any) {
-        console.error("Handler: Delete character error:", error);
-        safeSend(ws, { type: 'delete_character_fail', payload: error.message || 'Server error during character deletion' });
-    }
-}
+// Remove old exports if they existed
+// export { handleCreateCharacter, handleSelectCharacter, handleDeleteCharacter };
