@@ -243,11 +243,20 @@ function App() {
                 setUsername(message.payload.user?.username); // Use optional chaining
                 // Ensure characters received on login also conform to CharacterSummary
                 // Characters might be associated with the user object or still separate? Assuming separate for now.
-                // Let's check the authHandler again - it sends user object, but not characters directly in login_success anymore.
-                // Characters should probably be fetched separately or sent with select_character_success.
-                // For now, let's clear characters on login and expect them later.
-                // const receivedChars = message.payload.characters || []; // This is likely incorrect now
-                setCharacters([]); // Clear characters, expect list later
+                // Characters are sent with login_success payload according to authHandler.ts
+                const receivedChars = message.payload.characters || [];
+                const formattedChars: CharacterSummary[] = receivedChars.map((char: any) => ({
+                    id: char.id,
+                    name: char.name,
+                    // Ensure 'class' is a string, similar to create_character_success
+                    class: typeof char.class === 'string'
+                             ? char.class
+                             : (typeof char.class === 'object' && char.class !== null && typeof char.class.name === 'string'
+                                ? char.class.name
+                                : (typeof char.classId === 'string' ? char.classId : 'Unknown')), // Use classId as fallback if available
+                    level: char.level ?? 1 // Default level if not provided
+                }));
+                setCharacters(formattedChars); // Set the characters received on login
                 /* const formattedChars: CharacterSummary[] = receivedChars.map((char: any) => ({
                     id: char.id,
                     name: char.name,
