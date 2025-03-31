@@ -44,7 +44,8 @@ const characterClasses: Map<string, CharacterClass> = new Map([
 
 
 // --- WebSocket Connection Logic ---
-const serverUrl = 'ws://localhost:3001';
+// Use environment variable for deployed URL, fallback to localhost for development
+const serverUrl = import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:3001';
 let cleanupElectronWsListener: (() => void) | null = null;
 let cleanupElectronStatusListener: (() => void) | null = null;
 

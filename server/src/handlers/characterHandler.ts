@@ -1,8 +1,8 @@
 import WebSocket from 'ws';
-import { CharacterService, SelectCharacterResult } from '../services/characterService.js';
-import { IUserRepository, UserRepository } from '../repositories/userRepository.js'; // Import interface and repo
-import { ICharacterRepository, CharacterRepository } from '../repositories/characterRepository.js'; // Import interface and repo
-import { send } from '../websocketUtils.js'; // Use send from utils
+import { CharacterService } from '../services/characterService.js';
+import { UserRepository } from '../repositories/userRepository.js';
+import { CharacterRepository } from '../repositories/characterRepository.js';
+import { send } from '../websocketUtils.js';
 import { activeConnections } from '../server.js';
 import {
     validatePayload,
@@ -10,34 +10,13 @@ import {
     SelectCharacterPayloadSchema,
     DeleteCharacterPayloadSchema
 } from '../validation.js';
-import { Character } from '../types.js';
+import { Character, SelectCharacterResult, IUserRepository, ICharacterRepository } from '../types.js';
 
 // Helper function to get user ID (handles dev skip logic internally for now)
 // Returns null if not logged in and not dev skip
 function getUserId(ws: WebSocket, payload: any): string | null {
     let userId: string | undefined;
     let connectionInfo = activeConnections.get(ws);
-
-    // --- DEV ONLY Check ---
-    if (payload?.devUserId === 'dev-user-skipped-login') {
-        console.warn("DEV MODE: Using skipped login user ID.");
-        userId = 'dev-user-skipped-login';
-        if (!connectionInfo) {
-            activeConnections.set(ws, { userId: userId, username: 'dev-skip', selectedCharacterId: null });
-        } else if (connectionInfo.userId !== userId) {
-            connectionInfo.userId = userId;
-            connectionInfo.username = 'dev-skip'; // Assign dummy username
-            activeConnections.set(ws, connectionInfo);
-        }
-    } else {
-        // --- Regular Login Check ---
-        if (!connectionInfo || !connectionInfo.userId) {
-            send(ws, { type: 'error', payload: 'User not logged in' });
-            return null;
-        }
-        userId = connectionInfo.userId;
-    }
-    // --- End DEV ONLY Check ---
 
     if (!userId) { // Should not happen if logic is correct
         send(ws, { type: 'error', payload: 'User ID could not be determined.' });

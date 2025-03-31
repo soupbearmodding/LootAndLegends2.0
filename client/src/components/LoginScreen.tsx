@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 interface LoginScreenProps {
     onLogin: (username: string, password: string) => void;
     onRegister: (username: string, password: string) => void;
-    // onSkipLogin prop removed
 }
 
 const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onRegister }) => {

@@ -1,25 +1,7 @@
-import { ICharacterRepository } from '../repositories/characterRepository.js';
-import { Character, Zone } from '../types.js';
-import { zones, calculateMaxHp } from '../gameData.js'; // Import static zone data and HP calc
+import { Character, Zone, ICharacterRepository, TravelResult, ZoneStatus, ZoneWithStatus } from '../types.js';
+import { zones, calculateMaxHp } from '../gameData.js';
 
-// Define result type for service methods
-export interface TravelResult {
-    success: boolean;
-    message: string;
-    character?: Character; // Return updated character data
-    newZone?: Zone;        // Return data for the new zone
-    availableZones?: Zone[]; // Return data for connected zones from the new zone
-    needsCombatClear?: boolean; // Indicate if combat state should be cleared
-    startCombat?: boolean; // Indicate if combat should start in the new zone
-}
 
-// Simplified status: only locked or unlocked based on level
-export type ZoneStatus = 'unlocked' | 'locked';
-
-// Simplified interface, removing kill-related fields
-export interface ZoneWithStatus extends Zone {
-    status: ZoneStatus;
-}
 
 export class ZoneService {
     private characterRepository: ICharacterRepository;

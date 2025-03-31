@@ -1,20 +1,23 @@
 import WebSocket from 'ws';
-import { validatePayload, RegisterPayloadSchema, LoginPayloadSchema } from '../validation.js'; // Import schemas
-import { broadcast, send } from '../websocketUtils.js'; // Assuming websocketUtils exists or will be created
-import { activeConnections } from '../server.js'; // Assuming activeConnections is exported from server
-import { AuthService } from '../services/authService.js'; // To be created
-import { UserRepository } from '../repositories/userRepository.js'; // Assuming UserRepository exists
-import { LoginPayload, RegisterPayload } from '../types.js'; // Keep type imports for casting
+import { validatePayload, RegisterPayloadSchema, LoginPayloadSchema } from '../validation.js';
+import { broadcast, send } from '../websocketUtils.js';
+import { activeConnections } from '../server.js';
+import { AuthService } from '../services/authService.js';
+import { CharacterService } from '../services/characterService.js';
+import { UserRepository } from '../repositories/userRepository.js';
+import { LoginPayload, RegisterPayload, CharacterSummary, Character } from '../types.js';
 
 // TODO: Instantiate AuthService, likely requires UserRepository
 // const userRepository = new UserRepository(/* db connection or path */);
-// const authService = new AuthService(userRepository);
-
+// Assuming CharacterService is also injected or accessible
 export class AuthHandler {
     private authService: AuthService;
+    private characterService: CharacterService;
 
-    constructor(authService: AuthService) {
+    // Modify constructor to accept CharacterService
+    constructor(authService: AuthService, characterService: CharacterService) {
         this.authService = authService;
+        this.characterService = characterService;
     }
 
     async handleRegister(ws: WebSocket, payload: unknown): Promise<void> {
@@ -80,13 +83,31 @@ export class AuthHandler {
                 activeConnections.set(ws, { userId: userId, username: username, selectedCharacterId: null });
                 console.log(`User logged in successfully: ${username} (ID: ${userId})`);
 
-                // Send success message with user details (excluding password hash)
-                // result.user is already typed as Omit<User, "passwordHash"> by the service
+                // Fetch characters for the user
+                const charactersResult = await this.characterService.getCharactersByUserId(userId);
+                let characters: CharacterSummary[] = [];
+                if (charactersResult.success && charactersResult.characters) {
+                    // Format characters into CharacterSummary for the frontend
+                    // Add explicit type 'Character' to 'char' parameter
+                    characters = charactersResult.characters.map((char: Character) => ({
+                        id: char.id,
+                        name: char.name,
+                        class: char.class, // Assuming class is stored as a string ID/name
+                        level: char.level
+                    }));
+                    console.log(`Found ${characters.length} characters for user ${username}`);
+                } else {
+                    console.warn(`Could not fetch characters for user ${username}: ${charactersResult.message}`);
+                    // Proceed with login, but character list will be empty
+                }
+
+                // Send success message with user details and character list
                 const userWithoutPassword = result.user;
                 send(ws, {
                     type: 'login_success',
-                    payload: { // Nest user and message inside payload
+                    payload: {
                         user: userWithoutPassword,
+                        characters: characters, // Add the character list
                         message: 'Login successful.'
                     }
                 });

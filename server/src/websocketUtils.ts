@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
-import { WebSocketMessage, ConnectionData } from './types.js'; // Import necessary types
-import { activeConnections } from './server.js'; // Import activeConnections to iterate for broadcast
+import { WebSocketMessage, ConnectionData } from './types.js';
+import { activeConnections } from './server.js';
 
 /**
  * Sends a message to a specific WebSocket client.

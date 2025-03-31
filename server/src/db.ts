@@ -1,18 +1,16 @@
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
-// Removed dotenv imports
 import { User, Character } from './types.js';
 
-// Environment variables are now loaded in server.ts
 
 const MONGODB_URI = process.env.MONGODB_URI;
-const DB_NAME = process.env.DB_NAME || 'loot_and_legends'; // Allow overriding DB name via env
+const DB_NAME = process.env.DB_NAME || 'loot_and_legends';
 
 if (!MONGODB_URI) {
     console.error('FATAL: MONGODB_URI environment variable is not set. Please check your .env file.');
     process.exit(1);
 }
 
-let db: Db | null = null; // Allow db to be null initially
+let db: Db | null = null;
 
 // --- Abstracted Collection Types ---
 let usersCollection: Collection<User>;

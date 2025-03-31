@@ -1,20 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { CharacterClass } from '../types'; // Corrected import path
 
-interface CharacterStats {
-    strength: number;
-    dexterity: number;
-    vitality: number;
-    energy: number;
-}
-
-interface CharacterClass {
-    name: string;
-    description: string;
-    baseStats: CharacterStats;
-}
+// Local interfaces CharacterStats and CharacterClass removed
 
 interface CharacterCreateScreenProps {
-    characterClasses: Map<string, CharacterClass>; 
+    characterClasses: Map<string, CharacterClass>; // Uses imported CharacterClass
     onCreateCharacter: (name: string, classId: string) => void;
     onBack: () => void; 
 }

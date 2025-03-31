@@ -1,15 +1,10 @@
-import { ICharacterRepository } from '../repositories/characterRepository.js';
-import { Character, Item, EquipmentSlot } from '../types.js';
+import { Character, Item, EquipmentSlot, ICharacterRepository, InventoryServiceResult } from '../types.js';
 import { calculateCharacterStats } from '../utils.js';
-// Import static item definitions (e.g., for sell value)
+
 import { items as itemDefinitions } from '../lootData.js';
 
-// Define a result type for service methods
-export interface InventoryServiceResult {
-    success: boolean;
-    message: string;
-    character?: Character; // Return the updated character on success
-}
+
+
 
 export class InventoryService {
     private characterRepository: ICharacterRepository;

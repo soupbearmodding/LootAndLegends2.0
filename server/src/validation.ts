@@ -1,6 +1,6 @@
 import { zones, monsters, characterClasses, lootTables } from './gameData.js';
 import { items, prefixes, suffixes } from './lootData.js';
-import { Zone, Monster, Item, CharacterClass } from './types.js'; // Assuming Item is needed, add if necessary
+import { Zone, Monster, Item, CharacterClass, ValidationRule, ValidationSchema } from './types.js';
 
 // Basic validation function to check if a value is a non-negative number
 function isNonNegativeNumber(value: any): boolean {
@@ -167,19 +167,7 @@ function validateLootTables(): string[] {
 
 // --- Runtime Payload Validation ---
 
-// Define a simple schema structure
-export interface ValidationRule {
-    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
-    required?: boolean;
-    minLength?: number; // For strings
-    // Add other constraints as needed (e.g., pattern, enum, nested schema)
-}
-
-export interface ValidationSchema {
-    [key: string]: ValidationRule;
-}
-
-// Schemas for Auth Payloads
+// Schemas for Auth Payloads (Interfaces moved to types.ts)
 export const RegisterPayloadSchema: ValidationSchema = {
     username: { type: 'string', required: true, minLength: 3 },
     password: { type: 'string', required: true, minLength: 6 } // Example: require 6+ chars

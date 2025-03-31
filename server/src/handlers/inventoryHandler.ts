@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { InventoryService, InventoryServiceResult } from '../services/inventoryService.js';
+import { InventoryService } from '../services/inventoryService.js';
 import { send } from '../websocketUtils.js';
 import { activeConnections } from '../server.js';
 import {
@@ -11,7 +11,7 @@ import {
     UsePotionSlotPayloadSchema,
     AutoEquipPayloadSchema
 } from '../validation.js';
-import { EquipmentSlot, Character } from '../types.js'; // Import necessary types
+import { EquipmentSlot, Character, InventoryServiceResult } from '../types.js';
 
 // Helper function to get character ID and handle errors
 function getCharacterId(ws: WebSocket): string | null {

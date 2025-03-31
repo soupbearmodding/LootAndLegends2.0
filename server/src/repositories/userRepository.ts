@@ -1,16 +1,8 @@
 import { Collection, UpdateFilter, ObjectId } from 'mongodb'; // Import ObjectId
 import { usersCollection } from '../db.js';
-import { User } from '../types.js';
+import { User, IUserRepository } from '../types.js'; // Added IUserRepository
 
-// Interface describing the shape of the UserRepository
-export interface IUserRepository {
-    findById(id: string): Promise<User | null>;
-    findByUsername(username: string): Promise<User | null>;
-    // Define create method signature based on AuthService usage
-    create(userData: Omit<User, 'id'>): Promise<User | null>; // Assuming create returns the created user or null
-    save(user: User): Promise<void>;
-    updateCharacterList(userId: string, characterId: string, action: 'add' | 'remove'): Promise<boolean>;
-}
+// Interface moved to types.ts
 
 
 /**

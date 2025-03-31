@@ -27,6 +27,14 @@ export interface User {
     characterIds: string[];
 }
 
+// Summary structure sent to client for character selection
+export interface CharacterSummary {
+    id: string;
+    name: string;
+    class: string; // Or classId if you store the ID
+    level: number;
+}
+
 export interface CharacterClass {
     name: string;
     description: string;
@@ -171,4 +179,88 @@ export interface PlayerAttackUpdatePayload {
 export interface MonsterAttackUpdatePayload {
     monsterDamageTaken: number;
     characterUpdate: { currentHp: number };
+}
+
+// --- Validation Types ---
+export interface ValidationRule {
+    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+    required?: boolean;
+    minLength?: number; // For strings
+    // Add other constraints as needed (e.g., pattern, enum, nested schema)
+}
+
+export interface ValidationSchema {
+    [key: string]: ValidationRule;
+}
+
+// --- Repository Interfaces ---
+export interface ICharacterRepository {
+    findById(id: string): Promise<Character | null>;
+    findByUserId(userId: string): Promise<Character[]>;
+    save(character: Character): Promise<void>;
+    update(id: string, updates: Partial<Character>): Promise<void>;
+    deleteById(id: string): Promise<boolean>;
+}
+
+export interface IUserRepository {
+    findById(id: string): Promise<User | null>;
+    findByUsername(username: string): Promise<User | null>;
+    create(userData: Omit<User, 'id'>): Promise<User | null>;
+    save(user: User): Promise<void>;
+    updateCharacterList(userId: string, characterId: string, action: 'add' | 'remove'): Promise<boolean>;
+}
+
+// --- Service Result Types ---
+export interface SelectCharacterResult {
+    characterData: Character;
+    currentZoneData: Zone | undefined;
+    zoneStatuses: ZoneWithStatus[]; // Depends on ZoneWithStatus
+}
+
+export interface AuthServiceResult {
+    success: boolean;
+    message: string;
+    user?: Omit<User, 'passwordHash'>;
+}
+
+export interface FindMonsterResult {
+    success: boolean;
+    message: string;
+    monster?: Monster;
+    playerAttackSpeed?: number;
+}
+
+export interface AttackResult {
+    success: boolean;
+    message: string;
+    playerUpdate?: PlayerAttackUpdatePayload;
+    monsterUpdate?: MonsterAttackUpdatePayload;
+    encounterEnded?: boolean;
+    endReason?: string;
+    characterUpdate?: any; // Consider defining a more specific type
+    loot?: Item[];
+    respawn?: boolean;
+}
+
+export interface TravelResult {
+    success: boolean;
+    message: string;
+    character?: Character;
+    newZone?: Zone;
+    availableZones?: Zone[];
+    needsCombatClear?: boolean;
+    startCombat?: boolean;
+}
+
+export interface InventoryServiceResult {
+    success: boolean;
+    message: string;
+    character?: Character;
+}
+
+// --- Zone Status Types ---
+export type ZoneStatus = 'unlocked' | 'locked';
+
+export interface ZoneWithStatus extends Zone {
+    status: ZoneStatus;
 }

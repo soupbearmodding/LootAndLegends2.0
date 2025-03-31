@@ -1,16 +1,10 @@
 import bcrypt from 'bcrypt';
-// Import the interface and the concrete implementation
-import { UserRepository, IUserRepository } from '../repositories/userRepository.js';
-import { User } from '../types.js';
 
-const SALT_ROUNDS = 10; // Store salt rounds centrally
+import { UserRepository } from '../repositories/userRepository.js';
+import { User, IUserRepository, AuthServiceResult } from '../types.js';
 
-export interface AuthServiceResult {
-    success: boolean;
-    message: string;
-    // Update the type to reflect that the hash is omitted
-    user?: Omit<User, 'passwordHash'>;
-}
+const SALT_ROUNDS = 10;
+
 
 export class AuthService {
     // Use the interface for type annotation (Dependency Inversion)
