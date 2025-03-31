@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <!-- CSP needs adjustment for Vite dev server & inline styles/scripts if needed -->
     <!-- A more relaxed policy for dev might be needed, tighten for production -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' ws://localhost:*; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
+    <!-- Added connect-src to allow WebSocket connections to localhost and the deployed backend -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' ws://localhost:* wss://lootandlegends-backend.onrender.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com;">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Loot & Legends</title>
     <!-- Add Font Awesome for icons -->
