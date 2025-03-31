@@ -21,7 +21,7 @@ export class AuthHandler {
         console.log('Handling register request');
         // Use the schema for validation
         if (!validatePayload(payload, RegisterPayloadSchema)) {
-            send(ws, { type: 'error', message: 'Invalid registration payload' });
+            send(ws, { type: 'error', payload: { message: 'Invalid registration payload' } });
             console.warn('Invalid registration payload received:', payload);
             return;
         }
@@ -36,15 +36,15 @@ export class AuthHandler {
         try {
             const result = await this.authService.registerUser(username, registerData.password);
             if (result.success) {
-                send(ws, { type: 'register_success', message: 'Registration successful. Please log in.' });
+                send(ws, { type: 'register_success', payload: { message: 'Registration successful. Please log in.' } });
                 console.log(`User registered successfully: ${username}`);
             } else {
-                send(ws, { type: 'error', message: result.message });
+                send(ws, { type: 'error', payload: { message: result.message } });
                 console.warn(`Registration failed for ${username}: ${result.message}`);
             }
         } catch (error) {
             console.error('Error during registration:', error);
-            send(ws, { type: 'error', message: 'An internal error occurred during registration.' });
+            send(ws, { type: 'error', payload: { message: 'An internal error occurred during registration.' } });
         }
     }
 
@@ -52,7 +52,7 @@ export class AuthHandler {
         console.log('Handling login request');
         // Use the schema for validation
         if (!validatePayload(payload, LoginPayloadSchema)) {
-            send(ws, { type: 'error', message: 'Invalid login payload' });
+            send(ws, { type: 'error', payload: { message: 'Invalid login payload' } });
             console.warn('Invalid login payload received:', payload);
             return;
         }
@@ -66,7 +66,7 @@ export class AuthHandler {
         // Check if user is already logged in elsewhere
         for (const [existingWs, connectionData] of activeConnections.entries()) {
             if (connectionData.username === username && existingWs !== ws) {
-                send(ws, { type: 'error', message: 'User already logged in on another connection.' });
+                send(ws, { type: 'error', payload: { message: 'User already logged in on another connection.' } });
                 console.warn(`Login failed for ${username}: Already logged in.`);
                 return;
             }
@@ -81,23 +81,26 @@ export class AuthHandler {
                 console.log(`User logged in successfully: ${username} (ID: ${userId})`);
 
                 // Send success message with user details (excluding password hash)
-                const { passwordHash, ...userWithoutPassword } = result.user;
+                // result.user is already typed as Omit<User, "passwordHash"> by the service
+                const userWithoutPassword = result.user;
                 send(ws, {
                     type: 'login_success',
-                    user: userWithoutPassword,
-                    message: 'Login successful.'
+                    payload: { // Nest user and message inside payload
+                        user: userWithoutPassword,
+                        message: 'Login successful.'
+                    }
                 });
 
                 // Optionally broadcast login event to others if needed (e.g., for presence)
                 // broadcast({ type: 'user_logged_in', username: username }, ws); // Example broadcast
 
             } else {
-                send(ws, { type: 'error', message: result.message });
+                send(ws, { type: 'error', payload: { message: result.message } });
                 console.warn(`Login failed for ${username}: ${result.message}`);
             }
         } catch (error) {
             console.error('Error during login:', error);
-            send(ws, { type: 'error', message: 'An internal error occurred during login.' });
+            send(ws, { type: 'error', payload: { message: 'An internal error occurred during login.' } });
         }
     }
 
@@ -110,11 +113,11 @@ export class AuthHandler {
             console.log(`User logged out: ${username}`);
             // Optionally broadcast logout event
             // broadcast({ type: 'user_logged_out', username: username }, ws); // Example broadcast
-            send(ws, { type: 'logout_success', message: 'You have been logged out.' });
+            send(ws, { type: 'logout_success', payload: { message: 'You have been logged out.' } });
         } else {
             console.warn('Received logout request from connection without active session.');
             // Optionally send an error or just ignore
-            send(ws, { type: 'error', message: 'You are not logged in.' });
+            send(ws, { type: 'error', payload: { message: 'You are not logged in.' } });
         }
     }
 }

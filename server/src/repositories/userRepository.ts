@@ -1,4 +1,4 @@
-import { Collection, UpdateFilter } from 'mongodb';
+import { Collection, UpdateFilter, ObjectId } from 'mongodb'; // Import ObjectId
 import { usersCollection } from '../db.js';
 import { User } from '../types.js';
 
@@ -20,7 +20,29 @@ export interface IUserRepository {
  */
 async function findById(id: string): Promise<User | null> {
     try {
-        const user = await usersCollection.findOne({ id: id });
+        // Assuming the 'id' field in the DB matches the string ID used elsewhere.
+        // If the DB uses _id (ObjectId), this query needs adjustment.
+        // Let's assume for now the query is correct based on the 'save' function using { id: user.id }.
+        // However, if findByUsername uses _id mapping, this should too for consistency if needed.
+        // Convert the string ID to a MongoDB ObjectId for querying
+        if (!ObjectId.isValid(id)) {
+            console.warn(`UserRepository: Invalid ID format provided to findById: ${id}`);
+            return null; // Invalid ID format
+        }
+        const objectId = new ObjectId(id);
+
+        const userDoc = await usersCollection.findOne({ _id: objectId });
+        if (!userDoc) {
+            return null;
+        }
+
+        // Map the MongoDB document (_id) to the User type (id)
+        const user: User = {
+            id: userDoc._id.toString(), // Map _id to id
+            username: userDoc.username,
+            passwordHash: userDoc.passwordHash,
+            characterIds: userDoc.characterIds || [],
+        };
         return user;
     } catch (error) {
         console.error(`Error finding user by ID ${id}:`, error);
@@ -37,7 +59,22 @@ async function findByUsername(username: string): Promise<User | null> {
     try {
         // Ensure case-insensitive search if desired, otherwise use as is
         // const user = await usersCollection.findOne({ username: { $regex: `^${username}$`, $options: 'i' } });
-        const user = await usersCollection.findOne({ username: username });
+        const userDoc = await usersCollection.findOne({ username: username });
+
+        if (!userDoc) {
+            return null;
+        }
+
+        // Map _id to id if necessary
+        // Check if userDoc has _id and not id, and map if needed.
+        // Map the MongoDB document (_id) to the User type (id)
+        const user: User = {
+            id: userDoc._id.toString(), // Map _id to id
+            username: userDoc.username,
+            passwordHash: userDoc.passwordHash,
+            characterIds: userDoc.characterIds || [],
+        };
+
         return user;
     } catch (error) {
         console.error(`Error finding user by username ${username}:`, error);
@@ -70,13 +107,23 @@ async function create(userData: Omit<User, 'id'>): Promise<User | null> {
              // Re-evaluating based on AuthService: it expects the *created* user.
              // So, we need to fetch it after insert if the DB doesn't return it directly.
 
-             // Fetch the newly inserted document using the username (assuming it's unique)
-             const createdUser = await findByUsername(userData.username);
-             if (createdUser) {
+             // Fetch the newly inserted document using the insertedId
+             const createdUserDoc = await usersCollection.findOne({ _id: result.insertedId });
+
+             if (createdUserDoc) {
+                 // Map the MongoDB document (_id) to the User type (id)
+                 const createdUser: User = {
+                     id: createdUserDoc._id.toString(), // Map _id to id
+                     username: createdUserDoc.username,
+                     passwordHash: createdUserDoc.passwordHash,
+                     characterIds: createdUserDoc.characterIds || [],
+                 };
+                 // No need to delete _id as we constructed the object explicitly
+
                  console.log(`UserRepository: Created user ${createdUser.username} (ID: ${createdUser.id})`);
                  return createdUser;
              } else {
-                 console.error(`UserRepository: Failed to fetch user ${userData.username} immediately after creation.`);
+                 console.error(`UserRepository: Failed to fetch user with _id ${result.insertedId} immediately after creation.`);
                  return null; // Indicate failure
              }
         } else {
@@ -104,11 +151,24 @@ async function save(user: User): Promise<void> {
         if (!user.id) {
             throw new Error("Cannot save user without an ID.");
         }
+        // When saving, we need to query by _id, converting the user.id string
+        if (!ObjectId.isValid(user.id)) {
+             throw new Error(`Invalid user ID format for saving: ${user.id}`);
+        }
+        const objectId = new ObjectId(user.id);
+        // Exclude the 'id' field from the $set operation as we query by _id
+        const { id, ...userDataToSet } = user;
+
         const result = await usersCollection.updateOne(
-            { id: user.id }, // Use the user's ID for matching
-            { $set: user },
-            { upsert: true }
+            { _id: objectId }, // Query by MongoDB ObjectId
+            { $set: userDataToSet }, // Set data without the string 'id' field
+            { upsert: true } // Keep upsert if needed, but be aware it might insert without string 'id'
         );
+        // Note: If upserting, the new document might only have _id.
+        // Consider if the application *needs* a separate string 'id' field stored in the DB.
+        // If not, the mapping on read (findById, findByUsername) is sufficient.
+        // If yes, the $set operation needs to include the string 'id' field. Let's assume mapping on read is enough for now.
+
         if (result.upsertedCount > 0) {
             console.log(`UserRepository: Inserted user ${user.username} (ID: ${user.id})`);
         } else if (result.modifiedCount > 0) {
@@ -139,8 +199,15 @@ async function updateCharacterList(userId: string, characterId: string, action: 
             return false;
         }
 
+        // Also update this query to use ObjectId
+        if (!ObjectId.isValid(userId)) {
+            console.error(`Invalid user ID format for updateCharacterList: ${userId}`);
+            return false;
+        }
+        const userObjectId = new ObjectId(userId);
+
         const result = await usersCollection.updateOne(
-            { id: userId },
+            { _id: userObjectId }, // Query by ObjectId
             updateOperation
         );
 
