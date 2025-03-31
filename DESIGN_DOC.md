@@ -75,6 +75,7 @@ Loot & Legends is a UI-heavy RPG built with TypeScript and Electron. It features
 19. **UI Overhaul & Polish:** Redesign the UI using Tailwind CSS for a better look and feel. Implement proper UI feedback mechanisms (including crafting/upgrade interactions). *(In Progress - Initial styling applied to main game screen: Zones, Stats, Encounter Area)*
 20. **Combat Enhancements:** Add skills, status effects, more complex damage formulas.
 21. **Build & Deployment:** Configure Electron builds for distribution.
+22. **Dependency Update (Client):** Updated client-side dependencies (`npm update`) to attempt resolution of a Render.com build failure related to Rollup optional dependencies. **[COMPLETED]**
 
 ## 7. Design Document Maintenance
 
