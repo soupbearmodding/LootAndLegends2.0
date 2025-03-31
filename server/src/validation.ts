@@ -1,6 +1,6 @@
 import { zones, monsters, characterClasses, lootTables } from './gameData.js';
 import { items, prefixes, suffixes } from './lootData.js';
-import { Zone, Monster, Item, CharacterClass } from './types.js';
+import { Zone, Monster, Item, CharacterClass } from './types.js'; // Assuming Item is needed, add if necessary
 
 // Basic validation function to check if a value is a non-negative number
 function isNonNegativeNumber(value: any): boolean {
@@ -84,7 +84,7 @@ function validateCharacterClasses(): string[] {
             if (!isNonNegativeNumber(charClass.baseStats.energy)) errors.push(`Class "${id}": Invalid baseStats.energy "${charClass.baseStats.energy}".`);
         }
     }
-    return errors;
+    return errors; // Added missing return statement
 }
 
 // Validate Item data (Basic checks)
@@ -162,6 +162,147 @@ function validateLootTables(): string[] {
         });
     }
     return errors;
+}
+
+
+// --- Runtime Payload Validation ---
+
+// Define a simple schema structure
+export interface ValidationRule {
+    type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+    required?: boolean;
+    minLength?: number; // For strings
+    // Add other constraints as needed (e.g., pattern, enum, nested schema)
+}
+
+export interface ValidationSchema {
+    [key: string]: ValidationRule;
+}
+
+// Schemas for Auth Payloads
+export const RegisterPayloadSchema: ValidationSchema = {
+    username: { type: 'string', required: true, minLength: 3 },
+    password: { type: 'string', required: true, minLength: 6 } // Example: require 6+ chars
+};
+
+export const LoginPayloadSchema: ValidationSchema = {
+    username: { type: 'string', required: true },
+    password: { type: 'string', required: true }
+};
+
+// Schemas for Inventory Payloads
+export const EquipItemPayloadSchema: ValidationSchema = {
+    itemId: { type: 'string', required: true, minLength: 1 } // Assuming item IDs are non-empty strings
+};
+
+export const UnequipItemPayloadSchema: ValidationSchema = {
+    slot: { type: 'string', required: true, minLength: 1 } // Assuming slot names are non-empty strings
+};
+
+export const SellItemPayloadSchema: ValidationSchema = {
+    itemId: { type: 'string', required: true, minLength: 1 }
+};
+
+export const AssignPotionSlotPayloadSchema: ValidationSchema = {
+    slotNumber: { type: 'number', required: true }, // Further validation (1 or 2) happens in handler/service
+    itemBaseId: { type: 'string', required: false } // Allow null/undefined, specific check in handler/service
+};
+
+export const UsePotionSlotPayloadSchema: ValidationSchema = {
+    slotNumber: { type: 'number', required: true } // Further validation (1 or 2) happens in handler/service
+};
+
+export const AutoEquipPayloadSchema: ValidationSchema = {
+    stat: { type: 'string', required: true, minLength: 1 } // Assuming stat names are non-empty strings
+};
+
+// Schema for Combat Payloads
+export const FindMonsterPayloadSchema: ValidationSchema = {
+    // No properties currently needed, but schema exists for structure
+};
+
+// Schema for Zone Payloads
+export const TravelPayloadSchema: ValidationSchema = {
+    targetZoneId: { type: 'string', required: true, minLength: 1 } // Assuming zone IDs are non-empty strings
+};
+
+// Schemas for Character Payloads
+export const CreateCharacterPayloadSchema: ValidationSchema = {
+    name: { type: 'string', required: true, minLength: 1 },
+    classId: { type: 'string', required: true, minLength: 1 },
+    // Keep devUserId optional for the dev skip logic, validation happens in handler
+    devUserId: { type: 'string', required: false }
+};
+
+export const SelectCharacterPayloadSchema: ValidationSchema = {
+    characterId: { type: 'string', required: true, minLength: 1 }
+};
+
+export const DeleteCharacterPayloadSchema: ValidationSchema = {
+    characterId: { type: 'string', required: true, minLength: 1 }
+};
+
+
+// Generic payload validation function
+export function validatePayload(payload: unknown, schema: ValidationSchema): boolean {
+    if (typeof payload !== 'object' || payload === null) {
+        console.warn('Payload validation failed: Payload is not an object.');
+        return false;
+    }
+
+    const data = payload as Record<string, any>;
+
+    for (const key in schema) {
+        const rule = schema[key];
+        // Check if rule exists before accessing properties
+        if (!rule) {
+            console.warn(`Payload validation warning: No schema rule found for key "${key}". Skipping.`);
+            continue;
+        }
+        const value = data[key];
+
+        // Check required fields
+        if (rule.required && (value === undefined || value === null || value === '')) { // Also check for empty string if required
+            console.warn(`Payload validation failed: Required field "${key}" is missing or empty.`);
+            return false;
+        }
+
+        // Skip validation for non-required fields if they are absent
+        if (!rule.required && (value === undefined || value === null)) {
+            continue;
+        }
+
+        // Check type if value is present
+        if (value !== undefined && value !== null) {
+             if (typeof value !== rule.type) {
+                // Allow for array type check if needed
+                if (rule.type === 'array' && !Array.isArray(value)) {
+                     console.warn(`Payload validation failed: Field "${key}" has incorrect type. Expected array, got ${typeof value}. Value:`, value);
+                     return false;
+                } else if (rule.type !== 'array') { // Avoid logging error if type is array but check passed
+                    console.warn(`Payload validation failed: Field "${key}" has incorrect type. Expected ${rule.type}, got ${typeof value}. Value:`, value);
+                    return false;
+                }
+            }
+
+            // Check string minLength
+            if (rule.type === 'string' && rule.minLength !== undefined && value.length < rule.minLength) {
+                console.warn(`Payload validation failed: Field "${key}" length (${value.length}) is less than minimum ${rule.minLength}.`);
+                return false;
+            }
+        }
+        // Add more checks here based on ValidationSchema properties (e.g., number ranges, patterns)
+    }
+
+    // Optional: Check for extra fields not defined in the schema?
+    // for (const key in data) {
+    //     if (!schema.hasOwnProperty(key)) {
+    //         console.warn(`Payload validation warning: Unexpected field "${key}" found.`);
+    //         // Decide whether to return false or just warn based on strictness requirements
+    //     }
+    // }
+
+    return true;
 }
 
 

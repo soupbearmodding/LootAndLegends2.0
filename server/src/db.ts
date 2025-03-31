@@ -1,14 +1,5 @@
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import { User, Character } from './types.js';
-// --- JSON DB Fallback Import ---
-// To remove fallback: Delete these lines and the try/catch logic below.
-import {
-    initializeJsonDb,
-    usersJsonCollection,
-    charactersJsonCollection,
-    MockCollection // Use this interface for abstraction
-} from './jsonDb.js';
-// ------------------------------
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = 'loot_and_legends';
@@ -16,20 +7,8 @@ const DB_NAME = 'loot_and_legends';
 let db: Db | null = null; // Allow db to be null if connection fails
 
 // --- Abstracted Collection Types ---
-// Use MockCollection as the common interface.
-// Note: MongoDB's Collection<T> is structurally compatible enough for the methods we use.
-// We might need slight adjustments in repositories if using methods not in MockCollection.
-let usersCollection: Collection<User> | MockCollection<User>;
-let charactersCollection: Collection<Character> | MockCollection<Character>;
-
-// --- Type Guard for MongoDB Collections ---
-// Helper to check if we are using the real MongoDB collection
-function isMongoCollection<T extends { id: string }>(
-    collection: Collection<T> | MockCollection<T>
-): collection is Collection<T> {
-    // Check for a property unique to MongoDB's Collection, like namespace or collectionName
-    return collection && typeof (collection as Collection<T>).collectionName === 'string';
-}
+let usersCollection: Collection<User>;
+let charactersCollection: Collection<Character>;
 
 
 export async function connectToDatabase() {
@@ -65,22 +44,17 @@ export async function connectToDatabase() {
         console.log(`Successfully connected to MongoDB database: ${db.databaseName}`);
 
     } catch (error) {
-        // --- JSON DB Fallback Activation ---
-        // To remove fallback: Delete this catch block and the imports above.
-        console.warn('MongoDB connection failed or timed out. Attempting to use JSON file fallback.', error);
-        await initializeJsonDb();
-        usersCollection = usersJsonCollection; // Assign mock collection
-        charactersCollection = charactersJsonCollection; // Assign mock collection
-        // No process.exit(1) here, we continue with the fallback
-        // ------------------------------------
+        console.error('FATAL: MongoDB connection failed. Check connection string and server status.', error);
+        // Exit the process if the database connection fails, as it's critical
+        process.exit(1);
     }
 
-    // Ensure collections are assigned (either Mongo or JSON mock)
+    // This check might be redundant now if process exits on error, but kept for safety
     if (!usersCollection || !charactersCollection) {
-         console.error('FATAL: Database collections could not be initialized (Mongo or JSON). Exiting.');
+         console.error('FATAL: Database collections were not initialized correctly. Exiting.');
          process.exit(1);
     }
 }
 
 // Export collections for use in other modules
-export { usersCollection, charactersCollection, isMongoCollection, ObjectId }; // Export ObjectId for potential use in repositories
+export { usersCollection, charactersCollection, ObjectId }; // Export ObjectId for potential use in repositories

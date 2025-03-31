@@ -8,7 +8,7 @@ interface OptionsScreenProps {
     sendWsMessage: (type: string, payload: any) => Promise<any>;
     onReturnToCharacterSelect: () => void;
     onLogout: () => void;
-    onCharacterDataLoaded: (characterData: CharacterDataForClient) => void; // Callback to update App state
+    // Removed onCharacterDataLoaded prop
 }
 
 type ActiveTab = 'options' | 'saveLoad';
@@ -19,10 +19,10 @@ const OptionsScreen: React.FC<OptionsScreenProps> = ({
     character,
     sendWsMessage,
     onReturnToCharacterSelect,
-    onLogout,
-    onCharacterDataLoaded
+    onLogout
+    // Removed onCharacterDataLoaded from destructuring
 }) => {
-    const [activeTab, setActiveTab] = useState<ActiveTab>('saveLoad');
+    const [activeTab, setActiveTab] = useState<ActiveTab>('saveLoad'); // Defaulting to saveLoad for now
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
     const showStatus = (message: string) => {
@@ -45,25 +45,7 @@ const OptionsScreen: React.FC<OptionsScreenProps> = ({
         showStatus('Load (DB) - Not Implemented');
     };
 
-    const handleSaveJson = async () => {
-        if (!character) return;
-        showStatus('Saving to JSON...');
-        const result = await sendWsMessage('saveCharacterToJson', { characterData: character });
-        showStatus(result.success ? 'Character Saved (JSON)' : `JSON Save Failed: ${result.message || 'Unknown error'}`);
-    };
-
-    const handleLoadJson = async () => {
-        if (!character) return;
-        showStatus('Loading from JSON...');
-        const result = await sendWsMessage('loadCharacterFromJson', { characterId: character.id });
-        if (result.success && result.payload?.characterData) {
-            onCharacterDataLoaded(result.payload.characterData); // Update App state with loaded data
-            showStatus('Character Loaded (JSON)');
-            onClose(); // Close modal after successful load
-        } else {
-            showStatus(`JSON Load Failed: ${result.payload || 'Unknown error'}`);
-        }
-    };
+    // Removed handleSaveJson and handleLoadJson functions
 
     // --- Render Logic ---
     const renderSaveLoadTab = () => {
@@ -90,8 +72,7 @@ const OptionsScreen: React.FC<OptionsScreenProps> = ({
                         <div className="save-actions">
                             <button onClick={handleSaveDb} disabled={!!statusMessage}>Save (DB)</button>
                             <button onClick={handleLoadDb} disabled={!!statusMessage}>Load (DB)</button>
-                            <button onClick={handleSaveJson} disabled={!!statusMessage}>Save (JSON)</button>
-                            <button onClick={handleLoadJson} disabled={!!statusMessage}>Load (JSON)</button>
+                            {/* Removed JSON buttons */}
                         </div>
                     </div>
                 ) : (

@@ -399,26 +399,7 @@ function App() {
                  }));
                  setCharacters(formattedUpdatedChars);
                  break;
-            // --- Handle explicit JSON load ---
-            case 'load_json_success':
-                 console.log('Character loaded from JSON:', message.payload.message);
-                 // Update the main character state with the loaded data
-                 setSelectedCharacterData(message.payload.characterData);
-                 // Optionally show a success message in the UI if needed
-                 break;
-            case 'load_json_fail':
-                 console.error('Failed to load character from JSON:', message.payload);
-                 // TODO: Display error message in the UI (e.g., in the options modal)
-                 break;
-            // --- Handle explicit JSON save confirmation (optional) ---
-            case 'save_json_success':
-                 console.log('Character saved to JSON:', message.payload.message);
-                 // Optionally show confirmation in UI
-                 break;
-            case 'save_json_fail':
-                 console.error('Failed to save character to JSON:', message.payload);
-                 // TODO: Display error message in UI
-                 break;
+            // Removed JSON load/save message handlers
             // --- Handle DB save confirmation (optional) ---
              case 'save_success':
                  console.log('Character saved to DB:', message.payload.message);
@@ -734,8 +715,7 @@ function App() {
                               onReturnToCharacterSelect={handleReturnToCharacterSelect} // Pass the return handler
                               // Pass sendToServer function so InGameScreen can send messages directly
                               sendWsMessage={(type: string, payload: any) => sendToServer(type, payload, browserWsRef)}
-                              // Pass callback to update character data after JSON load
-                              onCharacterDataLoaded={(loadedData) => setSelectedCharacterData(loadedData)}
+                              // Removed onCharacterDataLoaded prop
                          />;
               default:
                 return <div>Error: Unknown View State</div>;

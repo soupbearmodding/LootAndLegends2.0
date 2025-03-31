@@ -1,22 +1,26 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { connectToDatabase, isMongoCollection } from './db.js'; // Import isMongoCollection
+import { connectToDatabase } from './db.js'; // Removed isMongoCollection import
 import { safeSend } from './utils.js';
-import { handleRegister, handleLogin, handleLogout } from './auth.js';
-// --- JSON DB Imports ---
-import {
-    saveData as saveJsonData, // Renamed to avoid conflict if needed, though 'saveData' is fine too
-    loadCharacterFromJsonFile,
-    saveCharacterToJsonFile
-} from './jsonDb.js';
-// ---------------------
+// Remove old auth imports: import { handleRegister, handleLogin, handleLogout } from './auth.js';
+// Removed JSON DB Imports
 // Import necessary functions/data for post-processing loaded character
-import { calculateMaxHp, calculateMaxMana, xpForLevel, zones } from './gameData.js'; // Corrected path
-import { CharacterRepository } from './repositories/characterRepository.js'; // Import CharacterRepository for saving
-
-import { handleCreateCharacter, handleSelectCharacter, handleDeleteCharacter } from './handlers/characterHandler.js';
-import { handleTravel } from './zone.js';
-import { handleFindMonster } from './combat.js';
-import { handleEquipItem, handleUnequipItem, handleSellItem, handleAssignPotionSlot, handleUsePotionSlot, handleAutoEquipBestStat } from './inventory.js';
+import { calculateMaxHp, calculateMaxMana, xpForLevel, zones } from './gameData.js';
+import { CharacterRepository } from './repositories/characterRepository.js';
+import { UserRepository } from './repositories/userRepository.js';
+import { AuthService } from './services/authService.js';
+import { AuthHandler } from './handlers/authHandler.js';
+// Remove old character handler imports: import { handleCreateCharacter, handleSelectCharacter, handleDeleteCharacter } from './handlers/characterHandler.js';
+// Remove old zone import: import { handleTravel } from './zone.js';
+// Remove old combat import: import { handleFindMonster } from './combat.js';
+// Remove old inventory imports: import { handleEquipItem, handleUnequipItem, handleSellItem, handleAssignPotionSlot, handleUsePotionSlot, handleAutoEquipBestStat } from './inventory.js';
+import { InventoryService } from './services/inventoryService.js';
+import { InventoryHandler } from './handlers/inventoryHandler.js';
+import { CombatService } from './services/combatService.js';
+import { CombatHandler } from './handlers/combatHandler.js';
+import { ZoneService } from './services/zoneService.js';
+import { ZoneHandler } from './handlers/zoneHandler.js';
+import { CharacterService } from './services/characterService.js'; // Import CharacterService
+import { CharacterHandler } from './handlers/characterHandler.js'; // Import CharacterHandler
 import { validateGameData } from './validation.js';
 import {
     WebSocketMessage,
@@ -37,14 +41,29 @@ const RATE_LIMIT_MAX_MESSAGES = 10; // Max 10 messages per window
 
 // --- In-Memory State Maps ---
 // Store active WebSocket connections and their associated user/character info
-const activeConnections: ActiveConnectionsMap = new Map();
+export const activeConnections: ActiveConnectionsMap = new Map(); // Exported
 // Store active combat encounters (player connection -> monster instance)
-const activeEncounters: ActiveEncountersMap = new Map();
+export const activeEncounters: ActiveEncountersMap = new Map(); // Export needed? Check usage in other handlers/services
 // Store separate combat loop intervals
-const playerAttackIntervals: PlayerAttackIntervalsMap = new Map();
-const monsterAttackIntervals: MonsterAttackIntervalsMap = new Map();
+export const playerAttackIntervals: PlayerAttackIntervalsMap = new Map(); // Export needed? Check usage
+export const monsterAttackIntervals: MonsterAttackIntervalsMap = new Map(); // Export needed? Check usage
 // Store rate limiting info per connection
 const rateLimitTracker: Map<WebSocket, RateLimitInfo> = new Map();
+
+// --- Instantiate Services and Handlers ---
+// Assuming Repositories are the exported objects with methods
+const authService = new AuthService(UserRepository);
+const authHandler = new AuthHandler(authService);
+const inventoryService = new InventoryService(CharacterRepository);
+const inventoryHandler = new InventoryHandler(inventoryService);
+// Instantiate CombatService, passing the state maps
+const combatService = new CombatService(CharacterRepository, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+const combatHandler = new CombatHandler(combatService);
+const zoneService = new ZoneService(CharacterRepository);
+const zoneHandler = new ZoneHandler(zoneService, combatService, combatHandler);
+// Instantiate CharacterService and Handler
+const characterService = new CharacterService(CharacterRepository, UserRepository, zoneService);
+const characterHandler = new CharacterHandler(characterService, UserRepository, CharacterRepository);
 
 
 // --- Server Startup ---
@@ -110,50 +129,59 @@ async function startServer() {
                 // --- Message Routing ---
                 switch (messageData.type) { // Use original messageData for logic
                     case 'register':
-                        handleRegister(ws, messageData.payload);
+                        // Use the new AuthHandler
+                        await authHandler.handleRegister(ws, messageData.payload);
                         break;
                     case 'login':
-                        // Pass activeConnections map to handleLogin
-                        handleLogin(ws, messageData.payload, activeConnections);
+                        // Use the new AuthHandler
+                        await authHandler.handleLogin(ws, messageData.payload);
                         break;
                     case 'create_character':
-                        // Pass activeConnections map
-                        handleCreateCharacter(ws, messageData.payload, activeConnections);
+                        // Use the new CharacterHandler
+                        await characterHandler.handleCreateCharacter(ws, messageData.payload);
                         break;
                     case 'select_character':
-                        // Pass activeConnections map
-                        handleSelectCharacter(ws, messageData.payload, activeConnections);
+                        // Use the new CharacterHandler
+                        await characterHandler.handleSelectCharacter(ws, messageData.payload);
                         break;
                     case 'travel':
-                        // Pass all state maps (update interval maps)
-                        handleTravel(ws, messageData.payload, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+                        // Use the new ZoneHandler
+                        await zoneHandler.handleTravel(ws, messageData.payload);
                         break;
                     case 'find_monster':
-                        // Pass all state maps (update interval maps)
-                        handleFindMonster(ws, messageData.payload, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+                        // Use the new CombatHandler
+                        await combatHandler.handleFindMonster(ws, messageData.payload);
                         break;
                     case 'equip_item':
-                        handleEquipItem(ws, messageData.payload, activeConnections);
+                        // Use the new InventoryHandler
+                        await inventoryHandler.handleEquipItem(ws, messageData.payload);
                         break;
                     case 'unequip_item':
-                        handleUnequipItem(ws, messageData.payload, activeConnections);
+                         // Use the new InventoryHandler
+                        await inventoryHandler.handleUnequipItem(ws, messageData.payload);
                         break;
-                    case 'sell_item': // Add case for selling items
-                        handleSellItem(ws, messageData.payload, activeConnections);
+                    case 'sell_item':
+                         // Use the new InventoryHandler
+                        await inventoryHandler.handleSellItem(ws, messageData.payload);
                         break;
                     case 'assign_potion_slot':
-                        handleAssignPotionSlot(ws, messageData.payload, activeConnections);
+                         // Use the new InventoryHandler
+                        await inventoryHandler.handleAssignPotionSlot(ws, messageData.payload);
                         break;
                     case 'use_potion_slot':
-                        handleUsePotionSlot(ws, messageData.payload, activeConnections);
+                         // Use the new InventoryHandler
+                        await inventoryHandler.handleUsePotionSlot(ws, messageData.payload);
                         break;
-                    case 'auto_equip_best_stat': // Add case for auto-equip
-                        handleAutoEquipBestStat(ws, messageData.payload, activeConnections);
+                    case 'auto_equip_best_stat':
+                         // Use the new InventoryHandler
+                        await inventoryHandler.handleAutoEquipBestStat(ws, messageData.payload);
                         break;
                     case 'delete_character':
-                        handleDeleteCharacter(ws, messageData.payload, activeConnections);
+                         // Use the new CharacterHandler
+                        await characterHandler.handleDeleteCharacter(ws, messageData.payload);
                         break;
                     // --- Save Character Handler ---
+                    // TODO: Move saveCharacter logic to CharacterService/Handler?
                     case 'saveCharacter':
                         // Assumes client sends the full character object to save
                         // TODO: Add validation for the received character data
@@ -173,115 +201,7 @@ async function startServer() {
                              safeSend(ws, { type: 'save_fail', payload: 'No active character selected or data mismatch.' });
                         }
                         break;
-                    // --- Force JSON Save Handler (TEMP) ---
-                    case 'forceJsonSave':
-                        // TEMPORARY: Allows forcing a save of the JSON DB state for testing.
-                        // Remove this case when the fallback system is removed or deemed stable.
-                        console.log("Received request to force save in-memory JSON cache...");
-                        try {
-                            await saveJsonData(); // Saves the whole cache
-                            console.log("In-memory JSON data cache force-saved successfully.");
-                            safeSend(ws, { type: 'force_json_save_success', payload: { message: 'In-memory JSON cache saved.' } });
-                        } catch (jsonSaveError) {
-                            console.error("Error during force JSON cache save:", jsonSaveError);
-                            safeSend(ws, { type: 'force_json_save_fail', payload: 'Failed to force save in-memory JSON cache.' });
-                        }
-                        break;
-                    // --- Explicit JSON Save/Load Handlers ---
-                    case 'saveCharacterToJson':
-                        const charToJson = messageData.payload.characterData as Character;
-                        const connInfoSaveJson = activeConnections.get(ws);
-                        if (connInfoSaveJson && connInfoSaveJson.selectedCharacterId === charToJson?.id) {
-                            try {
-                                await saveCharacterToJsonFile(charToJson);
-                                safeSend(ws, { type: 'save_json_success', payload: { message: 'Character saved to JSON file.' } });
-                            } catch (saveJsonError) {
-                                console.error(`Error saving character ${charToJson.id} to JSON file:`, saveJsonError);
-                                safeSend(ws, { type: 'save_json_fail', payload: 'Failed to save character to JSON file.' });
-                            }
-                        } else {
-                             console.warn(`Attempt to save character to JSON failed: No active character or ID mismatch.`);
-                             safeSend(ws, { type: 'save_json_fail', payload: 'No active character selected or data mismatch.' });
-                        }
-                        break;
-                    case 'loadCharacterFromJson':
-                        const connInfoLoadJson = activeConnections.get(ws);
-                        const charIdToLoad = messageData.payload.characterId as string;
-                        // Ensure the user is trying to load their own character? Or allow loading any for now?
-                        // Let's assume they can only load the currently selected character ID for simplicity/security.
-                        if (connInfoLoadJson && connInfoLoadJson.selectedCharacterId === charIdToLoad) {
-                            try {
-                                let loadedChar = await loadCharacterFromJsonFile(charIdToLoad);
-                                if (loadedChar) {
-                                    console.log(`Loaded character ${charIdToLoad} from JSON file.`);
-
-                                    // --- Post-process loaded character data (similar to CharacterService.selectCharacter) ---
-                                    let updateRequired = false;
-                                    const updatesForDb: Partial<Character> = {};
-
-                                    // Ensure equipment exists
-                                    if (!loadedChar.equipment) loadedChar.equipment = {};
-
-                                    // Force start in town & heal
-                                    if (loadedChar.currentZoneId !== 'town') {
-                                        console.log(`Server: Forcing loaded character ${loadedChar.name} to town.`);
-                                        loadedChar.currentZoneId = 'town';
-                                        updatesForDb.currentZoneId = 'town';
-                                        updateRequired = true;
-                                    }
-                                    if (loadedChar.currentZoneId === 'town') {
-                                        const maxHp = calculateMaxHp(loadedChar.stats);
-                                        if (loadedChar.currentHp < maxHp) {
-                                            console.log(`Server: Healing loaded character ${loadedChar.name} in town.`);
-                                            loadedChar.currentHp = maxHp;
-                                            updatesForDb.currentHp = maxHp;
-                                            updateRequired = true;
-                                        }
-                                        // Optionally heal mana too
-                                        // const maxMana = calculateMaxMana(loadedChar.stats);
-                                        // if (loadedChar.currentMana < maxMana) { ... }
-                                    }
-
-                                    // If changes were made (moved to town/healed), save them back to the primary DB
-                                    // This keeps the primary DB consistent with the state sent to client after JSON load.
-                                    if (updateRequired) {
-                                         try {
-                                             await CharacterRepository.update(loadedChar.id, updatesForDb);
-                                             console.log(`Server: Updated primary DB for character ${loadedChar.id} after JSON load.`);
-                                         } catch(updateError) {
-                                             console.error(`Server: Failed to update primary DB for ${loadedChar.id} after JSON load:`, updateError);
-                                             // Continue anyway, client will get the processed state
-                                         }
-                                    }
-
-                                    // Calculate XP breakdown
-                                    const totalXpForCurrentLevel = xpForLevel(loadedChar.level);
-                                    const totalXpForNextLevel = xpForLevel(loadedChar.level + 1);
-                                    const currentLevelXp = loadedChar.experience - totalXpForCurrentLevel;
-                                    const xpToNextLevelBracket = totalXpForNextLevel - totalXpForCurrentLevel;
-
-                                    const characterDataForPayload = {
-                                        ...loadedChar,
-                                        currentLevelXp: currentLevelXp,
-                                        xpToNextLevelBracket: xpToNextLevelBracket
-                                    };
-                                    // -----------------------------------------------------------------------------
-
-                                    // Send the *processed* data back
-                                    safeSend(ws, { type: 'load_json_success', payload: { characterData: characterDataForPayload, message: 'Character loaded from JSON file.' } });
-                                } else {
-                                    safeSend(ws, { type: 'load_json_fail', payload: 'Character not found in JSON file.' });
-                                }
-                            } catch (loadJsonError) {
-                                console.error(`Error loading character ${charIdToLoad} from JSON file:`, loadJsonError);
-                                safeSend(ws, { type: 'load_json_fail', payload: 'Failed to load character from JSON file.' });
-                            }
-                        } else {
-                             console.warn(`Attempt to load character from JSON failed: No active character or ID mismatch.`);
-                             safeSend(ws, { type: 'load_json_fail', payload: 'Cannot load character: No active character selected or ID mismatch.' });
-                        }
-                        break;
-                    // ------------------------------------
+                    // Removed forceJsonSave, saveCharacterToJson, loadCharacterFromJson handlers
                     default:
                         console.log(`Unknown message type: ${messageData.type}`);
                         safeSend(ws, { type: 'error', payload: `Unknown message type: ${messageData.type}` });
@@ -297,8 +217,10 @@ async function startServer() {
             console.log('Client disconnected');
             // Clean up rate limit tracker
             rateLimitTracker.delete(ws);
-            // Use the imported handleLogout function for other cleanup (update interval maps)
-            handleLogout(ws, activeConnections, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
+            // Use the new AuthHandler for logout logic
+            authHandler.handleLogout(ws); // Handles removing from activeConnections
+            // Use the CombatService to clear any combat state for this connection
+            combatService.clearCombatState(ws);
         });
 
         ws.on('error', (error) => {

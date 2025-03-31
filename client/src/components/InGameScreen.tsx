@@ -28,7 +28,7 @@ interface InGameScreenProps {
     onAutoEquipBestStat: (stat: keyof ItemStats) => void;
     onReturnToCharacterSelect: () => void; // Prop for returning
     sendWsMessage: (type: string, payload: any) => Promise<any>; // Prop for sending messages
-    onCharacterDataLoaded: (characterData: CharacterDataForClient) => void; // Prop to update App state after load
+    // Removed onCharacterDataLoaded prop
 }
 
 const getItemShorthand = (name: string): string => {
@@ -58,8 +58,8 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
     onEquipItem, onUnequipItem, onSellItem, onAssignPotionSlot,
     onUsePotionSlot, onLootGroundItem, onAutoEquipBestStat,
     onReturnToCharacterSelect, // Destructure new props
-    sendWsMessage, // Destructure new props
-    onCharacterDataLoaded // Destructure new prop
+    sendWsMessage // Destructure new props
+    // Removed onCharacterDataLoaded from destructuring
 }) => {
     const [centerTab, setCenterTab] = useState<'combat-log' | 'chat'>('combat-log');
     const [rightTab, setRightTab] = useState<'stats' | 'skills' | 'quests' | 'mercenaries'>('stats');
@@ -301,7 +301,7 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
                 sendWsMessage={sendWsMessage}
                 onReturnToCharacterSelect={onReturnToCharacterSelect}
                 onLogout={onLogout}
-                onCharacterDataLoaded={onCharacterDataLoaded} // Pass the callback
+                // Removed onCharacterDataLoaded prop
             />
         </div>
     );
