@@ -1,9 +1,11 @@
-import WebSocket from 'ws'; // May not be needed directly in service, but keep for now
+import WebSocket from 'ws';
 import { v4 as uuidv4 } from 'uuid';
-import { ICharacterRepository } from '../repositories/characterRepository.js';
 import {
     Character,
     Monster,
+    ICharacterRepository,
+    FindMonsterResult,    
+    AttackResult,       
     Item,
     EquipmentSlot,
     ActiveEncountersMap,
@@ -12,38 +14,19 @@ import {
     PlayerAttackUpdatePayload,
     MonsterAttackUpdatePayload
 } from '../types.js';
+
 import { zones, monsters, calculateMaxHp, xpForLevel, xpRequiredForLevel } from '../gameData.js';
-import { items as itemDefinitions } from '../lootData.js'; // Renamed import
-import { generateLoot as generateLootFromTable } from '../lootGenerator.js'; // Corrected path
-import { randomInt, calculateCharacterStats } from '../utils.js'; // Import necessary utils
+import { items as itemDefinitions } from '../lootData.js';
+import { generateLoot as generateLootFromTable } from '../lootGenerator.js';
+import { randomInt, calculateCharacterStats } from '../utils.js';
 
 const DEFAULT_PLAYER_ATTACK_SPEED = 2000; // Default ms between player attacks if no weapon
 const MIN_ATTACK_SPEED = 500; // Minimum attack speed in ms
 
-// Define result types for service methods
-export interface FindMonsterResult {
-    success: boolean;
-    message: string;
-    monster?: Monster; // Return the monster instance if found
-    playerAttackSpeed?: number; // Return calculated speed
-}
-
-export interface AttackResult {
-    success: boolean;
-    message: string;
-    playerUpdate?: PlayerAttackUpdatePayload; // For player attack
-    monsterUpdate?: MonsterAttackUpdatePayload; // For monster attack
-    encounterEnded?: boolean;
-    endReason?: string;
-    characterUpdate?: any; // For XP, level, inventory changes on monster defeat/player death
-    loot?: Item[]; // Loot dropped on monster defeat
-    respawn?: boolean; // Flag for player death
-}
-
 
 export class CombatService {
     private characterRepository: ICharacterRepository;
-    // State management - these need to be managed by this service or injected
+
     private activeEncounters: ActiveEncountersMap;
     private playerAttackIntervals: PlayerAttackIntervalsMap;
     private monsterAttackIntervals: MonsterAttackIntervalsMap;

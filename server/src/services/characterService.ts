@@ -1,19 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
-import { ICharacterRepository, CharacterRepository } from '../repositories/characterRepository.js'; // Import interface and concrete repo
-import { IUserRepository, UserRepository } from '../repositories/userRepository.js'; // Import interface and concrete repo
-import { ZoneService, ZoneWithStatus } from './zoneService.js'; // Import ZoneService and ZoneWithStatus
-import { Character, User, Zone } from '../types.js';
+import { CharacterRepository } from '../repositories/characterRepository.js';
+import { UserRepository } from '../repositories/userRepository.js';
+import { ZoneService } from './zoneService.js';
+import { Character, User, Zone, ICharacterRepository, SelectCharacterResult, IUserRepository, ZoneWithStatus } from '../types.js';
 import { characterClasses, calculateMaxHp, calculateMaxMana, zones, xpForLevel, xpRequiredForLevel } from '../gameData.js';
-// Removed import { getZoneStatuses, ZoneStatus, ZoneWithStatus } from '../zone.js';
+
 
 const MAX_CHARACTERS_PER_ACCOUNT = 5;
 
-// Define result types for service methods (optional but good practice)
-export interface SelectCharacterResult {
-    characterData: Character;
-    currentZoneData: Zone | undefined;
-    zoneStatuses: ZoneWithStatus[];
-}
 
 export class CharacterService {
     // Use interfaces for dependencies
@@ -191,8 +185,24 @@ export class CharacterService {
             characterData: characterDataForPayload,
             currentZoneData: currentZoneData,
             zoneStatuses: zoneStatuses
-        };
-    }
+         };
+     }
+
+     /**
+      * Retrieves all characters associated with a specific user ID.
+      * @param userId The ID of the user whose characters to retrieve.
+      * @returns A promise resolving to an array of Character objects.
+      */
+     async getCharactersByUserId(userId: string): Promise<{ success: boolean; characters?: Character[]; message?: string }> {
+         try {
+             const characters = await this.characterRepository.findByUserId(userId);
+             return { success: true, characters: characters };
+         } catch (error) {
+             console.error(`CharacterService: Error fetching characters for user ${userId}:`, error);
+             const message = error instanceof Error ? error.message : 'An unknown database error occurred';
+             return { success: false, message: message };
+         }
+     }
 
     /**
      * Deletes a character and removes it from the user's list.

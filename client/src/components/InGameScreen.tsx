@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'; // Removed useRef
+import React, { useState, useEffect } from 'react';
 import InventoryPanel from './InventoryPanel';
-import OptionsScreen from './OptionsScreen'; // Import the new OptionsScreen component
+import OptionsScreen from './OptionsScreen';
 import {
     EquipmentSlot,
     ItemStats,

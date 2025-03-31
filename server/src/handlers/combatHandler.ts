@@ -1,10 +1,10 @@
 import WebSocket from 'ws';
-import { CombatService, FindMonsterResult, AttackResult } from '../services/combatService.js';
+import { CombatService } from '../services/combatService.js';
 import { send } from '../websocketUtils.js';
-import { activeConnections, playerAttackIntervals, monsterAttackIntervals, activeEncounters } from '../server.js'; // Import state maps
+import { activeConnections, playerAttackIntervals, monsterAttackIntervals, activeEncounters } from '../server.js';
 import { validatePayload, FindMonsterPayloadSchema } from '../validation.js';
-import { Character } from '../types.js'; // Import necessary types
-import { randomInt } from '../utils.js'; // Import randomInt
+import { Character, AttackResult, FindMonsterResult } from '../types.js';
+import { randomInt } from '../utils.js';
 
 // Helper function to get character ID and handle errors
 function getCharacterId(ws: WebSocket): string | null {

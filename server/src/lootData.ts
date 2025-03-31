@@ -6,8 +6,8 @@ type BaseItemDefinition = Omit<Item, 'id' | 'quality' | 'prefixes' | 'suffixes' 
     effect?: PotionEffect;
     damage?: { min: number; max: number };
     defense?: number;
-    blockChance?: number; // Add optional block chance for shields
-    twoHanded?: boolean; // Add optional twoHanded flag
+    blockChance?: number;
+    twoHanded?: boolean;
 };
 
 

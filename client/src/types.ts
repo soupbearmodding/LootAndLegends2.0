@@ -83,3 +83,10 @@ export interface EncounterData {
     maxHp: number;
     hitRateVsPlayer?: number;
 }
+
+// --- Character Class (Used in Character Creation) ---
+export interface CharacterClass {
+    name: string;
+    description: string;
+    baseStats: ItemStats; // Use the more general ItemStats which includes base stats
+}

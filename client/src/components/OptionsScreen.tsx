@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CharacterDataForClient } from '../types'; // Import character type
+import { CharacterDataForClient } from '../types';
 
 interface OptionsScreenProps {
     isOpen: boolean;
@@ -8,7 +8,6 @@ interface OptionsScreenProps {
     sendWsMessage: (type: string, payload: any) => Promise<any>;
     onReturnToCharacterSelect: () => void;
     onLogout: () => void;
-    // Removed onCharacterDataLoaded prop
 }
 
 type ActiveTab = 'options' | 'saveLoad';
@@ -20,9 +19,8 @@ const OptionsScreen: React.FC<OptionsScreenProps> = ({
     sendWsMessage,
     onReturnToCharacterSelect,
     onLogout
-    // Removed onCharacterDataLoaded from destructuring
 }) => {
-    const [activeTab, setActiveTab] = useState<ActiveTab>('saveLoad'); // Defaulting to saveLoad for now
+    const [activeTab, setActiveTab] = useState<ActiveTab>('saveLoad');
     const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
     const showStatus = (message: string) => {
@@ -45,7 +43,6 @@ const OptionsScreen: React.FC<OptionsScreenProps> = ({
         showStatus('Load (DB) - Not Implemented');
     };
 
-    // Removed handleSaveJson and handleLoadJson functions
 
     // --- Render Logic ---
     const renderSaveLoadTab = () => {

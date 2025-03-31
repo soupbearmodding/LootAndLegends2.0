@@ -1,11 +1,11 @@
 import WebSocket from 'ws';
-import { ZoneService, TravelResult } from '../services/zoneService.js';
-import { CombatService } from '../services/combatService.js'; // Needed to clear combat state
-import { CombatHandler } from './combatHandler.js'; // Needed to trigger find monster
+import { ZoneService } from '../services/zoneService.js';
+import { CombatService } from '../services/combatService.js';
+import { CombatHandler } from './combatHandler.js';
 import { send } from '../websocketUtils.js';
 import { activeConnections } from '../server.js';
 import { validatePayload, TravelPayloadSchema } from '../validation.js';
-import { Character, Zone } from '../types.js'; // Import necessary types
+import { Character, Zone, TravelResult } from '../types.js';
 
 // Helper function to get character ID and handle errors
 function getCharacterId(ws: WebSocket): string | null {
@@ -20,7 +20,7 @@ function getCharacterId(ws: WebSocket): string | null {
 export class ZoneHandler {
     private zoneService: ZoneService;
     private combatService: CombatService;
-    private combatHandler: CombatHandler; // Need CombatHandler to trigger find monster
+    private combatHandler: CombatHandler;
 
     constructor(zoneService: ZoneService, combatService: CombatService, combatHandler: CombatHandler) {
         this.zoneService = zoneService;

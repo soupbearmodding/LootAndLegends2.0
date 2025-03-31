@@ -5,30 +5,22 @@ import WebSocket, { WebSocketServer } from 'ws';
 import { connectToDatabase } from './db.js';
 import { safeSend } from './utils.js';
 
-// Load environment variables from .env file FIRST
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-dotenv.config({ path: path.resolve(__dirname, '../.env') }); // Load from server/.env
-// Remove old auth imports: import { handleRegister, handleLogin, handleLogout } from './auth.js';
-// Removed JSON DB Imports
-// Import necessary functions/data for post-processing loaded character
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 import { calculateMaxHp, calculateMaxMana, xpForLevel, zones } from './gameData.js';
 import { CharacterRepository } from './repositories/characterRepository.js';
 import { UserRepository } from './repositories/userRepository.js';
 import { AuthService } from './services/authService.js';
 import { AuthHandler } from './handlers/authHandler.js';
-// Remove old character handler imports: import { handleCreateCharacter, handleSelectCharacter, handleDeleteCharacter } from './handlers/characterHandler.js';
-// Remove old zone import: import { handleTravel } from './zone.js';
-// Remove old combat import: import { handleFindMonster } from './combat.js';
-// Remove old inventory imports: import { handleEquipItem, handleUnequipItem, handleSellItem, handleAssignPotionSlot, handleUsePotionSlot, handleAutoEquipBestStat } from './inventory.js';
 import { InventoryService } from './services/inventoryService.js';
 import { InventoryHandler } from './handlers/inventoryHandler.js';
 import { CombatService } from './services/combatService.js';
 import { CombatHandler } from './handlers/combatHandler.js';
 import { ZoneService } from './services/zoneService.js';
 import { ZoneHandler } from './handlers/zoneHandler.js';
-import { CharacterService } from './services/characterService.js'; // Import CharacterService
-import { CharacterHandler } from './handlers/characterHandler.js'; // Import CharacterHandler
+import { CharacterService } from './services/characterService.js';
+import { CharacterHandler } from './handlers/characterHandler.js';
 import { validateGameData } from './validation.js';
 import {
     WebSocketMessage,
@@ -38,7 +30,7 @@ import {
     MonsterAttackIntervalsMap,
     Monster,
     RateLimitInfo,
-    Character // Import Character type
+    Character
 } from './types.js';
 
 console.log("Loot & Legends server starting...");
@@ -61,16 +53,19 @@ const rateLimitTracker: Map<WebSocket, RateLimitInfo> = new Map();
 // --- Instantiate Services and Handlers ---
 // Assuming Repositories are the exported objects with methods
 const authService = new AuthService(UserRepository);
-const authHandler = new AuthHandler(authService);
+// Instantiate CharacterService first as AuthHandler depends on it
+const zoneService = new ZoneService(CharacterRepository);
+const characterService = new CharacterService(CharacterRepository, UserRepository, zoneService);
+// Pass both services to AuthHandler
+const authHandler = new AuthHandler(authService, characterService);
 const inventoryService = new InventoryService(CharacterRepository);
 const inventoryHandler = new InventoryHandler(inventoryService);
 // Instantiate CombatService, passing the state maps
 const combatService = new CombatService(CharacterRepository, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
 const combatHandler = new CombatHandler(combatService);
-const zoneService = new ZoneService(CharacterRepository);
+// ZoneService is already instantiated above
 const zoneHandler = new ZoneHandler(zoneService, combatService, combatHandler);
-// Instantiate CharacterService and Handler
-const characterService = new CharacterService(CharacterRepository, UserRepository, zoneService);
+// CharacterService is already instantiated above
 const characterHandler = new CharacterHandler(characterService, UserRepository, CharacterRepository);
 
 
@@ -188,28 +183,8 @@ async function startServer() {
                          // Use the new CharacterHandler
                         await characterHandler.handleDeleteCharacter(ws, messageData.payload);
                         break;
-                    // --- Save Character Handler ---
-                    // TODO: Move saveCharacter logic to CharacterService/Handler?
-                    case 'saveCharacter':
-                        // Assumes client sends the full character object to save
-                        // TODO: Add validation for the received character data
-                        const characterToSave = messageData.payload.characterData as Character;
-                        const connectionInfoSave = activeConnections.get(ws);
-                        if (connectionInfoSave && connectionInfoSave.selectedCharacterId === characterToSave?.id) {
-                            try {
-                                await CharacterRepository.save(characterToSave);
-                                console.log(`Saved character ${characterToSave.id}`);
-                                safeSend(ws, { type: 'save_success', payload: { message: 'Character saved.' } });
-                            } catch (saveError) {
-                                console.error(`Error saving character ${characterToSave.id}:`, saveError);
-                                safeSend(ws, { type: 'save_fail', payload: 'Failed to save character data.' });
-                            }
-                        } else {
-                             console.warn(`Attempt to save character failed: No active character selected or ID mismatch.`);
-                             safeSend(ws, { type: 'save_fail', payload: 'No active character selected or data mismatch.' });
-                        }
-                        break;
                     // Removed forceJsonSave, saveCharacterToJson, loadCharacterFromJson handlers
+                    // Removed insecure 'saveCharacter' handler
                     default:
                         console.log(`Unknown message type: ${messageData.type}`);
                         safeSend(ws, { type: 'error', payload: `Unknown message type: ${messageData.type}` });

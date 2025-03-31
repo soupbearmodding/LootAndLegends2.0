@@ -1,15 +1,7 @@
 import { Collection, UpdateFilter, FindOptions } from 'mongodb';
 import { charactersCollection } from '../db.js';
-import { Character } from '../types.js';
+import { Character, ICharacterRepository } from '../types.js';
 
-// Interface describing the shape of the CharacterRepository
-export interface ICharacterRepository {
-    findById(id: string): Promise<Character | null>;
-    findByUserId(userId: string): Promise<Character[]>;
-    save(character: Character): Promise<void>;
-    update(id: string, updates: Partial<Character>): Promise<void>;
-    deleteById(id: string): Promise<boolean>;
-}
 
 /**
  * Finds a single character by its unique ID.
