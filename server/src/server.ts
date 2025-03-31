@@ -1,6 +1,14 @@
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import WebSocket, { WebSocketServer } from 'ws';
-import { connectToDatabase } from './db.js'; // Removed isMongoCollection import
+import { connectToDatabase } from './db.js';
 import { safeSend } from './utils.js';
+
+// Load environment variables from .env file FIRST
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') }); // Load from server/.env
 // Remove old auth imports: import { handleRegister, handleLogin, handleLogout } from './auth.js';
 // Removed JSON DB Imports
 // Import necessary functions/data for post-processing loaded character

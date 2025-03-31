@@ -236,12 +236,18 @@ function App() {
                 // TODO: Display error message on login screen
                 break;
             case 'login_success':
-                console.log(`Login successful! Welcome ${message.payload.username}`);
-                setUserId(message.payload.userId);
-                setUsername(message.payload.username);
+                // Adjusted to match the nested payload structure: payload: { user: ..., message: ... }
+                console.log(`Login successful! Welcome ${message.payload.user?.username}`); // Use optional chaining
+                setUserId(message.payload.user?.id); // Use optional chaining
+                setUsername(message.payload.user?.username); // Use optional chaining
                 // Ensure characters received on login also conform to CharacterSummary
-                const receivedChars = message.payload.characters || [];
-                const formattedChars: CharacterSummary[] = receivedChars.map((char: any) => ({
+                // Characters might be associated with the user object or still separate? Assuming separate for now.
+                // Let's check the authHandler again - it sends user object, but not characters directly in login_success anymore.
+                // Characters should probably be fetched separately or sent with select_character_success.
+                // For now, let's clear characters on login and expect them later.
+                // const receivedChars = message.payload.characters || []; // This is likely incorrect now
+                setCharacters([]); // Clear characters, expect list later
+                /* const formattedChars: CharacterSummary[] = receivedChars.map((char: any) => ({
                     id: char.id,
                     name: char.name,
                     // Ensure 'class' is a string, similar to create_character_success
@@ -251,8 +257,8 @@ function App() {
                                 ? char.class.name
                                 : (typeof char.classId === 'string' ? char.classId : 'Unknown')),
                     level: char.level ?? 1
-                }));
-                setCharacters(formattedChars);
+                })); */
+                // setCharacters(formattedChars); // Keep this commented, characters likely loaded later
                 setCurrentView('mainMenu'); // Go to Main Menu after login
                 break;
             case 'login_fail':
@@ -575,12 +581,8 @@ function App() {
     };
 
     const handleCreateCharacter = (name: string, classId: string) => {
-        const payload: { name: string; classId: string; devUserId?: string } = { name, classId };
-        // --- DEV ONLY: Include dummy ID if login was skipped ---
-        if (userId === 'dev-user-skipped-login') {
-            payload.devUserId = userId;
-        }
-        // ----------------------------------------------------
+        const payload = { name, classId };
+        // Dev user ID logic removed
         sendToServer('create_character', payload, browserWsRef);
     };
 
@@ -651,32 +653,19 @@ function App() {
         // window.electronAPI?.invoke('close-app');
     };
 
-    // --- DEV ONLY: Skip Login Handler ---
-    const handleSkipLogin = () => {
-        console.log("DEV: Skipping login, going to character create.");
-        // Set a dummy user ID and username if needed by subsequent screens,
-        // or adjust those screens to handle null user info during dev skip.
-        // For now, let's set dummy values.
-        setUserId('dev-user-skipped-login');
-        setUsername('DevUser');
-        setCharacters([]); // Ensure character list is empty
-        setCurrentView('createCharacter');
-    };
-    // ---------------------------------
-
 
     // --- Render Logic ---
     const renderCurrentScreen = () => {
         switch (currentView) {
             case 'login':
                 // Pass register and skip handlers
-                return <LoginScreen
-                            onLogin={handleLogin}
-                            onRegister={handleRegister}
-                            onSkipLogin={handleSkipLogin} // Pass the skip handler
-                       />;
-            case 'mainMenu':
-                return <MainMenuScreen
+                 return <LoginScreen
+                             onLogin={handleLogin}
+                             onRegister={handleRegister}
+                             // onSkipLogin prop removed
+                        />;
+             case 'mainMenu':
+                 return <MainMenuScreen
                             onNewGame={handleShowCreate}
                             onLoadGame={handleShowSelect}
                             onOptions={handleOptions}

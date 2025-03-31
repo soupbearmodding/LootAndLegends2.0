@@ -1,10 +1,18 @@
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
+// Removed dotenv imports
 import { User, Character } from './types.js';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
-const DB_NAME = 'loot_and_legends';
+// Environment variables are now loaded in server.ts
 
-let db: Db | null = null; // Allow db to be null if connection fails
+const MONGODB_URI = process.env.MONGODB_URI;
+const DB_NAME = process.env.DB_NAME || 'loot_and_legends'; // Allow overriding DB name via env
+
+if (!MONGODB_URI) {
+    console.error('FATAL: MONGODB_URI environment variable is not set. Please check your .env file.');
+    process.exit(1);
+}
+
+let db: Db | null = null; // Allow db to be null initially
 
 // --- Abstracted Collection Types ---
 let usersCollection: Collection<User>;
@@ -12,9 +20,17 @@ let charactersCollection: Collection<Character>;
 
 
 export async function connectToDatabase() {
+    // Ensure MONGODB_URI is defined before proceeding
+    if (!MONGODB_URI) {
+        // This case is already handled by the check above, but adding for clarity
+        // and potentially satisfying stricter type checking in some scenarios.
+        console.error('FATAL: MONGODB_URI is not defined. Cannot connect to database.');
+        process.exit(1);
+    }
+
     try {
         // Attempt MongoDB connection with a timeout
-        const client = new MongoClient(MONGODB_URI, {
+        const client = new MongoClient(MONGODB_URI, { // Now MONGODB_URI is guaranteed to be a string here
             serverSelectionTimeoutMS: 3000 // Wait 3 seconds max for server selection
         });
         await client.connect();
