@@ -230,6 +230,18 @@ export const DeleteCharacterPayloadSchema: ValidationSchema = {
     characterId: { type: 'string', required: true, minLength: 1 }
 };
 
+// Schema for crafting an item
+export const CraftItemPayloadSchema: ValidationSchema = {
+    recipeId: { type: 'string', required: true },
+};
+
+// Schema for upgrading an item
+export const UpgradeItemPayloadSchema: ValidationSchema = {
+    itemId: { type: 'string', required: true },
+    recipeId: { type: 'string', required: true },
+    affixId: { type: 'string', required: false }, // Optional, only needed for Magic/Rare upgrades
+};
+
 
 // Generic payload validation function
 export function validatePayload(payload: unknown, schema: ValidationSchema): boolean {

@@ -5,11 +5,9 @@ import MainMenuScreen from './components/MainMenuScreen';
 import CharacterSelectScreen from './components/CharacterSelectScreen';
 import CharacterCreateScreen from './components/CharacterCreateScreen';
 import InGameScreen from './components/InGameScreen';
+import CraftingPanel from './components/CraftingPanel'; // Import CraftingPanel
 
-import { EquipmentSlot, ItemStats } from './types.js';
-
-
-
+import { EquipmentSlot, ItemStats, CharacterDataForClient } from './types.js'; // Import CharacterDataForClient if not already
 
 interface CharacterClass {
     name: string;
@@ -49,9 +47,6 @@ const serverUrl = import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:3001';
 let cleanupElectronWsListener: (() => void) | null = null;
 let cleanupElectronStatusListener: (() => void) | null = null;
 
-// Store the browser WebSocket instance outside the function but within the module scope
-// Or better, manage it with useRef inside the App component.
-// Let's use useRef inside App.
 
 async function sendToServer(type: string, payload: any, browserWsRef: React.MutableRefObject<WebSocket | null>) {
     if (window.electronAPI) {
@@ -198,7 +193,7 @@ function connectWebSocket(
         };
     }
 }
-// --- End WebSocket Logic ---
+
 
 
 function App() {
@@ -213,6 +208,7 @@ function App() {
     const [currentEncounter, setCurrentEncounter] = useState<any | null>(null);
     const [wsStatus, setWsStatus] = useState<{ text: string; isConnected: boolean }>({ text: 'Idle', isConnected: false });
     const [serverMessages, setServerMessages] = useState<string[]>([]);
+    const [availableRecipes, setAvailableRecipes] = useState<any[]>([]); // Add state for recipes
     const browserWsRef = useRef<WebSocket | null>(null); // Ref for browser WebSocket
 
     // --- WebSocket Message Handling ---
@@ -376,11 +372,18 @@ function App() {
                       });
                   }
                   setCurrentEncounter(null);
+                  // --- Display Loot ---
                   if (message.payload.loot && Array.isArray(message.payload.loot) && message.payload.loot.length > 0) {
                       console.log("Received Loot:", message.payload.loot);
-                      const lootMessage = `Loot: ${message.payload.loot.map((item: any) => `${item.name}${item.quantity > 1 ? ` (x${item.quantity})` : ''}`).join(', ')}`;
-                      setServerMessages(prev => [...prev, lootMessage]);
+                      // Create a more user-friendly loot message
+                      const lootItemsString = message.payload.loot
+                          .map((item: any) => `${item.name}${item.quantity && item.quantity > 1 ? ` (x${item.quantity})` : ''}`)
+                          .join(', ');
+                      const lootMessage = `You found: ${lootItemsString}`;
+                      setServerMessages(prev => [...prev, lootMessage]); // Add to general messages for now
+                      // TODO: Consider a dedicated loot notification area in the UI
                   }
+                  // --- End Display Loot ---
                   break;
             case 'character_update': // General character updates (e.g., equip/unequip)
                  console.log('Character update received:', message.payload);
@@ -393,7 +396,21 @@ function App() {
                  setZoneStatuses(message.payload.zoneStatuses || []); // Store the new zoneStatuses array
                  setCurrentEncounter(null);
                  console.log(message.payload.message);
+
+                 // --- Display Offline Gains ---
+                 if (message.payload.offlineGains && (message.payload.offlineGains.xp > 0 || message.payload.offlineGains.gold > 0)) {
+                     const gains = message.payload.offlineGains;
+                     const gainMessage = `Welcome back! While away, you gained ${gains.xp} XP and ${gains.gold} Gold.`;
+                     console.log(gainMessage);
+                     // Add to server messages for display
+                     setServerMessages(prev => [...prev, gainMessage]);
+                 // TODO: Consider a more prominent notification (e.g., a temporary popup)
+                 }
+                 // --- End Display Offline Gains ---
+
                 setCurrentView('in_game'); // Change view after server confirmation
+                // Request recipes when entering the game
+                sendToServer('get_recipes', {}, browserWsRef);
                 break;
             case 'select_character_fail':
                 console.error(`Character selection failed: ${message.payload}`);
@@ -428,9 +445,44 @@ function App() {
             // ------------------------------------
             case 'error':
                 console.error('Server error message:', message.payload);
+                 // TODO: Display error in UI
                  break;
+            // --- Crafting Messages ---
+            case 'available_recipes':
+                console.log('Received available recipes:', message.payload);
+                setAvailableRecipes(message.payload || []);
+                break;
+            case 'craft_item_success':
+                console.log('Crafting successful:', message.payload.message);
+                setServerMessages(prev => [...prev, `Crafting: ${message.payload.message}`]);
+                // Update character data (includes updated resources and potentially inventory)
+                setSelectedCharacterData(message.payload.characterData);
+                // Optionally re-request recipes if costs might make others available/unavailable
+                // requestRecipes(); // Defined below
+                break;
+            case 'craft_item_fail':
+                console.error('Crafting failed:', message.payload);
+                setServerMessages(prev => [...prev, `Crafting Failed: ${message.payload}`]);
+                // TODO: Display error more prominently
+                break;
+            // --- Upgrade Messages ---
+            case 'upgrade_item_success':
+                console.log('Upgrade successful:', message.payload.message);
+                setServerMessages(prev => [...prev, `Upgrade: ${message.payload.message}`]);
+                // Update character data (includes updated resources and potentially inventory/equipment if item was modified)
+                setSelectedCharacterData(message.payload.characterData);
+                // TODO: Maybe show a specific notification for the upgraded item?
+                // We might need to re-request recipes if costs change availability
+                // requestRecipes();
+                break;
+            case 'upgrade_item_fail':
+                 console.error('Upgrade failed:', message.payload);
+                 setServerMessages(prev => [...prev, `Upgrade Failed: ${message.payload}`]);
+                 // TODO: Display error more prominently
+                 break;
+            // --- End Upgrade Messages ---
          }
-     }, [zoneStatuses, setWsStatus, setUserId, setUsername, setCharacters, setCurrentView, setSelectedCharacterData, setCurrentZoneData, setZoneStatuses, setCurrentEncounter, setServerMessages]); // Updated dependencies
+     }, [zoneStatuses, setWsStatus, setUserId, setUsername, setCharacters, setCurrentView, setSelectedCharacterData, setCurrentZoneData, setZoneStatuses, setCurrentEncounter, setServerMessages, setAvailableRecipes]);
 
     // Keep the ref updated with the latest callback
     useEffect(() => {
@@ -574,6 +626,8 @@ function App() {
          setCurrentEncounter(null);
          setCurrentView('login'); // Go back to login screen
         // Optionally disconnect WS or send logout message
+        // Clear recipes on logout
+        setAvailableRecipes([]);
     };
 
     const handleShowCreate = () => {
@@ -650,7 +704,15 @@ function App() {
         setCurrentEncounter(null);
         setCurrentView('selectCharacter');
         // Optionally send a message to server if needed (e.g., 'leave_game_instance')
+        // Clear recipes when returning to select screen
+        setAvailableRecipes([]);
     };
+
+    // --- Function to request recipes ---
+    const requestRecipes = useCallback(() => {
+        console.log("Requesting available recipes...");
+        sendToServer('get_recipes', {}, browserWsRef);
+    }, [browserWsRef]); // browserWsRef is stable
 
     const handleOptions = () => {
         console.log("Options clicked (not implemented)");
@@ -715,7 +777,15 @@ function App() {
                               // Pass sendToServer function so InGameScreen can send messages directly
                               sendWsMessage={(type: string, payload: any) => sendToServer(type, payload, browserWsRef)}
                               // Removed onCharacterDataLoaded prop
-                         />;
+                         >
+                            {/* Render CraftingPanel as a child or alongside other panels */}
+                            <CraftingPanel
+                                character={selectedCharacterData as CharacterDataForClient | null}
+                                availableRecipes={availableRecipes}
+                                sendWsMessage={(type: string, payload: any) => sendToServer(type, payload, browserWsRef)}
+                                requestRecipes={requestRecipes}
+                            />
+                         </InGameScreen>;
               default:
                 return <div>Error: Unknown View State</div>;
         }

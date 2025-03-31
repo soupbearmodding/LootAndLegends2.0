@@ -63,11 +63,15 @@ export interface Character {
     maxHp: number;
     currentMana: number;
     maxMana: number;
+    defense: number; // Added calculated defense
     currentZoneId: string;
     inventory: Item[];
     equipment: EquipmentSlots;
     groundLoot: Item[];
     gold: number;
+    monsterEssence: number; // Added resource
+    scrapMetal: number; // Added resource
+    lastLogoutTimestamp: number | null;
     potionSlot1?: string;
     potionSlot2?: string;
 }
@@ -83,6 +87,7 @@ export interface ItemStats {
     goldFind?: number;
     lifeStealPercent?: number;
     manaStealPercent?: number;
+    defense?: number; // Added flat defense stat for items/affixes
     defenseBonusPercent?: number;
     attackSpeed?: number; // Base attack speed (ms), primarily for weapons
 }
@@ -134,6 +139,8 @@ export interface Item {
     prefixes: Affix[];
     suffixes: Affix[];
     rarity?: 'common' | 'magic' | 'rare' | 'unique' | 'legendary';
+    upgradeCount?: number; // Track number of upgrades applied
+    maxUpgrades?: number; // Max upgrades allowed based on quality
 }
 
 // --- Item Quality ---
@@ -215,6 +222,7 @@ export interface SelectCharacterResult {
     characterData: Character;
     currentZoneData: Zone | undefined;
     zoneStatuses: ZoneWithStatus[]; // Depends on ZoneWithStatus
+    offlineGains?: { xp: number, gold: number }; // Added for offline progress reporting
 }
 
 export interface AuthServiceResult {

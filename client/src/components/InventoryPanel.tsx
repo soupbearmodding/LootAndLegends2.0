@@ -162,7 +162,11 @@ const InventoryPanel: React.FC<InventoryPanelProps> = ({
             <div className="inventory-grid-container">
                 <div className="inventory-header">
                     <h4>Inventory</h4>
-                    <div className="gold-display">Gold: {goldAmount}</div>
+                    <div className="currency-display">
+                        <span>Gold: {goldAmount}</span>
+                        <span style={{ marginLeft: '10px' }}>Essence: {character?.monsterEssence ?? 0}</span>
+                        <span style={{ marginLeft: '10px' }}>Scrap: {character?.scrapMetal ?? 0}</span>
+                    </div>
                 </div>
                 <div className="inventory-grid">
                     {gridItems.map((item, index) => (

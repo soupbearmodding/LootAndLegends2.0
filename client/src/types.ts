@@ -19,6 +19,19 @@ export interface ItemStats {
     attackSpeed?: number; // Base attack speed (ms), primarily for weapons
 }
 
+// --- Item Affixes (Copied from server) ---
+export interface Affix {
+    id: string;
+    name: string;
+    type: 'prefix' | 'suffix';
+    statModifiers?: Partial<ItemStats>;
+    // Add other potential affix properties if needed by client (e.g., levelReq?)
+}
+
+// --- Item Quality (Copied from server) ---
+export type ItemQuality = 'Gray' | 'White' | 'Green' | 'Blue' | 'Purple' | 'Red';
+
+
 // --- Item (Basic structure needed for components) ---
 export interface Item {
     id: string;
@@ -29,7 +42,12 @@ export interface Item {
     equipmentSlot?: EquipmentSlot;
     stats?: Partial<ItemStats>;
     quantity?: number;
+    quality: ItemQuality; // Added quality
+    prefixes: Affix[]; // Added prefixes
+    suffixes: Affix[]; // Added suffixes
     rarity?: 'common' | 'magic' | 'rare' | 'unique' | 'legendary';
+    upgradeCount?: number; // Added for upgrade system
+    maxUpgrades?: number; // Added for upgrade system
     baseName?: string; // Add baseName back for client-side display logic
 }
 
@@ -57,6 +75,8 @@ export interface CharacterDataForClient {
     equipment: EquipmentSlots;
     groundLoot: Item[];
     gold: number;
+    monsterEssence: number; // Added resource
+    scrapMetal: number; // Added resource
     potionSlot1?: string;
     potionSlot2?: string;
     combatStats?: any; // Keep any for now if structure is complex/variable

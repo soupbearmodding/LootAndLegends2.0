@@ -14,6 +14,7 @@ import {
     PlayerAttackUpdatePayload,
     MonsterAttackUpdatePayload
 } from '../types.js';
+import { InventoryService } from './inventoryService.js'; // Import InventoryService
 
 import { zones, monsters, calculateMaxHp, xpForLevel, xpRequiredForLevel } from '../gameData.js';
 import { items as itemDefinitions } from '../lootData.js';
@@ -26,6 +27,7 @@ const MIN_ATTACK_SPEED = 500; // Minimum attack speed in ms
 
 export class CombatService {
     private characterRepository: ICharacterRepository;
+    private inventoryService: InventoryService; // Add InventoryService property
 
     private activeEncounters: ActiveEncountersMap;
     private playerAttackIntervals: PlayerAttackIntervalsMap;
@@ -33,11 +35,13 @@ export class CombatService {
 
     constructor(
         characterRepository: ICharacterRepository,
+        inventoryService: InventoryService, // Inject InventoryService
         activeEncounters: ActiveEncountersMap,
         playerAttackIntervals: PlayerAttackIntervalsMap,
         monsterAttackIntervals: MonsterAttackIntervalsMap
     ) {
         this.characterRepository = characterRepository;
+        this.inventoryService = inventoryService; // Store InventoryService
         this.activeEncounters = activeEncounters;
         this.playerAttackIntervals = playerAttackIntervals;
         this.monsterAttackIntervals = monsterAttackIntervals;
@@ -195,10 +199,14 @@ export class CombatService {
             return { success: false, message: "Character not found.", encounterEnded: true };
         }
 
+        // Calculate final stats including equipment for this attack
+        const calculatedCharacter = calculateCharacterStats(character);
+
         try {
             // --- Player Attack Calculation ---
-            // TODO: Refine damage calculation (consider weapon damage, stats, etc.)
-            let playerDamage = Math.floor((character.stats?.strength ?? 0) / 5);
+            // Use calculated stats
+            // TODO: Refine damage calculation (consider weapon damage, etc.)
+            let playerDamage = Math.floor((calculatedCharacter.stats.strength ?? 0) / 5); // Use calculated strength
             playerDamage = Math.max(1, playerDamage); // Ensure at least 1 damage
 
             encounter.currentHp -= playerDamage;
@@ -260,6 +268,17 @@ export class CombatService {
                     // updateData.currentMana = character.currentMana;
                 }
 
+                // --- Grant Resources ---
+                // Simple example: grant resources based on monster level
+                const essenceDropped = randomInt(1, 1 + defeatedMonster.level); // 1 + level essence
+                const scrapDropped = Math.random() < 0.2 ? randomInt(0, 1) : 0; // 20% chance for 0-1 scrap
+
+                character.monsterEssence = (character.monsterEssence ?? 0) + essenceDropped;
+                character.scrapMetal = (character.scrapMetal ?? 0) + scrapDropped;
+                updateData.monsterEssence = character.monsterEssence;
+                updateData.scrapMetal = character.scrapMetal;
+                console.log(`CombatService: Resource Gain - ${character.name} gained ${essenceDropped} Essence, ${scrapDropped} Scrap.`);
+
                 // --- Generate Loot ---
                 let droppedLoot: Item[] = [];
                 if (defeatedMonster.lootTableId) {
@@ -268,33 +287,26 @@ export class CombatService {
                     console.log(`CombatService: Loot generated for ${defeatedMonster.name}: ${droppedLoot.length} items.`);
                 }
 
-                // --- Add Loot to Inventory ---
+                // --- Add Loot to Inventory using InventoryService ---
                 if (droppedLoot.length > 0) {
-                    if (!character.inventory) character.inventory = [];
-                    const currentInventory = [...character.inventory]; // Work with a copy
-
-                    droppedLoot.forEach(newItem => {
-                        const isStackable = (newItem.type === 'potion' || newItem.type === 'misc') && (newItem.quantity ?? 1) > 0;
-                        let existingItemIndex = -1;
-
-                        if (isStackable) {
-                            existingItemIndex = currentInventory.findIndex(invItem => invItem.baseId === newItem.baseId);
+                    for (const newItem of droppedLoot) {
+                        try {
+                            // Call InventoryService to handle adding the item
+                            // Note: addItemToInventory should handle stacking logic internally
+                            // We pass the character ID and the generated item instance
+                            await this.inventoryService.addItemToInventory(character.id, newItem);
+                            // InventoryService should ideally trigger its own character_update message
+                            // or the client should refetch inventory if needed.
+                        } catch (inventoryError) {
+                            console.error(`CombatService: Failed to add item ${newItem.name} (ID: ${newItem.id}) to inventory for character ${character.id}:`, inventoryError);
+                            // Decide how to handle partial failures - log and continue?
                         }
-
-                        if (isStackable && existingItemIndex !== -1) {
-                            const existingItem = currentInventory[existingItemIndex];
-                            if (existingItem) {
-                                existingItem.quantity = (existingItem.quantity ?? 0) + (newItem.quantity ?? 1);
-                            }
-                        } else {
-                            currentInventory.push(newItem);
-                        }
-                    });
-                    updateData.inventory = currentInventory; // Add updated inventory to DB payload
-                    character.inventory = currentInventory; // Update local character object for return payload
+                    }
+                    // Refresh character data after potential inventory changes IF needed by subsequent logic
+                    // character = await this.characterRepository.findById(characterId) ?? character;
                 }
-
-                // --- Save Character Updates ---
+                // Remove inventory from direct updateData here, as InventoryService handles it.
+                // --- Save Character Updates (XP, Level, Stats only) ---
                 await this.characterRepository.update(character.id, updateData);
 
                 // --- Prepare Character Update Payload for Client ---
@@ -306,7 +318,9 @@ export class CombatService {
                      experience: character.experience,
                      currentLevelXp: finalCurrentLevelXp,
                      xpToNextLevelBracket: finalXpToNextLevelBracket,
-                     inventory: character.inventory ?? [], // Send updated inventory
+                     monsterEssence: character.monsterEssence, // Add resource to payload
+                     scrapMetal: character.scrapMetal, // Add resource to payload
+                     // Remove inventory from this payload; rely on InventoryService updates
                  };
                  if (leveledUp) {
                      characterUpdatePayload.level = character.level;
@@ -366,14 +380,20 @@ export class CombatService {
             return { success: false, message: "Character not found.", encounterEnded: true };
         }
 
+        // Calculate final stats including equipment for defense calculation
+        const calculatedCharacter = calculateCharacterStats(character);
+
         try {
             // --- Monster Attack Calculation ---
-            // TODO: Refine damage calculation (consider monster stats, player defense/stats)
-            let monsterDamage = encounter.baseDamage ?? 1;
-            monsterDamage = Math.max(1, monsterDamage); // Ensure at least 1 damage
+            let monsterRawDamage = encounter.baseDamage ?? 1;
+            monsterRawDamage = Math.max(1, monsterRawDamage); // Ensure at least 1 base damage
 
-            const newHp = (character.currentHp ?? 0) - monsterDamage;
-            console.log(`CombatService: Monster Attack - ${encounter.name} dealt ${monsterDamage} damage to ${character.name}. ${character.name} HP: ${newHp}/${character.maxHp ?? '??'}`);
+            // Apply defense reduction (simple flat reduction for now)
+            const defenseReduction = calculatedCharacter.defense ?? 0;
+            const damageTaken = Math.max(1, monsterRawDamage - defenseReduction); // Ensure at least 1 damage taken
+
+            const newHp = (calculatedCharacter.currentHp ?? 0) - damageTaken;
+            console.log(`CombatService: Monster Attack - ${encounter.name} (Raw: ${monsterRawDamage}) dealt ${damageTaken} damage to ${character.name} (Def: ${defenseReduction}). ${character.name} HP: ${newHp}/${calculatedCharacter.maxHp ?? '??'}`);
 
             // --- Check if Player is Defeated ---
             if (newHp <= 0) {
@@ -383,7 +403,8 @@ export class CombatService {
                 this.clearCombatState(connectionId); // Clear intervals and encounter
 
                 // --- Player Death Consequences ---
-                const respawnHp = calculateMaxHp(character.stats ?? { strength: 0, dexterity: 0, vitality: 0, energy: 0 });
+                // Use calculated stats for respawn HP
+                const respawnHp = calculateMaxHp(calculatedCharacter.stats ?? { strength: 0, dexterity: 0, vitality: 0, energy: 0 });
                 const respawnZoneId = 'town'; // Respawn in town
 
                 // Prepare updates for DB
@@ -418,7 +439,8 @@ export class CombatService {
                 return {
                     success: true, // Attack happened, player died
                     message: `You were defeated by ${defeatedByMonsterName}!`,
-                    monsterUpdate: { monsterDamageTaken: monsterDamage, characterUpdate: { currentHp: 0 } }, // Show final hit
+                    // Send actual damage taken, not raw monster damage
+                    monsterUpdate: { monsterDamageTaken: damageTaken, characterUpdate: { currentHp: 0 } },
                     encounterEnded: true,
                     respawn: true,
                     endReason: `Defeated by ${defeatedByMonsterName}! Respawning...`,
@@ -426,10 +448,11 @@ export class CombatService {
                 };
             } else {
                 // --- Player Survived ---
+                // Update DB with the new HP after taking damage
                 await this.characterRepository.update(character.id, { currentHp: newHp });
 
                 const monsterAttackPayload: MonsterAttackUpdatePayload = {
-                    monsterDamageTaken: monsterDamage,
+                    monsterDamageTaken: damageTaken, // Send actual damage taken
                     characterUpdate: { currentHp: newHp }
                 };
 
@@ -449,4 +472,27 @@ export class CombatService {
 
     // TODO: Implement startCombatIntervals (maybe called by handler after findMonster success)
 
+    /**
+     * Calculates offline gains (XP, Gold) based on character and duration.
+     * Placeholder implementation.
+     * @param character The character who was offline.
+     * @param durationSeconds The duration in seconds the character was offline.
+     * @returns An object containing calculated XP and Gold gains.
+     */
+    async calculateOfflineGains(character: Character, durationSeconds: number): Promise<{ xp: number, gold: number }> {
+        // Placeholder logic: Grant 1 XP and 1 Gold per minute offline
+        const minutesOffline = Math.floor(durationSeconds / 60);
+        const xpGained = minutesOffline * 1; // Example: 1 XP per minute
+        const goldGained = minutesOffline * 1; // Example: 1 Gold per minute
+
+        console.log(`CombatService (Placeholder): Calculated offline gains for ${minutesOffline} minutes: ${xpGained} XP, ${goldGained} Gold`);
+
+        // In a real implementation, this would involve:
+        // - Determining the average XP/Gold per second in the character's last zone (character.currentZoneId)
+        // - Considering character stats/level/gear for efficiency
+        // - Applying multipliers (e.g., from potential future prestige upgrades)
+        // - Potentially capping gains based on time or other factors
+
+        return { xp: xpGained, gold: goldGained };
+    }
 }

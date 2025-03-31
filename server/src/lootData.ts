@@ -282,3 +282,159 @@ export const suffixes: Map<string, Affix> = new Map([
     ['ar_s1', { id: 'ar_s1', name: 'of Measure', type: 'suffix', levelReq: 3, statModifiers: { attackRating: 10 } }],
     ['ar_s2', { id: 'ar_s2', name: 'of Accuracy', type: 'suffix', levelReq: 9, statModifiers: { attackRating: 25 } }],
 ]);
+
+// --- Affix Tier Progression ---
+// Maps a base affix name to an ordered list of affix IDs representing tiers
+export const affixTiers: Map<string, string[]> = new Map([
+    // Prefixes
+    ['str_p', ['str_p1', 'str_p1b', 'str_p2', 'str_p2b']],
+    ['dex_p', ['dex_p1', 'dex_p1b', 'dex_p2', 'dex_p2b']],
+    ['vit_p', ['vit_p1', 'vit_p1b', 'vit_p2', 'vit_p2b']],
+    ['enr_p', ['enr_p1', 'enr_p1b', 'enr_p2', 'enr_p2b']],
+    ['ias_p', ['ias_p1', 'ias_p2', 'ias_p3']],
+    ['fhr_p', ['fhr_p1', 'fhr_p2']],
+    ['res_fire_p', ['res_fire_p1', 'res_fire_p2']],
+    ['res_cold_p', ['res_cold_p1', 'res_cold_p2']],
+    ['res_light_p', ['res_light_p1', 'res_light_p2']],
+    ['res_poison_p', ['res_poison_p1', 'res_poison_p2']],
+    // ['dmg_fire_p', ['dmg_fire_p1', /* ... */]], // Add tiers later if needed
+    // ['dmg_cold_p', ['dmg_cold_p1', /* ... */]],
+    // ['dmg_light_p', ['dmg_light_p1', /* ... */]],
+    // ['dmg_poison_p', ['dmg_poison_p1', /* ... */]],
+    ['hp_p', ['hp_p1', 'hp_p2']],
+    ['mana_p', ['mana_p1', 'mana_p2']],
+    // ['mf_p', ['mf_p1', /* ... */]],
+    // ['gf_p', ['gf_p1', /* ... */]],
+    ['def_p', ['def_p1', 'def_p2']],
+    ['ar_p', ['ar_p1', 'ar_p2']],
+    // Suffixes
+    ['str_s', ['str_s1', 'str_s1b', 'str_s2', 'str_s2b']],
+    ['dex_s', ['dex_s1', 'dex_s1b', 'dex_s2', 'dex_s2b']],
+    ['vit_s', ['vit_s1', 'vit_s1b', 'vit_s2', 'vit_s2b']],
+    ['enr_s', ['enr_s1', 'enr_s1b', 'enr_s2', 'enr_s2b']],
+    ['ias_s', ['ias_s1', 'ias_s2', 'ias_s3']],
+    ['fhr_s', ['fhr_s1', 'fhr_s2']],
+    ['res_fire_s', ['res_fire_s1', 'res_fire_s2']],
+    ['res_cold_s', ['res_cold_s1', 'res_cold_s2']],
+    ['res_light_s', ['res_light_s1', 'res_light_s2']],
+    ['res_poison_s', ['res_poison_s1', 'res_poison_s2']],
+    // ['dmg_fire_s', ['dmg_fire_s1', /* ... */]],
+    // ['dmg_cold_s', ['dmg_cold_s1', /* ... */]],
+    // ['dmg_light_s', ['dmg_light_s1', /* ... */]],
+    // ['dmg_poison_s', ['dmg_poison_s1', /* ... */]],
+    ['hp_s', ['hp_s1', 'hp_s2']],
+    ['mana_s', ['mana_s1', 'mana_s2']],
+    // ['mf_s', ['mf_s1', /* ... */]],
+    // ['gf_s', ['gf_s1', /* ... */]],
+    ['lifesteal_s', ['lifesteal_s1']], // Only one tier defined currently
+    ['manasteal_s', ['manasteal_s1']], // Only one tier defined currently
+    ['def_s', ['def_s1', 'def_s2']],
+    ['ar_s', ['ar_s1', 'ar_s2']],
+]);
+
+// Helper function to get the base name of an affix ID (e.g., 'str_p1b' -> 'str_p')
+export function getAffixBaseName(affixId: string): string | null {
+    const match = affixId.match(/^([a-z]+(?:_[a-z]+)*)_[ps]\d+[a-z]?$/);
+    if (!match) return null; // No regex match
+
+    const parts = affixId.split('_');
+    // Ensure there's at least two parts after split and the second part is not empty
+    if (parts.length < 2 || !parts[1]) return null;
+
+    return match[1] + '_' + parts[1].charAt(0); // e.g., str_p or res_fire_s
+}
+
+
+// --- Loot Tables ---
+// Defines what items can drop from a specific source (e.g., a monster type)
+// Export these interfaces
+export interface LootDrop {
+    baseId: string; // Base item ID from the 'items' map
+    chance: number; // Probability (0.0 to 1.0)
+    quantity?: { min: number; max: number }; // For stackable items like gold or potions
+    magicFindSensitive?: boolean; // Does Magic Find affect the chance of this specific item dropping? (Default: true for gear, false for potions/gold)
+}
+
+export interface LootTable {
+    id: string;
+    // Chance to drop *nothing* from this table, even if rolls succeed below
+    noDropChance: number; // e.g., 0.6 = 60% chance to drop nothing at all
+    // Maximum number of *distinct* item types to drop in one kill
+    maxDrops: number; // e.g., 3 means max 3 different baseIds can drop
+    possibleDrops: LootDrop[];
+    // Optional: Define chances for different qualities (magic, rare) if MF check succeeds
+    qualityChances?: {
+        magic: number; // e.g., 0.1 = 10% chance for magic if quality roll happens
+        rare: number;  // e.g., 0.02 = 2% chance for rare
+        // unique: number; // Add later
+    };
+}
+
+// Export this interface too
+export interface LootTable {
+    id: string;
+    // Chance to drop *nothing* from this table, even if rolls succeed below
+    noDropChance: number; // e.g., 0.6 = 60% chance to drop nothing at all
+    // Maximum number of *distinct* item types to drop in one kill
+    maxDrops: number; // e.g., 3 means max 3 different baseIds can drop
+    possibleDrops: LootDrop[];
+    // Optional: Define chances for different qualities (magic, rare) if MF check succeeds
+    qualityChances?: {
+        magic: number; // e.g., 0.1 = 10% chance for magic if quality roll happens
+        rare: number;  // e.g., 0.02 = 2% chance for rare
+        // unique: number; // Add later
+    };
+}
+
+
+export const lootTables: Map<string, LootTable> = new Map([
+    // Example: Level 1 Goblin in the starting fields
+    ['goblin_lvl1', {
+        id: 'goblin_lvl1',
+        noDropChance: 0.5, // 50% chance to drop nothing
+        maxDrops: 2,       // Max 2 different items
+        possibleDrops: [
+            // Currency/Potions (usually not MF sensitive)
+            { baseId: 'gold_coins', chance: 0.7, quantity: { min: 1, max: 10 }, magicFindSensitive: false },
+            { baseId: 'minor_health_potion', chance: 0.15, quantity: { min: 1, max: 1 }, magicFindSensitive: false },
+            // Basic Gear (MF sensitive by default if not specified)
+            { baseId: 'rusty_dagger', chance: 0.05 },
+            { baseId: 'club', chance: 0.05 },
+            { baseId: 'leather_cap', chance: 0.03 },
+            { baseId: 'quilted_armor', chance: 0.02 },
+            { baseId: 'sash', chance: 0.04 },
+        ],
+        qualityChances: { // Low chance for magic items early on
+            magic: 0.05, // 5% chance for magic quality if a gear item drops
+            rare: 0.005  // 0.5% chance for rare quality
+        }
+    }],
+    // Example: Level 3 Skeleton in the graveyard
+    ['skeleton_lvl3', {
+        id: 'skeleton_lvl3',
+        noDropChance: 0.4, // 40% chance to drop nothing
+        maxDrops: 3,
+        possibleDrops: [
+            // Currency/Potions
+            { baseId: 'gold_coins', chance: 0.8, quantity: { min: 5, max: 25 }, magicFindSensitive: false },
+            { baseId: 'minor_health_potion', chance: 0.20, quantity: { min: 1, max: 2 }, magicFindSensitive: false },
+            { baseId: 'minor_mana_potion', chance: 0.10, quantity: { min: 1, max: 1 }, magicFindSensitive: false },
+            // Slightly better gear
+            { baseId: 'dagger', chance: 0.06 },
+            { baseId: 'short_sword', chance: 0.05 },
+            { baseId: 'spiked_club', chance: 0.04 },
+            { baseId: 'hand_axe', chance: 0.03 },
+            { baseId: 'skull_cap', chance: 0.04 },
+            { baseId: 'leather_armor', chance: 0.03 },
+            { baseId: 'leather_gloves', chance: 0.05 },
+            { baseId: 'leather_boots', chance: 0.05 },
+            { baseId: 'leather_belt', chance: 0.06 },
+            { baseId: 'buckler', chance: 0.02 },
+        ],
+        qualityChances: {
+            magic: 0.08, // 8% chance for magic
+            rare: 0.01   // 1% chance for rare
+        }
+    }],
+    // Add more tables for other monsters...
+]);

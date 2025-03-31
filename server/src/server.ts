@@ -21,6 +21,8 @@ import { ZoneService } from './services/zoneService.js';
 import { ZoneHandler } from './handlers/zoneHandler.js';
 import { CharacterService } from './services/characterService.js';
 import { CharacterHandler } from './handlers/characterHandler.js';
+import { CraftingService } from './services/craftingService.js'; // Import CraftingService
+import { CraftingHandler } from './handlers/craftingHandler.js'; // Import CraftingHandler
 import { validateGameData } from './validation.js';
 import {
     WebSocketMessage,
@@ -53,20 +55,17 @@ const rateLimitTracker: Map<WebSocket, RateLimitInfo> = new Map();
 // --- Instantiate Services and Handlers ---
 // Assuming Repositories are the exported objects with methods
 const authService = new AuthService(UserRepository);
-// Instantiate CharacterService first as AuthHandler depends on it
 const zoneService = new ZoneService(CharacterRepository);
-const characterService = new CharacterService(CharacterRepository, UserRepository, zoneService);
-// Pass both services to AuthHandler
-const authHandler = new AuthHandler(authService, characterService);
-const inventoryService = new InventoryService(CharacterRepository);
+const inventoryService = new InventoryService(CharacterRepository); // Instantiate InventoryService
+const combatService = new CombatService(CharacterRepository, inventoryService, activeEncounters, playerAttackIntervals, monsterAttackIntervals); // Pass InventoryService
+const characterService = new CharacterService(CharacterRepository, UserRepository, zoneService, combatService); // Pass combatService
+const craftingService = new CraftingService(CharacterRepository, inventoryService); // Instantiate CraftingService
+const authHandler = new AuthHandler(authService, characterService, CharacterRepository); // Pass CharacterRepository
 const inventoryHandler = new InventoryHandler(inventoryService);
-// Instantiate CombatService, passing the state maps
-const combatService = new CombatService(CharacterRepository, activeEncounters, playerAttackIntervals, monsterAttackIntervals);
 const combatHandler = new CombatHandler(combatService);
-// ZoneService is already instantiated above
 const zoneHandler = new ZoneHandler(zoneService, combatService, combatHandler);
-// CharacterService is already instantiated above
 const characterHandler = new CharacterHandler(characterService, UserRepository, CharacterRepository);
+const craftingHandler = new CraftingHandler(craftingService); // Instantiate CraftingHandler
 
 
 // --- Server Startup ---
@@ -116,11 +115,9 @@ async function startServer() {
 
             try {
                 // Proceed with parsing only if rate limit not exceeded
-                // const data = JSON.parse(message.toString()); // This seems redundant, messageData is parsed below
                 const messageData: WebSocketMessage = JSON.parse(message.toString()); // Original message data
 
                 // --- Secure Logging ---
-                // Perform a DEEP COPY for logging to avoid modifying original payload
                 let logData: any = JSON.parse(JSON.stringify(messageData));
                 if (logData.type === 'login' || logData.type === 'register') {
                     if (logData.payload && typeof logData.payload.password === 'string') {
@@ -132,59 +129,53 @@ async function startServer() {
                 // --- Message Routing ---
                 switch (messageData.type) { // Use original messageData for logic
                     case 'register':
-                        // Use the new AuthHandler
                         await authHandler.handleRegister(ws, messageData.payload);
                         break;
                     case 'login':
-                        // Use the new AuthHandler
                         await authHandler.handleLogin(ws, messageData.payload);
                         break;
                     case 'create_character':
-                        // Use the new CharacterHandler
                         await characterHandler.handleCreateCharacter(ws, messageData.payload);
                         break;
                     case 'select_character':
-                        // Use the new CharacterHandler
                         await characterHandler.handleSelectCharacter(ws, messageData.payload);
                         break;
+                    case 'delete_character':
+                         await characterHandler.handleDeleteCharacter(ws, messageData.payload);
+                        break;
                     case 'travel':
-                        // Use the new ZoneHandler
                         await zoneHandler.handleTravel(ws, messageData.payload);
                         break;
                     case 'find_monster':
-                        // Use the new CombatHandler
                         await combatHandler.handleFindMonster(ws, messageData.payload);
                         break;
                     case 'equip_item':
-                        // Use the new InventoryHandler
                         await inventoryHandler.handleEquipItem(ws, messageData.payload);
                         break;
                     case 'unequip_item':
-                         // Use the new InventoryHandler
                         await inventoryHandler.handleUnequipItem(ws, messageData.payload);
                         break;
                     case 'sell_item':
-                         // Use the new InventoryHandler
                         await inventoryHandler.handleSellItem(ws, messageData.payload);
                         break;
                     case 'assign_potion_slot':
-                         // Use the new InventoryHandler
                         await inventoryHandler.handleAssignPotionSlot(ws, messageData.payload);
                         break;
                     case 'use_potion_slot':
-                         // Use the new InventoryHandler
                         await inventoryHandler.handleUsePotionSlot(ws, messageData.payload);
                         break;
                     case 'auto_equip_best_stat':
-                         // Use the new InventoryHandler
                         await inventoryHandler.handleAutoEquipBestStat(ws, messageData.payload);
                         break;
-                    case 'delete_character':
-                         // Use the new CharacterHandler
-                        await characterHandler.handleDeleteCharacter(ws, messageData.payload);
+                    case 'get_recipes': // New crafting message type
+                        await craftingHandler.handleGetRecipes(ws);
                         break;
-                    // Removed forceJsonSave, saveCharacterToJson, loadCharacterFromJson handlers
-                    // Removed insecure 'saveCharacter' handler
+                    case 'craft_item': // New crafting message type
+                        await craftingHandler.handleCraftItem(ws, messageData.payload);
+                        break;
+                    case 'upgrade_item': // New upgrade message type
+                        await craftingHandler.handleUpgradeItem(ws, messageData.payload); // Assumes handleUpgradeItem exists
+                        break;
                     default:
                         console.log(`Unknown message type: ${messageData.type}`);
                         safeSend(ws, { type: 'error', payload: `Unknown message type: ${messageData.type}` });
@@ -198,16 +189,12 @@ async function startServer() {
 
         ws.on('close', () => {
             console.log('Client disconnected');
-            // Clean up rate limit tracker
             rateLimitTracker.delete(ws);
-            // Use the new AuthHandler for logout logic
-            authHandler.handleLogout(ws); // Handles removing from activeConnections
-            // Use the CombatService to clear any combat state for this connection
+            authHandler.handleLogout(ws);
             combatService.clearCombatState(ws);
         });
 
         ws.on('error', (error) => {
-            // Clean up rate limit tracker on error too
             rateLimitTracker.delete(ws);
             console.error('WebSocket error:', error);
         });

@@ -4,8 +4,8 @@ import { broadcast, send } from '../websocketUtils.js';
 import { activeConnections } from '../server.js';
 import { AuthService } from '../services/authService.js';
 import { CharacterService } from '../services/characterService.js';
-import { UserRepository } from '../repositories/userRepository.js';
-import { LoginPayload, RegisterPayload, CharacterSummary, Character } from '../types.js';
+import { ICharacterRepository, LoginPayload, RegisterPayload, CharacterSummary, Character } from '../types.js'; // Import ICharacterRepository
+import { UserRepository } from '../repositories/userRepository.js'; // Keep this if needed elsewhere, or remove if not
 
 // TODO: Instantiate AuthService, likely requires UserRepository
 // const userRepository = new UserRepository(/* db connection or path */);
@@ -13,11 +13,17 @@ import { LoginPayload, RegisterPayload, CharacterSummary, Character } from '../t
 export class AuthHandler {
     private authService: AuthService;
     private characterService: CharacterService;
+    private characterRepository: ICharacterRepository; // Add repository
 
-    // Modify constructor to accept CharacterService
-    constructor(authService: AuthService, characterService: CharacterService) {
+    // Modify constructor to accept CharacterService and ICharacterRepository
+    constructor(
+        authService: AuthService,
+        characterService: CharacterService,
+        characterRepository: ICharacterRepository // Inject repository
+    ) {
         this.authService = authService;
         this.characterService = characterService;
+        this.characterRepository = characterRepository; // Store repository
     }
 
     async handleRegister(ws: WebSocket, payload: unknown): Promise<void> {
@@ -125,11 +131,27 @@ export class AuthHandler {
         }
     }
 
-    handleLogout(ws: WebSocket): void {
+    async handleLogout(ws: WebSocket): Promise<void> { // Make async
         const connectionData = activeConnections.get(ws);
         if (connectionData) {
-            const { username, userId } = connectionData;
+            const { username, userId, selectedCharacterId } = connectionData;
             console.log(`Handling logout request for user: ${username} (ID: ${userId})`);
+
+            // --- Record Logout Timestamp ---
+            if (selectedCharacterId) {
+                try {
+                    const timestamp = Date.now();
+                    await this.characterRepository.update(selectedCharacterId, { lastLogoutTimestamp: timestamp });
+                    console.log(`AuthHandler: Recorded logout timestamp ${timestamp} for character ${selectedCharacterId}`);
+                } catch (error) {
+                    console.error(`AuthHandler: Failed to record logout timestamp for character ${selectedCharacterId}:`, error);
+                    // Log error but continue logout process
+                }
+            } else {
+                console.log(`AuthHandler: No character selected for user ${username}, skipping timestamp recording.`);
+            }
+            // --- End Timestamp Recording ---
+
             activeConnections.delete(ws);
             console.log(`User logged out: ${username}`);
             // Optionally broadcast logout event

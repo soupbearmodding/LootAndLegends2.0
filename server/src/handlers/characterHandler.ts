@@ -130,7 +130,8 @@ export class CharacterHandler {
                         message: `Character ${result.characterData.name} selected. Welcome to ${result.currentZoneData?.name ?? 'the game'}!`,
                         characterData: result.characterData,
                         currentZoneData: result.currentZoneData,
-                        zoneStatuses: result.zoneStatuses
+                        zoneStatuses: result.zoneStatuses,
+                        offlineGains: result.offlineGains // Include offline gains in the payload
                     }
                 });
             } else {

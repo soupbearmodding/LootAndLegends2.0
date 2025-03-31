@@ -28,9 +28,7 @@ export function randomInt(min: number, max: number): number {
 }
 
 // --- Character Stat Calculation ---
-// Import necessary types, getting ItemStats from Character
-import { Character, Item, EquipmentSlot } from './types.js';
-type ItemStats = Character['stats']; // Use the stats type from Character
+import { Character, Item, EquipmentSlot, ItemStats } from './types.js'; // Import ItemStats directly
 
 /**
  * Calculates the character's final stats including equipment bonuses.
@@ -41,18 +39,46 @@ type ItemStats = Character['stats']; // Use the stats type from Character
 export function calculateCharacterStats(character: Character): Character {
     // Start with base stats defined on the character document
     const baseStats = { ...character.stats };
-    const finalStats: ItemStats = { ...baseStats }; // Initialize final stats with base
+    // Use the imported ItemStats interface which includes all potential stats
+    const finalStats: Partial<ItemStats> = { ...baseStats }; // Use Partial as not all stats might exist initially
+    let totalFlatDefense = 0;
+    let totalDefenseBonusPercent = 0;
 
     // Add stats from equipment
     for (const slotKey in character.equipment) {
         const slot = slotKey as EquipmentSlot;
         const item = character.equipment[slot];
+
+        // Add flat defense from base item definition (if it exists)
+        // Need to import baseItems from lootData for this
+        // Let's assume baseItems is imported as 'itemDefinitions' like in inventoryService
+        // const baseItemDef = item ? itemDefinitions.get(item.baseId) : undefined;
+        // if (baseItemDef?.defense) {
+        //     totalFlatDefense += baseItemDef.defense;
+        // }
+        // NOTE: The above requires importing itemDefinitions. A simpler approach for now
+        // is to assume flat defense is part of the item.stats object if needed.
+        // Let's add 'defense' to ItemStats and sum it here.
+
         if (item?.stats) {
+            // Iterate over the keys of the item's stats object
             for (const statKey in item.stats) {
-                // Ensure statKey is treated as a key of ItemStats
+                // Ensure the key is a valid key of ItemStats
                 const stat = statKey as keyof ItemStats;
-                if (stat in finalStats) { // Check if the stat exists on finalStats
-                    finalStats[stat] = (finalStats[stat] || 0) + (item.stats[stat] || 0);
+                const value = item.stats[stat] ?? 0; // Get the value, default to 0
+
+                if (stat === 'defense') {
+                    totalFlatDefense += value;
+                } else if (stat === 'defenseBonusPercent') {
+                    totalDefenseBonusPercent += value;
+                } else if (stat in finalStats) { // Check if it's one of the base stats (str, dex, vit, enr)
+                    // Use type assertion here as we've checked `stat in finalStats`
+                    (finalStats as any)[stat] = ((finalStats as any)[stat] || 0) + value;
+                } else {
+                    // Handle other potential stats from ItemStats if needed (e.g., resistances)
+                    // For now, we only explicitly add base stats, defense, and defenseBonusPercent
+                    // We could add other stats to finalStats if required:
+                    // finalStats[stat] = (finalStats[stat] || 0) + value;
                 }
             }
         }
@@ -60,16 +86,28 @@ export function calculateCharacterStats(character: Character): Character {
 
     // --- Sanity Check Stats (Ensure non-negative) ---
     (Object.keys(finalStats) as Array<keyof ItemStats>).forEach(statKey => {
-        if (finalStats[statKey] < 0) {
+        // Use nullish coalescing to handle potentially undefined stats
+        if ((finalStats[statKey] ?? 0) < 0) {
             console.warn(`Character ${character.id}: Calculated stat ${statKey} was negative (${finalStats[statKey]}). Clamping to 0.`);
-            finalStats[statKey] = 0;
+            finalStats[statKey] = 0; // Clamp to 0
         }
     });
 
     // --- Calculate Derived Stats ---
-    let calculatedMaxHp = 50 + (finalStats.vitality || 0) * 5; // Example formula
+    // Example: Base defense from Dexterity? (Common in ARPGs)
+    const baseDefenseFromStats = Math.floor((finalStats.dexterity ?? 0) / 4); // Use nullish coalescing
+    totalFlatDefense += baseDefenseFromStats;
+
+    // Apply percentage bonus
+    let calculatedDefense = Math.floor(totalFlatDefense * (1 + totalDefenseBonusPercent)); // Use let
+
+    let calculatedMaxHp = 50 + (finalStats.vitality ?? 0) * 5; // Example formula, use nullish coalescing
 
     // --- Sanity Check Derived Stats ---
+    if (calculatedDefense < 0) {
+        console.warn(`Character ${character.id}: Calculated defense was negative (${calculatedDefense}). Clamping to 0.`);
+        calculatedDefense = 0;
+    }
     if (calculatedMaxHp < 1) {
         console.warn(`Character ${character.id}: Calculated maxHp was less than 1 (${calculatedMaxHp}). Clamping to 1.`);
         calculatedMaxHp = 1;
@@ -80,11 +118,22 @@ export function calculateCharacterStats(character: Character): Character {
 
     // Return a *new* character object with the calculated final stats and derived stats
     // Ensure all original character properties are preserved
+    // Ensure the 'stats' object conforms to the required Character['stats'] type
+    const finalCharacterStats: Character['stats'] = {
+        strength: finalStats.strength ?? 0,
+        dexterity: finalStats.dexterity ?? 0,
+        vitality: finalStats.vitality ?? 0,
+        energy: finalStats.energy ?? 0,
+    };
+
     const updatedCharacter: Character = {
         ...character, // Spread original character data first
-        stats: finalStats, // Overwrite with calculated final stats
+        stats: finalCharacterStats, // Assign the correctly typed stats object
         maxHp: calculatedMaxHp, // Overwrite with calculated max HP
+        defense: calculatedDefense, // Add calculated defense
         currentHp: finalCurrentHp, // Overwrite with validated current HP
+        // Note: Other potential stats from ItemStats (like resistances) are not explicitly added
+        // back to the Character object here unless the Character type is updated to include them.
     };
 
     return updatedCharacter;

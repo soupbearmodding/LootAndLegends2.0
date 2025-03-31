@@ -531,4 +531,67 @@ export class InventoryService {
             return { success: false, message: `An internal server error occurred during auto-equip for ${statKey}.` };
         }
     }
+
+    /**
+     * Adds an item instance to the character's inventory. Handles stacking.
+     * @param characterId The ID of the character.
+     * @param itemToAdd The Item object instance to add.
+     * @returns InventoryServiceResult indicating success/failure. Character data is not returned here as CombatService handles the final update.
+     */
+    async addItemToInventory(characterId: string, itemToAdd: Item): Promise<Omit<InventoryServiceResult, 'character'>> {
+        // Basic validation
+        if (!itemToAdd || !itemToAdd.id || !itemToAdd.baseId) {
+            return { success: false, message: 'Invalid item data provided.' };
+        }
+
+        try {
+            const character = await this.characterRepository.findById(characterId);
+            if (!character) {
+                return { success: false, message: 'Character not found' };
+            }
+
+            const currentInventory = character.inventory || [];
+            const isStackable = (itemToAdd.type === 'potion' || itemToAdd.type === 'misc') && (itemToAdd.quantity ?? 1) > 0;
+            const itemQuantityToAdd = itemToAdd.quantity ?? 1;
+
+            let itemAdded = false;
+
+            // --- Handle Stacking ---
+            if (isStackable) {
+                for (let i = 0; i < currentInventory.length; i++) {
+                    const existingItem = currentInventory[i];
+                    // Check if it's the same base item and stackable
+                    if (existingItem && existingItem.baseId === itemToAdd.baseId && (existingItem.type === 'potion' || existingItem.type === 'misc')) {
+                        // TODO: Add check for stack size limit if implemented later
+                        existingItem.quantity = (existingItem.quantity ?? 0) + itemQuantityToAdd;
+                        itemAdded = true;
+                        console.log(`InventoryService: Stacked ${itemQuantityToAdd} ${itemToAdd.name} onto existing stack for character ${characterId}. New quantity: ${existingItem.quantity}`);
+                        break; // Stop after finding the first stack
+                    }
+                }
+            }
+
+            // --- Handle Adding New Item (if not stacked or not stackable) ---
+            if (!itemAdded) {
+                // TODO: Add check for inventory space limit if implemented later
+                currentInventory.push(itemToAdd); // Add the new item instance
+                itemAdded = true;
+                console.log(`InventoryService: Added new item ${itemToAdd.name} (Qty: ${itemQuantityToAdd}) to inventory for character ${characterId}.`);
+            }
+
+            // --- Update Character ---
+            if (itemAdded) {
+                await this.characterRepository.update(characterId, { inventory: currentInventory });
+                return { success: true, message: 'Item added to inventory.' };
+            } else {
+                // This case should ideally not be reached if inventory space is handled
+                console.error(`InventoryService: Failed to add item ${itemToAdd.name} for character ${characterId} - potentially inventory full or logic error.`);
+                return { success: false, message: 'Could not add item to inventory (possibly full).' };
+            }
+
+        } catch (error) {
+            console.error(`Error in InventoryService.addItemToInventory for character ${characterId}, item ${itemToAdd.name} (ID: ${itemToAdd.id}):`, error);
+            return { success: false, message: 'An internal server error occurred while adding the item to inventory.' };
+        }
+    }
 }

@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { CharacterRepository } from '../repositories/characterRepository.js';
 import { UserRepository } from '../repositories/userRepository.js';
 import { ZoneService } from './zoneService.js';
+import { CombatService } from './combatService.js'; // Import CombatService
 import { Character, User, Zone, ICharacterRepository, SelectCharacterResult, IUserRepository, ZoneWithStatus } from '../types.js';
 import { characterClasses, calculateMaxHp, calculateMaxMana, zones, xpForLevel, xpRequiredForLevel } from '../gameData.js';
 
@@ -10,19 +11,21 @@ const MAX_CHARACTERS_PER_ACCOUNT = 5;
 
 
 export class CharacterService {
-    // Use interfaces for dependencies
     private characterRepository: ICharacterRepository;
     private userRepository: IUserRepository;
-    private zoneService: ZoneService; // Inject ZoneService
+    private zoneService: ZoneService;
+    private combatService: CombatService; // Add CombatService property
 
     constructor(
         characterRepository: ICharacterRepository,
         userRepository: IUserRepository,
-        zoneService: ZoneService // Add ZoneService to constructor
+        zoneService: ZoneService,
+        combatService: CombatService // Inject CombatService
     ) {
         this.characterRepository = characterRepository;
         this.userRepository = userRepository;
-        this.zoneService = zoneService; // Store injected service
+        this.zoneService = zoneService;
+        this.combatService = combatService; // Store injected service
     }
 
     /**
@@ -72,11 +75,15 @@ export class CharacterService {
             currentHp: calculateMaxHp(chosenClass.baseStats),
             maxMana: calculateMaxMana(chosenClass.baseStats),
             currentMana: calculateMaxMana(chosenClass.baseStats),
+            defense: 0, // Initialize defense
             currentZoneId: 'town',
             inventory: [],
             equipment: {},
             groundLoot: [],
             gold: 0,
+            monsterEssence: 0, // Initialize resource
+            scrapMetal: 0, // Initialize resource
+            lastLogoutTimestamp: null,
             potionSlot1: undefined,
             potionSlot2: undefined,
         };
@@ -109,12 +116,12 @@ export class CharacterService {
      * @param userId The ID of the user selecting the character.
      * @param characterId The ID of the character being selected.
      * @returns A promise resolving to an object containing the character data, current zone data, and zone statuses.
-     * @throws Error if user/character not found, character doesn't belong to user, or DB error.
-     */
-    async selectCharacter(userId: string, characterId: string): Promise<SelectCharacterResult> {
-        const character = await this.characterRepository.findById(characterId); // Use injected repo
-        let user: User | null = null;
-        let usernameForLog = userId;
+      * @throws Error if user/character not found, character doesn't belong to user, or DB error.
+      */
+     async selectCharacter(userId: string, characterId: string): Promise<SelectCharacterResult> {
+         const character = await this.characterRepository.findById(characterId);
+         let user: User | null = null;
+         let usernameForLog = userId;
 
         if (userId !== 'dev-user-skipped-login') {
             user = await this.userRepository.findById(userId); // Use injected repo
@@ -130,17 +137,57 @@ export class CharacterService {
              if (!character) {
                  throw new Error(`Character not found (ID: ${characterId})`);
              }
-        }
+         }
 
-        if (!character.equipment) {
-            character.equipment = {};
-        }
+         if (!character.equipment) {
+             character.equipment = {};
+         }
 
-        let dbUpdateNeeded = false;
-        const updates: Partial<Character> = {};
+         let dbUpdateNeeded = false;
+         const updates: Partial<Character> = {};
+         let offlineGainsResult: { xp: number, gold: number } | null = null;
 
-        if (character.currentZoneId !== 'town') {
-            console.log(`CharacterService: Character ${character.name} was in ${character.currentZoneId}, moving to Town on select.`);
+         // --- Offline Progress Calculation ---
+         if (character.lastLogoutTimestamp && typeof character.lastLogoutTimestamp === 'number') {
+             const offlineDurationMs = Date.now() - character.lastLogoutTimestamp;
+             const offlineDurationSeconds = Math.floor(offlineDurationMs / 1000);
+
+             if (offlineDurationSeconds > 60) { // Only calculate if offline for more than a minute
+                 console.log(`CharacterService: Calculating offline progress for ${character.name} (Offline for ${offlineDurationSeconds}s)`);
+                 // TODO: Implement actual calculation in CombatService
+                 // For now, assume a placeholder function exists and returns some gains
+                 const gains = await this.combatService.calculateOfflineGains(character, offlineDurationSeconds);
+
+                 if (gains.xp > 0 || gains.gold > 0) {
+                     offlineGainsResult = { xp: gains.xp, gold: gains.gold };
+                     console.log(`CharacterService: Offline gains for ${character.name}: ${gains.xp} XP, ${gains.gold} Gold`);
+
+                     // Apply gains (modifies character object directly)
+                     this.addExperience(character, gains.xp); // Handles level ups
+                     character.gold = (character.gold ?? 0) + gains.gold;
+
+                     // Mark fields for DB update
+                     updates.experience = character.experience;
+                     updates.level = character.level;
+                     updates.stats = character.stats; // In case of level up
+                     updates.maxHp = character.maxHp; // In case of level up
+                     updates.currentHp = character.currentHp; // addExperience might heal on level up
+                     updates.maxMana = character.maxMana; // In case of level up
+                     updates.currentMana = character.currentMana; // addExperience might heal on level up
+                     updates.gold = character.gold;
+                     dbUpdateNeeded = true;
+                 }
+             }
+             // Always clear the timestamp after checking
+             character.lastLogoutTimestamp = null;
+             updates.lastLogoutTimestamp = null;
+             dbUpdateNeeded = true; // Need to save the cleared timestamp
+         }
+         // --- End Offline Progress ---
+
+
+         if (character.currentZoneId !== 'town') {
+             console.log(`CharacterService: Character ${character.name} was in ${character.currentZoneId}, moving to Town on select.`);
             character.currentZoneId = 'town';
             updates.currentZoneId = 'town';
             dbUpdateNeeded = true;
@@ -179,14 +226,15 @@ export class CharacterService {
             xpToNextLevelBracket: xpToNextLevelBracket
         };
 
-        console.log(`CharacterService: User ${usernameForLog} (ID: ${userId}) selected character ${character.name} (ID: ${characterId}).`);
+         console.log(`CharacterService: User ${usernameForLog} (ID: ${userId}) selected character ${character.name} (ID: ${characterId}).`);
 
-        return {
-            characterData: characterDataForPayload,
-            currentZoneData: currentZoneData,
-            zoneStatuses: zoneStatuses
-         };
-     }
+         return {
+             characterData: characterDataForPayload,
+             currentZoneData: currentZoneData,
+             zoneStatuses: zoneStatuses,
+             offlineGains: offlineGainsResult ?? undefined // Include offline gains if calculated
+          };
+      }
 
      /**
       * Retrieves all characters associated with a specific user ID.
