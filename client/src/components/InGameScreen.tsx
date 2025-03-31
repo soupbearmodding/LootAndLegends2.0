@@ -1,8 +1,7 @@
-import React, { useState, useEffect, ReactNode } from 'react'; // Import ReactNode
+import React, { useState, useEffect } from 'react';
 import InventoryPanel from './InventoryPanel';
 import OptionsScreen from './OptionsScreen';
-// Import CraftingPanel - Assuming it's passed as children for now
-// import CraftingPanel from './CraftingPanel';
+import CraftingPanel from './CraftingPanel'; // Import CraftingPanel directly
 import {
     EquipmentSlot,
     ItemStats,
@@ -30,7 +29,9 @@ interface InGameScreenProps {
     onAutoEquipBestStat: (stat: keyof ItemStats) => void;
     onReturnToCharacterSelect: () => void; // Prop for returning
     sendWsMessage: (type: string, payload: any) => Promise<any>; // Prop for sending messages
-    children?: ReactNode; // Allow children to be passed (e.g., CraftingPanel)
+    // Add availableRecipes and requestRecipes props needed by CraftingPanel
+    availableRecipes: any[]; // Use 'any' for now, or define CraftingRecipeClient here/import
+    requestRecipes: () => void;
 }
 
 const getItemShorthand = (name: string): string => {
@@ -61,7 +62,8 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
     onUsePotionSlot, onLootGroundItem, onAutoEquipBestStat,
     onReturnToCharacterSelect,
     sendWsMessage,
-    children // Destructure children
+    availableRecipes, // Destructure new props
+    requestRecipes // Destructure new props
 }) => {
     const [centerTab, setCenterTab] = useState<'combat-log' | 'chat'>('combat-log');
     const [rightTab, setRightTab] = useState<'stats' | 'skills' | 'quests' | 'mercenaries'>('stats');
@@ -298,8 +300,13 @@ const InGameScreen: React.FC<InGameScreenProps> = ({
                 <div className="modal-overlay" onClick={() => setIsCraftingModalOpen(false)}>
                     <div className="modal-content crafting-modal" onClick={e => e.stopPropagation()}>
                         <button className="modal-close-button" onClick={() => setIsCraftingModalOpen(false)}>&times;</button>
-                        {/* Render the CraftingPanel passed as children */}
-                        {children}
+                        {/* Render CraftingPanel directly and pass props */}
+                        <CraftingPanel
+                            character={character}
+                            availableRecipes={availableRecipes}
+                            sendWsMessage={sendWsMessage}
+                            requestRecipes={requestRecipes}
+                        />
                     </div>
                 </div>
             )}

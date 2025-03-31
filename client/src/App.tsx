@@ -776,16 +776,9 @@ function App() {
                               onReturnToCharacterSelect={handleReturnToCharacterSelect} // Pass the return handler
                               // Pass sendToServer function so InGameScreen can send messages directly
                               sendWsMessage={(type: string, payload: any) => sendToServer(type, payload, browserWsRef)}
-                              // Removed onCharacterDataLoaded prop
-                         >
-                            {/* Render CraftingPanel as a child or alongside other panels */}
-                            <CraftingPanel
-                                character={selectedCharacterData as CharacterDataForClient | null}
-                                availableRecipes={availableRecipes}
-                                sendWsMessage={(type: string, payload: any) => sendToServer(type, payload, browserWsRef)}
-                                requestRecipes={requestRecipes}
-                            />
-                         </InGameScreen>;
+                              availableRecipes={availableRecipes} // Pass recipes prop
+                              requestRecipes={requestRecipes} // Pass request function
+                         />;
               default:
                 return <div>Error: Unknown View State</div>;
         }
