@@ -169,6 +169,9 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
     );
 
     const renderUpgradeTab = () => {
+        console.log("Rendering Upgrade Tab. Selected Recipe:", selectedUpgradeRecipe); // Log selected recipe
+        console.log("Available Upgrade Recipes:", upgradeRecipes); // Log available upgrade recipes
+
         // Combine inventory and equipped items that are potentially upgradeable
         const allItems = [
             ...(character?.inventory || []),
@@ -181,10 +184,10 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
             const maxUpgrades = item.maxUpgrades ?? 0;
             const currentUpgrades = item.upgradeCount ?? 0;
             return selectedUpgradeRecipe.appliesToSlotType.includes(item.equipmentSlot as EquipmentSlot) &&
-                   currentUpgrades < maxUpgrades &&
-                   (item.quality === 'Gray' || item.quality === 'White' || item.quality === 'Green' || item.quality === 'Blue');
+                    currentUpgrades < maxUpgrades &&
+                    (item.quality === 'Gray' || item.quality === 'White' || item.quality === 'Green' || item.quality === 'Blue');
         });
-
+        console.log("Filtered Upgradeable Items (for selected recipe):", upgradeableItems); // Log filter result
 
         const selectedItemAffixes = selectedItemForUpgrade ? [...(selectedItemForUpgrade.prefixes || []), ...(selectedItemForUpgrade.suffixes || [])] : [];
 
@@ -281,6 +284,8 @@ const CraftingPanel: React.FC<CraftingPanelProps> = ({
         );
     };
 
+    // Log activeTab value just before returning JSX
+    console.log("CraftingPanel rendering, activeTab:", activeTab);
 
     return (
         <div className="crafting-panel panel-section">
